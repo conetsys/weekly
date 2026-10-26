@@ -581,7 +581,7 @@ td.wk .wdate{background:var(--surface)}
         <button type="button" data-layout="month">▦ 캘린더로 보기</button>
         <button type="button" data-layout="gantt" id="ganttBtn" hidden>3주 일정</button>
       </div>
-      <div class="donemode" role="group" aria-label="끝난 일 표시">
+      <div class="donemode" id="doneMode" role="group" aria-label="끝난 일 표시">
         <span class="dlab">끝난 일</span>
         <button type="button" data-done="hide">숨기기</button>
         <button type="button" data-done="recent">최근만</button>
@@ -1559,7 +1559,7 @@ $("vp-sel").onchange=e=>{const n=e.target.value==="__new";$("vp-new").hidden=!n;
 $("vp-cancel").onclick=closeVpop;$("vp-save").onclick=saveVpop;
 $("vpop").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.tagName!=="BUTTON"){e.preventDefault();saveVpop()}});
 $("dClose").onclick=cancelEdit;$("cancelBtn").onclick=cancelEdit;
-document.querySelector(".donemode").onclick=e=>{const b=e.target.closest("[data-done]");if(!b)return;st.doneMode=b.dataset.done;store.set("wk-done",st.doneMode);render()};
+$("doneMode").onclick=e=>{const b=e.target.closest("[data-done]");if(!b)return;st.doneMode=b.dataset.done;store.set("wk-done",st.doneMode);render()};
 $("carryNext").onclick=()=>{
   const task=$("w-task").value.trim(),msg=$("carryNextMsg");
   if(!task){msg.textContent="이번주 할일이 비어 있어서 가져올 내용이 없어요.";msg.hidden=false;$("w-task").focus();return}
