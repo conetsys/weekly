@@ -478,6 +478,12 @@ td.wk .wdate{background:var(--surface)}
 .ndate{font-size:12px;color:var(--muted);margin-bottom:12px}
 .nbody{font-size:14.5px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;border-top:1px solid var(--line);padding-top:12px}
 .nempty{padding:24px 0;text-align:center;color:var(--muted)}
+.nnav{display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-size:12.5px;color:var(--muted)}
+.nnav .btn{min-width:30px;height:28px;padding:0 6px}
+.nnew{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;color:#fff;background:var(--danger,#C0392B);border-radius:999px;padding:1px 7px;vertical-align:middle}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.nepick{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.nepick select{flex:1;border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:7px 8px;font:inherit;color:inherit}
 .modal .mfoot{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:18px;padding-top:12px;border-top:1px solid var(--line)}
 .modal .mfoot .spacer{flex:1}
 .nhide{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer}
@@ -716,9 +722,9 @@ td.wk .wdate{background:var(--surface)}
 <datalist id="dl-project"></datalist><datalist id="dl-part"></datalist><datalist id="dl-vendor"></datalist>
 <div class="mscrim" id="mscrim" hidden></div>
 <div class="modal" id="noticeModal" hidden role="dialog" aria-modal="true" aria-labelledby="ntTitle">
-  <div class="mtop"><span class="mtag">📢 공지사항</span><button class="btn ghost icon" id="ntClose" aria-label="닫기">✕</button></div>
+  <div class="mtop"><span class="mtag">📢 공지사항</span><span class="nnav" id="ntNav" hidden><button class="btn ghost icon" id="ntPrev" type="button" aria-label="이전 공지">◀</button><span class="mono" id="ntPos"></span><button class="btn ghost icon" id="ntNext" type="button" aria-label="다음 공지">▶</button></span><button class="btn ghost icon" id="ntClose" aria-label="닫기">✕</button></div>
   <div id="ntView">
-    <h2 id="ntTitle"></h2>
+    <h2><span id="ntTitle"></span><span class="nnew" id="ntNew" hidden>NEW</span></h2>
     <div class="ndate mono" id="ntDate"></div>
     <div class="nbody" id="ntBody"></div>
   </div>
@@ -739,10 +745,11 @@ td.wk .wdate{background:var(--surface)}
     <div class="mfoot"><span class="spacer"></span><button class="btn primary" type="submit">확인</button></div>
   </form>
   <form id="neForm" novalidate hidden>
+    <div class="nepick"><label for="ne-pick" class="sr">편집할 공지</label><select id="ne-pick"></select></div>
     <div class="f"><label for="ne-title">제목 <i>*</i></label><input id="ne-title" autocomplete="off" placeholder="예: 10월 마감 일정 안내"></div>
     <div class="f" style="margin-top:12px"><label for="ne-body">내용 <i>*</i></label><textarea id="ne-body" rows="8" placeholder="팀원들에게 알릴 내용을 적어주세요. 줄바꿈은 그대로 보여요."></textarea></div>
     <label class="nhide" style="margin-top:12px"><input type="checkbox" id="ne-pop" checked> 접속할 때 팝업으로 띄우기</label>
-    <p class="hint" style="margin:6px 0 0">저장하면 '다시 보지 않기'를 눌렀던 사람에게도 새 공지로 다시 떠요.</p>
+    <p class="hint" style="margin:6px 0 0" id="neHint"></p>
     <p class="err" id="neErr" hidden></p>
     <div class="mfoot">
       <button class="btn danger" type="button" id="neRemove">공지 내리기</button>
@@ -1682,31 +1689,47 @@ async function refresh(){
 }
 function refreshSoon(){clearTimeout(rt);rt=setTimeout(refresh,150)}
 /* ---------- 공지사항 ---------- */
-let notice=null,noticeShownOnce=false;
+let notices=[],noticeShownOnce=false,ntQ=[],ntI=0,ntPopup=false;
 const NSEEN="weekly-notice-seen-"+TEAM;
-const seenId=()=>{try{return localStorage.getItem(NSEEN)}catch(e){return null}};
+function seenSet(){try{const v=localStorage.getItem(NSEEN);if(!v)return new Set();if(v[0]==="[")return new Set(JSON.parse(v));return new Set([v])}catch(e){return new Set()}}
+function markSeen(id){const st_=seenSet();st_.add(id);try{localStorage.setItem(NSEEN,JSON.stringify([...st_].slice(-100)))}catch(e){}}
 const fmtDT=iso=>{const d=new Date(iso);return isNaN(d)?"":`${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`};
-function hasNotice(){return !!(notice&&notice.active&&notice.title)}
-function paintNoticeDot(){$("noticeDot").hidden=!(hasNotice()&&seenId()!==notice.id)}
+// 저장 형식: {list:[{id,title,body,popup,active,createdAt,updatedAt}]}. 예전 단일 공지 형식도 읽음
+function normNotices(d){if(!d)return [];const l=Array.isArray(d.list)?d.list:(d.title?[d]:[]);return l.map(n=>Object.assign({createdAt:n.updatedAt},n))}
+const activeNotices=()=>notices.filter(n=>n.active&&n.title).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
+const unseenNotices=()=>{const ss=seenSet();return activeNotices().filter(n=>!ss.has(n.id))};
+function hasNotice(){return activeNotices().length>0}
+function paintNoticeDot(){$("noticeDot").hidden=!unseenNotices().length}
 async function loadNotice(){
   try{
-    const n=await api.getNotice();
-    const changed=JSON.stringify(n)!==JSON.stringify(notice);
-    notice=n;paintNoticeDot();
-    if(!noticeShownOnce&&hasNotice()&&notice.popup!==false&&seenId()!==notice.id){noticeShownOnce=true;openNotice()}
-    else if(changed&&!$("noticeModal").hidden)fillNotice();
+    const n=normNotices(await api.getNotice());
+    const changed=JSON.stringify(n)!==JSON.stringify(notices);
+    notices=n;paintNoticeDot();
+    const pop=unseenNotices().filter(x=>x.popup!==false);
+    if(!noticeShownOnce&&pop.length&&!anyModalOpen()){noticeShownOnce=true;openNotice(pop,true)}
+    else if(changed&&!$("noticeModal").hidden&&!ntPopup){ntQ=activeNotices();ntI=Math.min(ntI,Math.max(0,ntQ.length-1));fillNotice()}
   }catch(e){}
 }
 function anyModalOpen(){return !$("noticeModal").hidden||!$("noticeEdit").hidden}
 function fillNotice(){
-  const ok=hasNotice();
+  const n=ntQ[ntI],ok=!!n;
   $("ntView").hidden=!ok;$("ntEmpty").hidden=ok;$("ntHideWrap").hidden=!ok;
-  if(ok){$("ntTitle").textContent=notice.title;$("ntBody").textContent=notice.body||"";$("ntDate").textContent=fmtDT(notice.updatedAt)+" 게시";}
+  if(ok){$("ntTitle").textContent=n.title;$("ntBody").textContent=n.body||"";$("ntDate").textContent=fmtDT(n.createdAt)+" 게시"+(n.updatedAt&&n.createdAt&&n.updatedAt.slice(0,16)!==n.createdAt.slice(0,16)?` · ${fmtDT(n.updatedAt)} 수정`:"");
+    $("ntNew").hidden=seenSet().has(n.id);}
+  const many=ntQ.length>1;$("ntNav").hidden=!many;$("ntPos").textContent=`${ntI+1} / ${ntQ.length}`;
+  $("ntPrev").disabled=ntI===0;$("ntNext").disabled=ntI>=ntQ.length-1;
+  const last=ntI>=ntQ.length-1;
+  $("ntOk").textContent=ntPopup&&!last?`다음 공지 (${ntI+2}/${ntQ.length})`:"확인";
   $("ntHide").checked=false;
 }
-function openNotice(){fillNotice();$("noticeEdit").hidden=true;$("mscrim").hidden=false;$("noticeModal").hidden=false;setTimeout(()=>$("ntOk").focus(),30)}
+// list 를 주면 그 공지들을 차례로(팝업), 없으면 게시 중인 공지 전체를 최신순으로
+function openNotice(list,popup){
+  ntPopup=!!popup;ntQ=Array.isArray(list)?list:activeNotices();ntI=0;
+  fillNotice();$("noticeEdit").hidden=true;$("mscrim").hidden=false;$("noticeModal").hidden=false;setTimeout(()=>$("ntOk").focus(),30)}
+function leaveCurrent(){const n=ntQ[ntI];if(n&&$("ntHide").checked)markSeen(n.id)}
+function stepNotice(d){leaveCurrent();ntI=Math.max(0,Math.min(ntQ.length-1,ntI+d));fillNotice()}
 function closeNotice(){
-  if(hasNotice()&&$("ntHide").checked){try{localStorage.setItem(NSEEN,notice.id)}catch(e){}}
+  if(!$("noticeModal").hidden)leaveCurrent();
   $("noticeModal").hidden=true;$("noticeEdit").hidden=true;$("mscrim").hidden=true;paintNoticeDot();
 }
 async function sha256hex(t){
@@ -1714,19 +1737,33 @@ async function sha256hex(t){
   return "";
 }
 function isAdminSession(){try{return sessionStorage.getItem("weekly-notice-admin")==="1"}catch(e){return false}}
+let neWant="";
 function openNoticeEdit(){
+  neWant=(!$("noticeModal").hidden&&ntQ[ntI])?ntQ[ntI].id:"";
   $("noticeModal").hidden=true;$("mscrim").hidden=false;$("noticeEdit").hidden=false;$("neErr").hidden=true;
   const unlocked=isAdminSession();
   $("nePw").hidden=unlocked;$("neForm").hidden=!unlocked;$("nePwErr").hidden=true;$("ne-pw").value="";
   if(unlocked)fillNoticeForm();
   setTimeout(()=>(unlocked?$("ne-title"):$("ne-pw")).focus(),30);
 }
-function fillNoticeForm(){
-  $("ne-title").value=hasNotice()?notice.title:"";$("ne-body").value=hasNotice()?(notice.body||""):"";
-  $("ne-pop").checked=hasNotice()?notice.popup!==false:true;$("neRemove").hidden=!hasNotice();
+let neEditId="";
+function fillNoticeForm(pick){
+  const act=activeNotices();
+  if(pick===undefined)pick=neWant;
+  neEditId=act.some(n=>n.id===pick)?pick:"";
+  $("ne-pick").innerHTML=`<option value="">+ 새 공지 쓰기</option>`+act.map(n=>`<option value="${esc(n.id)}">${esc(fmtDT(n.createdAt).slice(5,10))} · ${esc(n.title)}</option>`).join("");
+  $("ne-pick").value=neEditId;
+  const n=act.find(x=>x.id===neEditId);
+  $("ne-title").value=n?n.title:"";$("ne-body").value=n?(n.body||""):"";
+  $("ne-pop").checked=n?n.popup!==false:true;$("neRemove").hidden=!n;
+  $("neSave").textContent=n?"수정 저장":"게시";
+  $("neHint").textContent=n?"고친 내용은 공지 목록에 바로 반영돼요. 이미 읽은 사람에게 다시 팝업으로 뜨지는 않아요.":"새 공지는 아직 안 읽은 사람에게 접속할 때 차례로 떠요. 이전 공지도 그대로 남아 ◀ ▶ 로 볼 수 있어요.";
+  $("neErr").hidden=true;
 }
-$("noticeBtn").onclick=openNotice;
-$("ntOk").onclick=closeNotice;$("ntClose").onclick=closeNotice;
+$("ne-pick").onchange=e=>{fillNoticeForm(e.target.value);$("ne-title").focus()};
+$("noticeBtn").onclick=()=>openNotice();
+$("ntPrev").onclick=()=>stepNotice(-1);$("ntNext").onclick=()=>stepNotice(1);
+$("ntOk").onclick=()=>{if(ntPopup&&ntI<ntQ.length-1)stepNotice(1);else closeNotice()};$("ntClose").onclick=closeNotice;
 $("ntAdmin").onclick=openNoticeEdit;
 $("neClose").onclick=closeNotice;$("neCancel").onclick=closeNotice;
 $("mscrim").onclick=closeNotice;
@@ -1742,14 +1779,19 @@ $("neForm").addEventListener("submit",async e=>{
   const title=$("ne-title").value.trim(),body=$("ne-body").value.trim();
   if(!title||!body){$("neErr").textContent="제목과 내용을 모두 적어주세요.";$("neErr").hidden=false;(title?$("ne-body"):$("ne-title")).focus();return}
   const now=new Date().toISOString();
-  const data={id:"n"+Date.now().toString(36),title,body,popup:$("ne-pop").checked,active:true,updatedAt:now};
+  let cur=[];try{cur=normNotices(await api.getNotice())}catch(_){cur=notices.slice()}
+  const ex=neEditId&&cur.find(n=>n.id===neEditId);
+  if(ex)Object.assign(ex,{title,body,popup:$("ne-pop").checked,updatedAt:now});
+  else cur.push({id:"n"+Date.now().toString(36),title,body,popup:$("ne-pop").checked,active:true,createdAt:now,updatedAt:now});
   $("neSave").disabled=true;
-  try{await api.setNotice(data);notice=data;closeNotice();paintNoticeDot();toast("공지를 게시했어요")}
+  try{await api.setNotice({list:cur});notices=cur;closeNotice();paintNoticeDot();toast(ex?"공지를 고쳤어요":"공지를 게시했어요")}
   catch(x){$("neErr").textContent="저장하지 못했어요. 잠시 후 다시 눌러주세요.";$("neErr").hidden=false}
   finally{$("neSave").disabled=false}
 });
 $("neRemove").onclick=async()=>{
-  try{await api.setNotice(Object.assign({},notice,{active:false,updatedAt:new Date().toISOString()}));notice=Object.assign({},notice,{active:false});closeNotice();toast("공지를 내렸어요")}
+  try{let cur=[];try{cur=normNotices(await api.getNotice())}catch(_){cur=notices.slice()}
+    const ex=cur.find(n=>n.id===neEditId);if(ex)Object.assign(ex,{active:false,updatedAt:new Date().toISOString()});
+    await api.setNotice({list:cur});notices=cur;closeNotice();toast("공지를 내렸어요")}
   catch(x){$("neErr").textContent="처리하지 못했어요. 잠시 후 다시 눌러주세요.";$("neErr").hidden=false}
 };
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&anyModalOpen()){e.stopImmediatePropagation();closeNotice()}},true);
