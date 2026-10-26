@@ -331,6 +331,23 @@ tbody tr.done .wkmain .w2,tbody tr.done .wkcell .cat{color:var(--muted)}
 tbody tr.isnew .wkcell .cat{background:var(--surface)}
 .carrybtn{margin-left:auto;padding:3px 10px;font-size:12px;font-weight:600;letter-spacing:0;color:var(--accent);border-color:var(--accent);background:var(--surface)}
 .carrybtn:hover{background:var(--accent-soft)}
+/* ---- 공지 ---- */
+.nbtn{position:relative}
+.ndot{position:absolute;top:3px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 2px var(--surface)}
+.mscrim{position:fixed;inset:0;background:rgba(10,15,20,.45);z-index:40}
+.modal{position:fixed;z-index:41;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,calc(100% - 32px));max-height:calc(100% - 48px);overflow:auto;background:var(--surface);border-radius:12px;box-shadow:var(--shadow);padding:18px 22px 16px}
+.mtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.mtag{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:3px 10px}
+.modal h2{margin:4px 0 2px;font-size:20px;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+.ndate{font-size:12px;color:var(--muted);margin-bottom:12px}
+.nbody{font-size:14.5px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;border-top:1px solid var(--line);padding-top:12px}
+.nempty{padding:24px 0;text-align:center;color:var(--muted)}
+.modal .mfoot{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:18px;padding-top:12px;border-top:1px solid var(--line)}
+.modal .mfoot .spacer{flex:1}
+.nhide{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer}
+.nhide input{width:auto;margin:0}
+.nadmin{font-size:12px;color:var(--muted)}
+.modal .f input,.modal .f textarea{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:8px 10px;width:100%}
 /* ---- 업무 요약 창 ---- */
 .drawer.sum{width:min(520px,100%)}
 .sh{display:flex;flex-direction:column;gap:6px}
@@ -393,6 +410,7 @@ tbody tr.isnew .wkcell .cat{background:var(--surface)}
       <button class="btn ghost" id="thisWeek">이번주로</button>
     </div>
     <div class="actions">
+      <button class="btn nbtn" id="noticeBtn" aria-label="공지사항"><span aria-hidden="true">📢</span> 공지<span class="ndot" id="noticeDot" hidden></span></button>
       <button class="btn" id="copyReport">보고용 복사</button>
       <button class="btn" id="openSettings">목록 관리</button>
     </div>
@@ -551,6 +569,44 @@ tbody tr.isnew .wkcell .cat{background:var(--surface)}
 </aside>
 
 <datalist id="dl-project"></datalist><datalist id="dl-part"></datalist><datalist id="dl-vendor"></datalist>
+<div class="mscrim" id="mscrim" hidden></div>
+<div class="modal" id="noticeModal" hidden role="dialog" aria-modal="true" aria-labelledby="ntTitle">
+  <div class="mtop"><span class="mtag">📢 공지사항</span><button class="btn ghost icon" id="ntClose" aria-label="닫기">✕</button></div>
+  <div id="ntView">
+    <h2 id="ntTitle"></h2>
+    <div class="ndate mono" id="ntDate"></div>
+    <div class="nbody" id="ntBody"></div>
+  </div>
+  <div class="nempty" id="ntEmpty" hidden>지금 올라와 있는 공지가 없어요.</div>
+  <div class="mfoot">
+    <button class="btn ghost nadmin" id="ntAdmin" type="button">공지 관리</button>
+    <span class="spacer"></span>
+    <label class="nhide" id="ntHideWrap"><input type="checkbox" id="ntHide"> 이 공지 다시 보지 않기</label>
+    <button class="btn primary" id="ntOk" type="button">확인</button>
+  </div>
+</div>
+<div class="modal" id="noticeEdit" hidden role="dialog" aria-modal="true" aria-labelledby="neTitle">
+  <div class="mtop"><span class="mtag" id="neTitle">공지 관리</span><button class="btn ghost icon" id="neClose" aria-label="닫기">✕</button></div>
+  <form id="nePw" novalidate>
+    <p class="hint" style="margin:0 0 10px">관리자 비밀번호를 입력해주세요.</p>
+    <div class="f"><label for="ne-pw">비밀번호</label><input id="ne-pw" type="password" autocomplete="current-password"></div>
+    <p class="err" id="nePwErr" hidden>비밀번호가 맞지 않아요.</p>
+    <div class="mfoot"><span class="spacer"></span><button class="btn primary" type="submit">확인</button></div>
+  </form>
+  <form id="neForm" novalidate hidden>
+    <div class="f"><label for="ne-title">제목 <i>*</i></label><input id="ne-title" autocomplete="off" placeholder="예: 10월 마감 일정 안내"></div>
+    <div class="f" style="margin-top:12px"><label for="ne-body">내용 <i>*</i></label><textarea id="ne-body" rows="8" placeholder="팀원들에게 알릴 내용을 적어주세요. 줄바꿈은 그대로 보여요."></textarea></div>
+    <label class="nhide" style="margin-top:12px"><input type="checkbox" id="ne-pop" checked> 접속할 때 팝업으로 띄우기</label>
+    <p class="hint" style="margin:6px 0 0">저장하면 '다시 보지 않기'를 눌렀던 사람에게도 새 공지로 다시 떠요.</p>
+    <p class="err" id="neErr" hidden></p>
+    <div class="mfoot">
+      <button class="btn danger" type="button" id="neRemove">공지 내리기</button>
+      <span class="spacer"></span>
+      <button class="btn" type="button" id="neCancel">취소</button>
+      <button class="btn primary" type="submit" id="neSave">게시</button>
+    </div>
+  </form>
+</div>
 <div class="toast" id="toast" hidden role="status"></div>
 
 <script>
@@ -560,7 +616,9 @@ tbody tr.isnew .wkcell .cat{background:var(--surface)}
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key(sb_publishable_…) 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const TEAM = "quality";         // 같은 Supabase에 여러 팀을 둘 때 구분용 (구매팀은 "purchase")
+const TEAM = "quality";
+// 공지 관리 비밀번호의 SHA-256 값 (바꾸려면 Claude에게 요청하세요)
+const NOTICE_PW_SHA256 = "6101b95d7947bffd4a3831582956a8aa53ca8256f4a25cd247e457ed85f70f8b";         // 같은 Supabase에 여러 팀을 둘 때 구분용 (구매팀은 "purchase")
 </script>
 <script>
 (function(){
@@ -1148,7 +1206,9 @@ const remote={
   },
   async setItem(id,data){await rest("weekly_items?on_conflict=id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify({id,team:TEAM,data,updated_at:new Date().toISOString()})})},
   async delItem(id){await rest("weekly_items?team=eq."+TEAM+"&id=eq."+encodeURIComponent(id),{method:"DELETE"})},
-  async setLists(data){await rest("weekly_config?on_conflict=team",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify({team:TEAM,data,updated_at:new Date().toISOString()})})}
+  async setLists(data){await rest("weekly_config?on_conflict=team",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify({team:TEAM,data,updated_at:new Date().toISOString()})})},
+  async getNotice(){const r=await rest("weekly_config?team=eq."+TEAM+"-notice&select=data");return r&&r[0]?r[0].data:null},
+  async setNotice(data){await rest("weekly_config?on_conflict=team",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify({team:TEAM+"-notice",data,updated_at:new Date().toISOString()})})}
 };
 const LKEY="weekly-local-"+TEAM;
 const local={
@@ -1157,7 +1217,9 @@ const local={
   async load(){return this.read()},
   async setItem(id,data){const d=this.read();const k=d.items.findIndex(x=>x._id===id);const v=Object.assign({},data,{_id:id});if(k<0)d.items.push(v);else d.items[k]=v;this.write(d)},
   async delItem(id){const d=this.read();d.items=d.items.filter(x=>x._id!==id);this.write(d)},
-  async setLists(data){const d=this.read();d.lists=data;this.write(d)}
+  async setLists(data){const d=this.read();d.lists=data;this.write(d)},
+  async getNotice(){return this.read().notice||null},
+  async setNotice(data){const d=this.read();d.notice=data;this.write(d)}
 };
 const api=CONFIGURED?remote:local;
 const newId=()=>"i"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -1185,6 +1247,81 @@ async function refresh(){
   }finally{loading=false;if(again){again=false;refresh()}}
 }
 function refreshSoon(){clearTimeout(rt);rt=setTimeout(refresh,150)}
+/* ---------- 공지사항 ---------- */
+let notice=null,noticeShownOnce=false;
+const NSEEN="weekly-notice-seen-"+TEAM;
+const seenId=()=>{try{return localStorage.getItem(NSEEN)}catch(e){return null}};
+const fmtDT=iso=>{const d=new Date(iso);return isNaN(d)?"":`${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`};
+function hasNotice(){return !!(notice&&notice.active&&notice.title)}
+function paintNoticeDot(){$("noticeDot").hidden=!(hasNotice()&&seenId()!==notice.id)}
+async function loadNotice(){
+  try{
+    const n=await api.getNotice();
+    const changed=JSON.stringify(n)!==JSON.stringify(notice);
+    notice=n;paintNoticeDot();
+    if(!noticeShownOnce&&hasNotice()&&notice.popup!==false&&seenId()!==notice.id){noticeShownOnce=true;openNotice()}
+    else if(changed&&!$("noticeModal").hidden)fillNotice();
+  }catch(e){}
+}
+function anyModalOpen(){return !$("noticeModal").hidden||!$("noticeEdit").hidden}
+function fillNotice(){
+  const ok=hasNotice();
+  $("ntView").hidden=!ok;$("ntEmpty").hidden=ok;$("ntHideWrap").hidden=!ok;
+  if(ok){$("ntTitle").textContent=notice.title;$("ntBody").textContent=notice.body||"";$("ntDate").textContent=fmtDT(notice.updatedAt)+" 게시";}
+  $("ntHide").checked=false;
+}
+function openNotice(){fillNotice();$("noticeEdit").hidden=true;$("mscrim").hidden=false;$("noticeModal").hidden=false;setTimeout(()=>$("ntOk").focus(),30)}
+function closeNotice(){
+  if(hasNotice()&&$("ntHide").checked){try{localStorage.setItem(NSEEN,notice.id)}catch(e){}}
+  $("noticeModal").hidden=true;$("noticeEdit").hidden=true;$("mscrim").hidden=true;paintNoticeDot();
+}
+async function sha256hex(t){
+  if(window.crypto&&crypto.subtle){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+  return "";
+}
+function isAdminSession(){try{return sessionStorage.getItem("weekly-notice-admin")==="1"}catch(e){return false}}
+function openNoticeEdit(){
+  $("noticeModal").hidden=true;$("mscrim").hidden=false;$("noticeEdit").hidden=false;$("neErr").hidden=true;
+  const unlocked=isAdminSession();
+  $("nePw").hidden=unlocked;$("neForm").hidden=!unlocked;$("nePwErr").hidden=true;$("ne-pw").value="";
+  if(unlocked)fillNoticeForm();
+  setTimeout(()=>(unlocked?$("ne-title"):$("ne-pw")).focus(),30);
+}
+function fillNoticeForm(){
+  $("ne-title").value=hasNotice()?notice.title:"";$("ne-body").value=hasNotice()?(notice.body||""):"";
+  $("ne-pop").checked=hasNotice()?notice.popup!==false:true;$("neRemove").hidden=!hasNotice();
+}
+$("noticeBtn").onclick=openNotice;
+$("ntOk").onclick=closeNotice;$("ntClose").onclick=closeNotice;
+$("ntAdmin").onclick=openNoticeEdit;
+$("neClose").onclick=closeNotice;$("neCancel").onclick=closeNotice;
+$("mscrim").onclick=closeNotice;
+$("nePw").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const h=await sha256hex($("ne-pw").value);
+  if(h&&h===NOTICE_PW_SHA256){try{sessionStorage.setItem("weekly-notice-admin","1")}catch(_){}
+    $("nePw").hidden=true;$("neForm").hidden=false;fillNoticeForm();$("ne-title").focus()}
+  else{$("nePwErr").hidden=false;$("ne-pw").select()}
+});
+$("neForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const title=$("ne-title").value.trim(),body=$("ne-body").value.trim();
+  if(!title||!body){$("neErr").textContent="제목과 내용을 모두 적어주세요.";$("neErr").hidden=false;(title?$("ne-body"):$("ne-title")).focus();return}
+  const now=new Date().toISOString();
+  const data={id:"n"+Date.now().toString(36),title,body,popup:$("ne-pop").checked,active:true,updatedAt:now};
+  $("neSave").disabled=true;
+  try{await api.setNotice(data);notice=data;closeNotice();paintNoticeDot();toast("공지를 게시했어요")}
+  catch(x){$("neErr").textContent="저장하지 못했어요. 잠시 후 다시 눌러주세요.";$("neErr").hidden=false}
+  finally{$("neSave").disabled=false}
+});
+$("neRemove").onclick=async()=>{
+  try{await api.setNotice(Object.assign({},notice,{active:false,updatedAt:new Date().toISOString()}));notice=Object.assign({},notice,{active:false});closeNotice();toast("공지를 내렸어요")}
+  catch(x){$("neErr").textContent="처리하지 못했어요. 잠시 후 다시 눌러주세요.";$("neErr").hidden=false}
+};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&anyModalOpen()){e.stopImmediatePropagation();closeNotice()}},true);
+loadNotice();
+setInterval(()=>{if(document.visibilityState==="visible")loadNotice()},60000);
+
 st.db=dbShim;st.canWrite=true;
 $("localNote").hidden=CONFIGURED;
 refresh();
