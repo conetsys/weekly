@@ -872,8 +872,13 @@ function renderCal(rows,shown,groups){
       const bars=calBars(r);
       // 겹치는 막대는 줄을 나눠 쌓기
       const lanes=[];
+      bars.sort((x,y)=>x.start.localeCompare(y.start));
       bars.forEach(b=>{b.s=Math.max(0,dayIdx(days,b.start,"start"));b.t=dayIdx(days,b.end,"end");if(b.t<b.s)b.t=b.s;
-        let li=lanes.findIndex(l=>l<b.s);if(li<0){li=lanes.length;lanes.push(-1)}lanes[li]=b.t;b.lane=li});
+        // 짧은 막대는 글자가 밖으로 이어지므로, 글자 길이만큼 칸을 차지한 것으로 보고 겹치면 아래 줄로
+        const txt=`${b.e.carried?"↻ ":""}${b.e.task}`;
+        const need=Math.ceil(([...txt].length*12.5+26)/74);
+        const occ=b.t-b.s<1?Math.max(b.t,b.s+need-1):b.t;
+        let li=lanes.findIndex(l=>l<b.s);if(li<0){li=lanes.length;lanes.push(-1)}lanes[li]=occ;b.lane=li});
       const vis=bars.filter(b=>b.s<n&&b.t>=0);
       const h=Math.max(1,lanes.length);
       const barHtml=vis.map(b=>{
