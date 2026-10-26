@@ -411,6 +411,11 @@ td.wk .wdate{background:var(--surface)}
 .dn{font-size:13px;font-weight:700}
 .mday .dot{display:none}
 .mday .more{position:absolute;left:6px;bottom:3px;font-size:11px;font-weight:600;color:var(--accent)}
+.dadd{position:absolute;top:3px;right:4px;z-index:3;display:inline-flex;align-items:center;gap:2px;height:20px;padding:0 7px;border-radius:10px;background:var(--accent);color:#fff;font-size:11.5px;font-weight:700;line-height:20px;opacity:0;pointer-events:none;transition:opacity .12s}
+.mday:hover .dadd,.mday:focus-visible .dadd{opacity:1;pointer-events:auto}
+.dadd:hover{filter:brightness(1.1)}
+.mlist h3{display:flex;align-items:center;gap:8px}
+.mlist h3 .btn{margin-left:auto}
 .msegs{position:absolute;left:0;right:0;top:26px;pointer-events:none}
 .mseg{pointer-events:auto;position:absolute;height:19px;border:0;border-radius:4px;padding:0 6px;font:inherit;font-size:11.5px;font-weight:600;line-height:19px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;color:var(--c);background:var(--b);box-shadow:inset 3px 0 0 var(--c)}
 .mseg.cl{border-top-left-radius:0;border-bottom-left-radius:0;box-shadow:none}
@@ -444,6 +449,7 @@ td.wk .wdate{background:var(--surface)}
   .mseg .lmark{display:none}
   .mday{padding:3px 4px}
   .mday .more{font-size:10px;left:4px}
+  .dadd{display:none}
   .mlegend{margin-left:0}
   .mitem{grid-template-columns:6px minmax(0,1fr) auto}
   .mitem .mwho{grid-column:2}
@@ -985,7 +991,7 @@ function renderMonth(){
       const dt=parseKey(d),other=dt.getMonth()!==M.mo,red=i===0||HOLIDAYS.has(d);
       const hidden=w.segs.filter(g=>g.lane>=MAXL&&g.s<=i&&g.t>=i).length;
       const n=w.segs.filter(g=>g.s<=i&&g.t>=i).length;
-      return `<button type="button" class="mday${other?" other":""}${d===todayKey?" today":""}${d===st.mSel?" sel":""}" data-day="${d}" aria-label="${dt.getMonth()+1}월 ${dt.getDate()}일 일정 ${n}건"><span class="dn${red?" red":""}">${dt.getDate()}</span>${n?`<span class="dot" aria-hidden="true"></span>`:""}${hidden?`<span class="more">+${hidden}건</span>`:""}</button>`}).join("");
+      return `<button type="button" class="mday${other?" other":""}${d===todayKey?" today":""}${d===st.mSel?" sel":""}" data-day="${d}" aria-label="${dt.getMonth()+1}월 ${dt.getDate()}일 일정 ${n}건"><span class="dn${red?" red":""}">${dt.getDate()}</span>${n?`<span class="dot" aria-hidden="true"></span>`:""}${hidden?`<span class="more">+${hidden}건</span>`:""}${st.canWrite?`<span class="dadd" data-addday="${d}" role="button" title="${dt.getMonth()+1}/${dt.getDate()} 기한으로 업무 추가">+ 추가</span>`:""}</button>`}).join("");
     grid+=`<div class="mrow" style="--lanes:${shownL}"><div class="mdays">${cells}</div><div class="msegs">${w.segs.filter(g=>g.lane<MAXL).map(segHtml).join("")}</div></div>`;
   });
   // 선택한 날짜 목록
@@ -1009,7 +1015,7 @@ function renderMonth(){
       ${grid}
     </div>
     <section class="mlist" aria-live="polite">
-      <h3>${sd.getMonth()+1}월 ${sd.getDate()}일 (${dow[sd.getDay()]}) <span class="dim">${list.length}건</span></h3>
+      <h3>${sd.getMonth()+1}월 ${sd.getDate()}일 (${dow[sd.getDay()]}) <span class="dim">${list.length}건</span>${st.canWrite?`<button type="button" class="btn" data-addday="${st.mSel||todayKey}">+ 이날 업무 추가</button>`:""}</h3>
       <div class="mitems">${dayList}</div>
     </section>`;
 }
@@ -1299,7 +1305,8 @@ function renderSummary(){
     ${older.length?`<div><p class="sec-t">이전 기록</p><div class="history">${older.map(k=>{const e=w[k];return `<div class="hrow"><div class="hw mono">${rangeOf(k)}</div><div class="ht">${esc(e.task)} ${pill(e.status)}${e.due?` <span class="mono dim" style="font-size:12px">~${shortDate(e.due)}</span>`:""}</div>${e.memo?`<div class="hm">${esc(e.memo)}</div>`:""}</div>`}).join("")}</div></div>`:""}`;
   $("sumEdit").hidden=!st.canWrite;$("sumRO").hidden=st.canWrite;
 }
-function closeAll(){["drawer","settings","copyDrawer","sumDrawer","scrim"].forEach(i=>$(i).hidden=true);st.editing=null;st.sumFor=null;st.fromSum=null;closePop()}
+function closeAll(){["drawer","settings","copyDrawer","sumDrawer","scrim"].forEach(i=>$(i).hidden=true);st.editing=null;st.sumFor=null;st.fromSum=null;closePop();
+  if(st.weekBack){st.week=st.weekBack;st.weekBack=null;render()}}
 function cancelEdit(){const back=st.fromSum;closeAll();if(back&&st.items.some(i=>i._id===back))openSummary(back)}
 
 async function save(){
@@ -1536,10 +1543,19 @@ $("monthView").onclick=e=>{
     if(v==="today"){st.month=keyOf(new Date(t.getFullYear(),t.getMonth(),1));st.mSel=todayKey}
     else{const m=parseKey(st.month);st.month=keyOf(new Date(m.getFullYear(),m.getMonth()+(+v),1));st.mSel=null}
     renderMonth();return}
+  const ad=e.target.closest("[data-addday]");if(ad){e.stopPropagation();addOnDay(ad.dataset.addday);return}
   const seg=e.target.closest("[data-id]");if(seg){openSummary(seg.dataset.id);return}
   const d=e.target.closest("[data-day]");if(d){const k=d.dataset.day;if(k.slice(0,7)!==st.month.slice(0,7))st.month=k.slice(0,8)+"01";st.mSel=k;renderMonth();
     if(matchMedia("(max-width:720px)").matches)setTimeout(()=>$("monthView").querySelector(".mlist").scrollIntoView({behavior:"smooth",block:"start"}),30)}
 };
+function addOnDay(k){
+  // 그 날짜가 속한 주를 '이번주'로 잡고, 언제까지에 그 날짜를 미리 넣어 새 업무 창을 연다
+  st.mSel=k;
+  const wk=keyOf(mondayOf(parseKey(k)));
+  if(wk!==st.week){st.weekBack=st.week;st.week=wk}
+  openDrawer(null,st.owner!=="전체"?st.owner:null);
+  $("w-due").value=k;
+}
 $("calView").onclick=e=>{const a=e.target.closest("[data-add]");if(a){openDrawer(null,a.dataset.add);return}const b=e.target.closest("[data-id]");if(b)openSummary(b.dataset.id)};
 $("f-cat").onchange=e=>{const n=e.target.value==="__new";$("f-cat-new").hidden=!n;if(n)$("f-cat-new").focus()};
 $("f-vendor").onchange=e=>{const n=e.target.value==="__new";$("f-vendor-new").hidden=!n;if(n)$("f-vendor-new").focus()};
