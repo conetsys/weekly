@@ -331,6 +331,51 @@ tbody tr.done .wkmain .w2,tbody tr.done .wkcell .cat{color:var(--muted)}
 tbody tr.isnew .wkcell .cat{background:var(--surface)}
 .carrybtn{margin-left:auto;padding:3px 10px;font-size:12px;font-weight:600;letter-spacing:0;color:var(--accent);border-color:var(--accent);background:var(--surface)}
 .carrybtn:hover{background:var(--accent-soft)}
+/* ---- 작성일 ---- */
+.wdate{float:right;margin:1px 0 4px 10px;font-size:10.5px;color:var(--muted);background:var(--surface-2);border-radius:4px;padding:0 6px;line-height:1.7;font-weight:500}
+td.wk .wdate{background:var(--surface)}
+/* ---- 캘린더(간트) ---- */
+.viewmode{margin-right:6px}
+.calbox{overflow-x:auto}
+.cal{min-width:1100px;font-size:13px}
+.cal-h{display:grid;grid-template-columns:260px 1fr;position:sticky;top:0;z-index:2;background:var(--surface-2);border-bottom:1px solid var(--line-strong)}
+.cal-hl{padding:10px 14px;font-weight:700;font-size:12px;color:var(--muted);display:flex;align-items:flex-end}
+.cal-weeks{display:grid;grid-template-columns:repeat(3,1fr)}
+.cal-wk{padding:8px 10px;font-size:12px;color:var(--muted);border-left:2px solid var(--line-strong)}
+.cal-wk b{color:var(--fg)}
+.cal-wk.cur{background:var(--accent);color:var(--accent-fg)}
+.cal-wk.cur b{color:var(--accent-fg)}
+.cal-days{display:grid;grid-template-columns:repeat(var(--n),1fr);border-top:1px solid var(--line)}
+.cal-d{padding:4px 0;text-align:center;font-size:11px;color:var(--muted);border-left:1px solid var(--line)}
+.cal-d.wstart{border-left:2px solid var(--line-strong)}
+.cal-d.today{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.cal-band{padding:14px 14px 10px;border-top:2px solid var(--fg);background:var(--surface)}
+.cal-band ~ .cal-band{margin-top:0}
+.cal-row{display:grid;grid-template-columns:260px 1fr;border-top:1px solid var(--line);min-height:calc(var(--h,1) * 30px + 12px)}
+.cal-l{display:flex;align-items:flex-start;gap:8px;padding:8px 14px;min-width:0;cursor:pointer}
+.cal-l .cat{flex:0 0 auto;margin-top:1px}
+.cal-t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-row.isnew .cal-l{background:var(--new-bg)}
+.cal-l:hover{background:var(--accent-soft)}
+.cal-grid{position:relative;background-image:repeating-linear-gradient(to right,transparent 0,transparent calc(100% / var(--n) - 1px),var(--line) calc(100% / var(--n) - 1px),var(--line) calc(100% / var(--n)));border-left:2px solid var(--line-strong)}
+.cal-today{position:absolute;top:0;bottom:0;background:var(--accent-soft);opacity:.7;pointer-events:none}
+.cal-bar{position:absolute;height:24px;border:0;border-radius:5px;padding:0 8px;font:inherit;font-size:12px;font-weight:600;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;box-shadow:inset 3px 0 0 currentColor}
+.cal-bar.prog{color:var(--prog);background:var(--prog-bg)}
+.cal-bar.wait{color:var(--wait);background:var(--wait-bg)}
+.cal-bar.done{color:var(--done);background:var(--done-bg)}
+.cal-bar.late{color:var(--danger);background:var(--danger-bg)}
+.cal-bar.planned{color:var(--muted);background:var(--surface);border:1px dashed var(--line-strong);box-shadow:none}
+.cal-bar.narrow{overflow:visible;text-overflow:clip;z-index:1}
+.cal-bar:hover{filter:brightness(.96);outline:1px solid currentColor}
+.cal-empty .cal-l{cursor:default}
+.cal-legend{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;padding:12px 14px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.cal-legend span{display:inline-flex;align-items:center;gap:6px}
+.lg{display:inline-block;width:18px;height:10px;border-radius:3px}
+.lg.prog{background:var(--prog-bg);box-shadow:inset 3px 0 0 var(--prog)}
+.lg.wait{background:var(--wait-bg);box-shadow:inset 3px 0 0 var(--wait)}
+.lg.done{background:var(--done-bg);box-shadow:inset 3px 0 0 var(--done)}
+.lg.late{background:var(--danger-bg);box-shadow:inset 3px 0 0 var(--danger)}
+.lg.planned{border:1px dashed var(--line-strong)}
 /* ---- 공지 ---- */
 .nbtn{position:relative}
 .ndot{position:absolute;top:3px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 2px var(--surface)}
@@ -434,6 +479,10 @@ tbody tr.isnew .wkcell .cat{background:var(--surface)}
     <div class="bar">
       <div id="summary" style="display:flex;flex-wrap:wrap;gap:8px"></div>
       <span class="spacer"></span>
+      <div class="donemode viewmode" role="group" aria-label="보기 방식">
+        <button type="button" data-layout="table">▤ 표로 보기</button>
+        <button type="button" data-layout="cal">▦ 캘린더로 보기</button>
+      </div>
       <div class="donemode" role="group" aria-label="끝난 일 표시">
         <span class="dlab">끝난 일</span>
         <button type="button" data-done="hide">숨기기</button>
@@ -446,7 +495,8 @@ tbody tr.isnew .wkcell .cat{background:var(--surface)}
       <button class="btn" id="clearSamples">예시 지우기</button>
       <span id="clearConfirm" hidden class="confirm"><p>손대지 않은 예시를 모두 지울까요?</p><button class="btn danger" id="clearYes">지우기</button><button class="btn ghost" id="clearNo">취소</button></span>
     </div>
-    <div class="tablebox">
+    <div class="tablebox calbox" id="calView" hidden></div>
+    <div class="tablebox" id="tableView">
       <table id="tbl">
         <colgroup><col class="c-work"><col class="c-prev"><col class="c-cur"><col class="c-next"></colgroup>
         <thead id="thead"></thead>
@@ -649,7 +699,7 @@ const nextKey=k=>keyOf(addDays(parseKey(k),7));
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 
 const st={items:[],loaded:false,lists:DEFAULT_LISTS,week:CUR,owner:store.get("wk-owner")||"전체",cat:"전체",cust:"전체",status:null,q:"",
-  view:store.get("wk-view")==="review"?"review":"write",moreOpen:false,doneMode:["hide","recent","all"].includes(store.get("wk-done"))?store.get("wk-done"):(store.get("wk-alldone")==="1"?"all":"recent"),canWrite:true,db:null,editing:null,popFor:null};
+  view:store.get("wk-view")==="review"?"review":"write",moreOpen:false,layout:store.get("wk-layout")==="cal"?"cal":"table",doneMode:["hide","recent","all"].includes(store.get("wk-done"))?store.get("wk-done"):(store.get("wk-alldone")==="1"?"all":"recent"),canWrite:true,db:null,editing:null,popFor:null};
 
 /* ---------- derived rows ---------- */
 function buildRows(){
@@ -750,6 +800,9 @@ function render(){
   const rows=st.doneMode==="hide"&&st.status!=="완료"?shown.filter(r=>!isDoneRow(r)):shown;
   const extra=[...new Set(rows.map(r=>r.it.owner).filter(o=>o&&!st.lists.members.includes(o)))];
   const groups=st.owner!=="전체"?[st.owner]:[...st.lists.members,...extra];
+  document.querySelectorAll("[data-layout]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.layout===st.layout));
+  $("tableView").hidden=st.layout==="cal";$("calView").hidden=st.layout!=="cal";
+  if(st.layout==="cal"){renderCal(rows,shown,groups);return}
   let html="";
   for(const o of groups){
     const rs=rows.filter(r=>r.it.owner===o);
@@ -764,6 +817,79 @@ function render(){
   }
   if(!html)html=`<tr><td colspan="${cols}" class="empty"><b>조건에 맞는 업무가 없어요</b>위의 '전체 보기'를 누르거나 필터를 바꿔보세요.</td></tr>`;
   $("rows").innerHTML=html;
+}
+/* ---------- 캘린더(간트) 보기: 작성일 → 언제까지 ---------- */
+function calDays(){
+  const P=prevKey(st.week),days=[];
+  for(let w=0;w<3;w++)for(let d=0;d<5;d++)days.push(keyOf(addDays(parseKey(P),w*7+d)));
+  return days;
+}
+function dayIdx(days,k,side){
+  // 주말은 가까운 평일로: 시작은 다음 월요일, 끝은 앞 금요일
+  if(!k)return -1;
+  const dt=parseKey(k),wd=(dt.getDay()+6)%7;
+  if(wd>4)k=side==="start"?keyOf(addDays(dt,7-wd)):keyOf(addDays(dt,4-wd));
+  if(k<days[0])return side==="start"?0:-1;
+  if(k>days[days.length-1])return side==="end"?days.length-1:days.length;
+  let i=days.indexOf(k);return i;
+}
+function calBars(r){
+  const it=r.it,out=[],W=st.week,P=prevKey(W),N=nextKey(W);
+  const add=(e,wk,kind)=>{
+    if(!e)return;
+    const wIso=writtenOf(it,e,wk);
+    let start=e.planned||!wIso?wk:keyOf(new Date(wIso));
+    if(start<wk)start=wk;
+    let end=e.due||keyOf(addDays(parseKey(wk),4));
+    const late=e.status!=="완료"&&e.due&&e.due<todayKey;
+    if(late&&kind!=="prev")end=todayKey;
+    if(end<start)start=end;
+    out.push({e,wk,kind,start,end,late,written:wIso});
+  };
+  if(r.prev&&r.prevWk===P)add(r.prev,P,"prev");
+  if(r.cur)add(r.cur,W,"cur");
+  if(r.nxt)add(r.nxt,N,"next");
+  return out;
+}
+function renderCal(rows,shown,groups){
+  const days=calDays(),n=days.length,W=st.week,P=prevKey(W),N=nextKey(W),isCur=W===CUR;
+  const dow=["월","화","수","목","금"];
+  const tIdx=days.indexOf(todayKey);
+  const head=`<div class="cal-h"><div class="cal-l cal-hl">업무</div><div class="cal-r">
+      <div class="cal-weeks">${[[P,isCur?"지난주":"이전 주"],[W,isCur?"이번주":"선택한 주"],[N,isCur?"다음주":"다음 주"]].map(([k,l],i)=>`<div class="cal-wk${i===1?" cur":""}"><b>${l}</b> <span class="mono">${shortRange(k)}</span></div>`).join("")}</div>
+      <div class="cal-days">${days.map((k,i)=>`<div class="cal-d${k===todayKey?" today":""}${i%5===0?" wstart":""}"><span class="mono">${shortDate(k)}</span> ${dow[i%5]}</div>`).join("")}</div>
+    </div></div>`;
+  const grid=`style="--n:${n}"`;
+  const todayLine=tIdx>=0?`<div class="cal-today" style="left:calc(${tIdx} * 100% / ${n});width:calc(100% / ${n})"></div>`:"";
+  let html="";
+  for(const o of groups){
+    const rs=rows.filter(r=>r.it.owner===o);
+    if(st.status&&!rs.length)continue;
+    const bc={p:0,w:0,d:0,l:0};shown.filter(r=>r.it.owner===o).forEach(r=>{if(r.cur){if(r.cur.status==="진행")bc.p++;else if(r.cur.status==="대기")bc.w++;else bc.d++}if(r.late)bc.l++});
+    html+=`<div class="cal-band band"><div class="bin"><span class="bn">${esc(o)}</span><span class="bc"><span class="p"><b>${bc.p}</b>진행</span><span class="w"><b>${bc.w}</b>대기</span><span class="d"><b>${bc.d}</b>완료</span>${bc.l?`<span class="l"><b>${bc.l}</b>기한 지남</span>`:""}</span>${st.canWrite?`<button class="addbtn sm" type="button" data-add="${esc(o)}"><b>+</b>업무 추가</button>`:""}</div></div>`;
+    if(!rs.length){html+=`<div class="cal-row cal-empty"><div class="cal-l dim">표시할 업무가 없어요</div><div class="cal-r cal-grid" ${grid}>${todayLine}</div></div>`;continue}
+    for(const r of rs){
+      const bars=calBars(r);
+      // 겹치는 막대는 줄을 나눠 쌓기
+      const lanes=[];
+      bars.forEach(b=>{b.s=Math.max(0,dayIdx(days,b.start,"start"));b.t=dayIdx(days,b.end,"end");if(b.t<b.s)b.t=b.s;
+        let li=lanes.findIndex(l=>l<b.s);if(li<0){li=lanes.length;lanes.push(-1)}lanes[li]=b.t;b.lane=li});
+      const vis=bars.filter(b=>b.s<n&&b.t>=0);
+      const h=Math.max(1,lanes.length);
+      const barHtml=vis.map(b=>{
+        const cls=b.late?"late":({진행:"prog",대기:"wait",완료:"done"}[b.e.status]||"prog");
+        const label=`${b.e.carried?"↻ ":""}${b.e.task}`;
+        const narrow=b.t-b.s<1;
+        const tip=`${label}\n${b.written?shortDate(keyOf(new Date(b.written)))+" 작성 → ":""}~${shortDate(b.e.due)||"기한 없음"} · ${b.kind==="next"&&b.e.planned?"계획":b.e.status}`;
+        return `<button type="button" class="cal-bar ${cls}${b.kind==="next"&&b.e.planned?" planned":""}${narrow?" narrow":""}" data-id="${esc(r.it._id)}" title="${esc(tip)}" style="left:calc(${b.s} * 100% / ${n} + 2px);width:calc(${b.t-b.s+1} * 100% / ${n} - 4px);top:${6+b.lane*30}px">${esc(label)}</button>`;
+      }).join("");
+      html+=`<div class="cal-row${r.isNew?" isnew":""}" style="--h:${h}"><div class="cal-l" data-id="${esc(r.it._id)}"><span class="cat">${esc(r.it.category)}</span><span class="cal-t"><b>${esc(r.it.project)}</b>${r.it.part?` <span class="dim">${esc(r.it.part)}</span>`:""}</span></div>
+        <div class="cal-r cal-grid" ${grid}>${todayLine}${barHtml}</div></div>`;
+    }
+  }
+  if(!html)html=`<div class="empty"><b>조건에 맞는 업무가 없어요</b>위의 '전체 보기'를 누르거나 필터를 바꿔보세요.</div>`;
+  $("calView").innerHTML=`<div class="cal" ${grid}>${head}${html}
+    <div class="cal-legend"><span><i class="lg prog"></i>진행</span><span><i class="lg wait"></i>대기</span><span><i class="lg done"></i>완료</span><span><i class="lg late"></i>기한 지남</span><span><i class="lg planned"></i>다음주 계획</span><span>↻ 지난주에서 넘어온 일</span><span class="dim">막대: 작성한 날 → 언제까지 · 오늘은 세로 띠로 표시</span></div></div>`;
 }
 function workCell(it,isNew){
   const missing=!it.vendor||it.vendor==="확인 필요";
@@ -780,14 +906,25 @@ function statusCell(r){
   const s=st.canWrite?`<button class="pill ${esc(c.status)}" type="button" data-qs="${esc(r.it._id)}" aria-haspopup="menu" aria-label="상태 ${esc(c.status)}, 바꾸기">${esc(c.status)}</button>`:pill(c.status);
   return s+(r.waitN>=2?`<span class="waitn">대기 ${r.waitN}주째</span>`:"");
 }
+// 작성일: 주별 할일을 처음 적은 시각 (예전 기록은 그 주에 만든·고친 날짜로 대신)
+function writtenOf(it,e,wk){
+  if(!e||e.carried)return null;
+  if(e.writtenAt)return e.writtenAt;
+  const inWk=iso=>iso&&keyOf(mondayOf(new Date(iso)))===wk;
+  if(inWk(it.createdAt))return it.createdAt;
+  if(inWk(it.updatedAt))return it.updatedAt;
+  return null;
+}
+const wdateHtml=iso=>{if(!iso)return"";const d=new Date(iso);if(isNaN(d))return"";const t=`${d.getMonth()+1}/${d.getDate()}`;return `<span class="wdate mono" title="${t} 작성">${t} 작성</span>`};
 const dueHtml=(d,late)=>d?`<span class="duev mono${late?" late":""}">~${esc(shortDate(d))}</span>`:"";
 function rowHtml(r,first){
   const it=r.it,p=r.prev,c=r.cur,n=r.nxt;
-  const prevCell=p?`<td class="sep wkc">${esc(p.task)}<div class="t2">${dueHtml(p.due)}${pill(p.status,true)}</div>${p.memo?`<div class="t3">${esc(p.memo)}</div>`:""}${r.stale?`<span class="oldwk mono">${shortRange(r.prevWk)} 기록</span>`:""}</td>`
+  const W0=st.week;
+  const prevCell=p?`<td class="sep wkc">${wdateHtml(writtenOf(it,p,r.prevWk))}${esc(p.task)}<div class="t2">${dueHtml(p.due)}${pill(p.status,true)}</div>${p.memo?`<div class="t3">${esc(p.memo)}</div>`:""}${r.stale?`<span class="oldwk mono">${shortRange(r.prevWk)} 기록</span>`:""}</td>`
     :`<td class="sep wkc dim">—</td>`;
-  const curCell=c?`<td class="sep wk wkc">${c.carried?'<span class="carry">이월</span>':""}${esc(c.task)}<div class="t2">${dueHtml(c.due,r.late)}${statusCell(r)}</div>${c.carried?'<div class="t3">이번주 메모 없음</div>':c.memo?`<div class="t3">${esc(c.memo)}</div>`:""}</td>`
+  const curCell=c?`<td class="sep wk wkc">${wdateHtml(writtenOf(it,c,W0))}${c.carried?'<span class="carry">이월</span>':""}${esc(c.task)}<div class="t2">${dueHtml(c.due,r.late)}${statusCell(r)}</div>${c.carried?'<div class="t3">이번주 메모 없음</div>':c.memo?`<div class="t3">${esc(c.memo)}</div>`:""}</td>`
     :`<td class="sep wk wkc dim">${p&&p.status==="완료"?(r.stale?`${shortRange(r.prevWk)} 주에 완료`:"지난주 완료"):"—"}</td>`;
-  const nextCell=n?`<td class="sep nx wkc">${esc(n.task)}<div class="t2">${dueHtml(n.due)}${n.planned?"":pill(n.status,true)}</div>${n.memo?`<div class="t3">${esc(n.memo)}</div>`:""}</td>`
+  const nextCell=n?`<td class="sep nx wkc">${wdateHtml(writtenOf(it,n,nextKey(W0)))}${esc(n.task)}<div class="t2">${dueHtml(n.due)}${n.planned?"":pill(n.status,true)}</div>${n.memo?`<div class="t3">${esc(n.memo)}</div>`:""}</td>`
     :`<td class="sep nx wkc">${st.canWrite&&c&&c.status!=="완료"?`<button class="planbtn" type="button" data-plan="${esc(it._id)}">+ 계획</button>`:""}</td>`;
   const done=(!c||c.status==="완료")&&!n;
   const sc=r.late?"s-late":c?({진행:"s-prog",대기:"s-wait",완료:"s-done"}[c.status]||""):"";
@@ -846,7 +983,7 @@ async function quickStatus(id,status){
   const it=st.items.find(i=>i._id===id);if(!it||!st.db)return;
   const r=buildRows().find(x=>x.it._id===id);if(!r||!r.cur)return;
   const W=st.week;
-  const entry={task:r.cur.task,due:r.cur.due||"",status,memo:r.cur.carried?"":(r.cur.memo||"")};
+  const entry={task:r.cur.task,due:r.cur.due||"",status,memo:r.cur.carried?"":(r.cur.memo||""),writtenAt:r.cur.carried?new Date().toISOString():(writtenOf(it,r.cur,W)||new Date().toISOString())};
   const {_id,...rest}=it;
   const body=Object.assign({},rest,{weeks:Object.assign({},it.weeks||{},{[W]:entry}),updatedAt:new Date().toISOString()});
   delete body.sample;
@@ -986,9 +1123,9 @@ async function save(){
   document.querySelectorAll("[aria-invalid]").forEach(e=>e.removeAttribute("aria-invalid"));
   if(errs.length){bad.forEach(id=>$(id).setAttribute("aria-invalid","true"));$("formErr").textContent=`${errs.join(", ")}을(를) 채워주세요.`;$("formErr").hidden=false;$(bad[0]).focus();return}
   const weeks=Object.assign({},existing?.weeks||{});
-  if(task)weeks[W]={task,due,status,memo};
+  if(task)weeks[W]={task,due,status,memo,writtenAt:(existing&&writtenOf(existing,weeks[W],W))||new Date().toISOString()};
   const oldN=weeks[N];
-  if(nTask){weeks[N]={task:nTask,due:nDue,memo:nMemo,status:oldN?oldN.status:"진행"};if(!oldN||oldN.planned)weeks[N].planned=true}
+  if(nTask){weeks[N]={task:nTask,due:nDue,memo:nMemo,status:oldN?oldN.status:"진행",writtenAt:(existing&&writtenOf(existing,oldN,N))||new Date().toISOString()};if(!oldN||oldN.planned)weeks[N].planned=true}
   else if(oldN&&oldN.planned)delete weeks[N];
   const rest=existing?(({_id,...r})=>r)(existing):{createdAt:new Date().toISOString()};
   const body=Object.assign({},rest,v,{weeks,updatedAt:new Date().toISOString()});
@@ -1182,6 +1319,8 @@ $("delBtn").onclick=()=>{$("delConfirm").hidden=false;$("delBtn").hidden=true};
 $("delNo").onclick=()=>{$("delConfirm").hidden=true;$("delBtn").hidden=false};
 $("delYes").onclick=del;
 $("copyReport").onclick=copyReport;
+document.querySelector(".viewmode").onclick=e=>{const b=e.target.closest("[data-layout]");if(!b)return;st.layout=b.dataset.layout;store.set("wk-layout",st.layout);render()};
+$("calView").onclick=e=>{const a=e.target.closest("[data-add]");if(a){openDrawer(null,a.dataset.add);return}const b=e.target.closest("[data-id]");if(b)openSummary(b.dataset.id)};
 $("f-cat").onchange=e=>{const n=e.target.value==="__new";$("f-cat-new").hidden=!n;if(n)$("f-cat-new").focus()};
 $("f-vendor").onchange=e=>{const n=e.target.value==="__new";$("f-vendor-new").hidden=!n;if(n)$("f-vendor-new").focus()};
 $("sTabs").onclick=e=>{const b=e.target.closest("[data-list]");if(!b)return;sTab=b.dataset.list;renderSettings()};
