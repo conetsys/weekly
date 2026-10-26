@@ -512,7 +512,8 @@ tbody tr.isnew .wkcell .cat{background:var(--surface)}
       <div class="f"><label for="f-po">관리번호</label><input id="f-po" class="mono" autocomplete="off" placeholder="발주번호·클레임번호 등"></div>
       <div class="f"><label for="f-vendor">협력사</label><select id="f-vendor"></select>
         <input id="f-vendor-new" autocomplete="off" placeholder="새 협력사 이름" hidden aria-label="새 협력사 이름"></div>
-      <div class="f"><label for="f-cat">구분 <i>*</i></label><select id="f-cat"></select></div>
+      <div class="f"><label for="f-cat">구분 <i>*</i></label><select id="f-cat"></select>
+        <input id="f-cat-new" autocomplete="off" placeholder="새 구분 이름" hidden aria-label="새 구분 이름"></div>
       <p class="hint">출장검사·불량처럼 협력사가 관련된 일은 협력사를 골라주세요. 목록에 없으면 '+ 새 협력사'를 고르면 저장할 때 목록에도 추가돼요.</p>
     </fieldset>
     <div id="historyBox" hidden>
@@ -548,6 +549,7 @@ tbody tr.isnew .wkcell .cat{background:var(--surface)}
       <button class="tab" role="tab" data-list="members" aria-selected="true">담당자</button>
       <button class="tab" role="tab" data-list="customers" aria-selected="false">고객사</button>
       <button class="tab" role="tab" data-list="vendors" aria-selected="false">협력사</button>
+      <button class="tab" role="tab" data-list="cats" aria-selected="false">구분</button>
     </div>
     <p class="hint" id="sHint" style="margin:0"></p>
     <div class="addline">
@@ -555,7 +557,7 @@ tbody tr.isnew .wkcell .cat{background:var(--surface)}
       <button class="btn primary" id="s-add" type="button">추가</button>
     </div>
     <div class="lst" id="s-list"></div>
-    <p class="hint" style="margin:0">이름을 고치면 그 이름을 쓰던 업무도 함께 바뀌어요. 삭제해도 이미 등록된 업무의 내용은 그대로 남아요. 구분과 상태는 팀 공통 용어라 고정되어 있어요.</p>
+    <p class="hint" style="margin:0">이름을 고치면 그 이름을 쓰던 업무도 함께 바뀌어요. 삭제해도 이미 등록된 업무의 내용은 그대로 남아요. 상태(진행·대기·완료)는 팀 공통 용어라 고정되어 있어요.</p>
   </div>
   <div class="dfoot"><span class="spacer"></span><button class="btn" id="sCancel" type="button">취소</button><button class="btn primary" id="sSave" type="button">저장</button></div>
 </aside>
@@ -623,10 +625,12 @@ const NOTICE_PW_SHA256 = "6101b95d7947bffd4a3831582956a8aa53ca8256f4a25cd247e457
 <script>
 (function(){
 const CATS=["수검","출장검사","성적서","고객사 대응","불량·클레임","시정조치","품보","심사·감사","기타"];
-const DEFAULT_LISTS={members:["한규철","김용진","김년수","한현호","이석희","김지민","유선영","문지원"],customers:["한화시스템","STX엔진","한화에어로스페이스","미래시스템","유니온","동아일렉콤","머큐리","국방기술진흥연구소","기타업체","내부"],vendors:[]};
+const DEFAULT_LISTS={members:["한규철","김용진","김년수","한현호","이석희","김지민","유선영","문지원"],customers:["한화시스템","STX엔진","한화에어로스페이스","미래시스템","유니온","동아일렉콤","머큐리","국방기술진흥연구소","기타업체","내부"],vendors:[],cats:[...CATS]};
+const catsList=()=>st.lists.cats&&st.lists.cats.length?st.lists.cats:CATS;
 const LIST_INFO={members:{label:"담당자",field:"owner",hint:"표에 보이는 순서대로 정렬돼요. ↑↓로 순서를 바꿀 수 있어요.",ph:"새 담당자 이름"},
   customers:{label:"고객사",field:"customer",hint:"'내부'는 고객사가 없는 팀 내부 업무용이라 지울 수 없어요.",ph:"새 고객사 이름"},
-  vendors:{label:"협력사",field:"vendor",hint:"업무를 쓸 때 협력사 칸에서 고르는 목록이에요. 가나다순으로 보여요.",ph:"새 협력사 이름"}};
+  vendors:{label:"협력사",field:"vendor",hint:"업무를 쓸 때 협력사 칸에서 고르는 목록이에요. 가나다순으로 보여요.",ph:"새 협력사 이름"},
+  cats:{label:"구분",field:"category",hint:"업무를 쓸 때 고르는 구분이에요. ↑↓로 고르는 순서를 바꿀 수 있어요.",ph:"새 구분 이름"}};
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,"0");
 const keyOf=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
@@ -713,7 +717,7 @@ function render(){
   $("writeView").hidden=st.view!=="write";$("reviewView").hidden=st.view!=="review";
   const owners=["전체",...st.lists.members];
   $("ownerChips").innerHTML=owners.map(o=>`<button class="chip" aria-pressed="${o===st.owner}" data-owner="${esc(o)}">${esc(o)}</button>`).join("");
-  fillSelect($("catFilter"),["전체",...CATS],st.cat);
+  fillSelect($("catFilter"),["전체",...new Set([...catsList(),...st.items.map(i=>i.category).filter(Boolean)])],st.cat);
   fillSelect($("custFilter"),["전체",...new Set([...st.lists.customers,...st.items.map(i=>i.customer).filter(Boolean)])],st.cust);
   const nf=(st.cat!=="전체")+(st.cust!=="전체");
   $("moreBtn").textContent=nf?`필터 ${nf}`:"필터";
@@ -863,6 +867,12 @@ function fillVendor(val){
   $("f-vendor").innerHTML=opts.map(([v,l])=>`<option value="${esc(v)}">${esc(l)}</option>`).join("");
   $("f-vendor").value=val;$("f-vendor-new").hidden=true;$("f-vendor-new").value="";
 }
+function fillCat(val){
+  const cs=catsList();
+  const opts=[...(val&&!cs.includes(val)?[[val,val+" (목록에 없음)"]]:[]),...cs.map(c=>[c,c]),["__new","+ 새 구분…"]];
+  $("f-cat").innerHTML=opts.map(([v,l])=>`<option value="${esc(v)}">${esc(l)}</option>`).join("");
+  $("f-cat").value=val;$("f-cat-new").hidden=true;$("f-cat-new").value="";
+}
 function openDrawer(id,presetOwner,focusNext){
   closePop();
   const it=id?st.items.find(i=>i._id===id):null;
@@ -876,7 +886,7 @@ function openDrawer(id,presetOwner,focusNext){
   fillSelect($("f-customer"),custs,it?.customer||custs[0]);
   $("f-project").value=it?.project||"";$("f-part").value=it?.part||"";$("f-po").value=it?.po||"";
   fillVendor(it&&it.vendor!=="확인 필요"?it.vendor||"":"");
-  fillSelect($("f-cat"),CATS,it?.category||"발주");
+  fillCat(it?.category||catsList()[0]);
   const w=it?.weeks||{};
   const ks=Object.keys(w).filter(k=>k<W).sort();const last=ks.length?w[ks[ks.length-1]]:null;
   const carried=!w[W]&&last&&last.status!=="완료";
@@ -959,12 +969,13 @@ async function save(){
   if(!st.db||!st.canWrite)return;
   const W=st.week;
   const vSel=$("f-vendor").value,isNewVendor=vSel==="__new";
-  const v={owner:$("f-owner").value,customer:$("f-customer").value,project:$("f-project").value.trim(),part:$("f-part").value.trim(),po:$("f-po").value.trim(),vendor:(isNewVendor?$("f-vendor-new").value:vSel).trim(),category:$("f-cat").value};
+  const v={owner:$("f-owner").value,customer:$("f-customer").value,project:$("f-project").value.trim(),part:$("f-part").value.trim(),po:$("f-po").value.trim(),vendor:(isNewVendor?$("f-vendor-new").value:vSel).trim(),category:($("f-cat").value==="__new"?$("f-cat-new").value:$("f-cat").value).trim()};
   const task=$("w-task").value.trim(),due=$("w-due").value,memo=$("w-memo").value.trim();
   const status=(document.querySelector('input[name="w-status"]:checked')||{}).value||"진행";
   const errs=[],bad=[];
   if(!v.project){errs.push("대상사업");bad.push("f-project")}
   if(isNewVendor&&!v.vendor){errs.push("새 협력사 이름");bad.push("f-vendor-new")}
+  if(!v.category){errs.push("새 구분 이름");bad.push("f-cat-new")}
   const isNew=st.editing==="__new";
   const existing=isNew?null:st.items.find(i=>i._id===st.editing);
   const N=nextKey(W);
@@ -986,8 +997,12 @@ async function save(){
   try{
     const ref=isNew?st.db.collection("items").doc():st.db.doc("items/"+existing._id);
     await ref.set(body);
-    if(v.vendor&&!(st.lists.vendors||[]).includes(v.vendor)){
-      try{await st.db.doc("config/lists").set(Object.assign({},st.lists,{vendors:[...(st.lists.vendors||[]),v.vendor]}))}catch(_){}
+    const addV=v.vendor&&!(st.lists.vendors||[]).includes(v.vendor),addC=v.category&&!catsList().includes(v.category);
+    if(addV||addC){
+      const nl=Object.assign({},st.lists,{cats:[...catsList()]});
+      if(addV)nl.vendors=[...(st.lists.vendors||[]),v.vendor];
+      if(addC)nl.cats=[...nl.cats,v.category];
+      try{await st.db.doc("config/lists").set(nl)}catch(_){}
     }
     closeAll();toast("저장했어요");
   }catch(e){handleWriteErr(e)}
@@ -1051,7 +1066,7 @@ function renderSettings(){
       <span class="num mono">${pos+1}</span>
       <input value="${esc(x.val)}" data-edit="${x.i}" aria-label="${esc(info.label)} 이름" ${lock?"readonly":""}>
       ${x.orig&&x.val.trim()!==x.orig?`<span class="chg">${esc(x.orig)}에서 변경</span>`:!x.orig?`<span class="chg">새로 추가</span>`:n?`<span class="use">업무 ${n}건</span>`:""}
-      ${sTab==="members"?`<button class="ib" type="button" data-up="${x.i}" aria-label="위로" ${pos===0?"disabled":""}>↑</button><button class="ib" type="button" data-down="${x.i}" aria-label="아래로" ${pos===arr.length-1?"disabled":""}>↓</button>`:""}
+      ${sTab==="members"||sTab==="cats"?`<button class="ib" type="button" data-up="${x.i}" aria-label="위로" ${pos===0?"disabled":""}>↑</button><button class="ib" type="button" data-down="${x.i}" aria-label="아래로" ${pos===arr.length-1?"disabled":""}>↓</button>`:""}
       <button class="ib del" type="button" data-del="${x.i}" aria-label="삭제" ${lock?"disabled":""}>✕</button></div>`}).join("")
     :`<div class="none">아직 등록된 ${esc(info.label)}가 없어요. 위에서 추가하세요.</div>`;
 }
@@ -1070,6 +1085,7 @@ async function saveSettings(){
     sEdit[k].forEach(x=>{const nv=x.val.trim();if(x.orig&&nv&&nv!==x.orig)renames.push({field:LIST_INFO[k].field,from:x.orig,to:nv})});
   }
   if(!lists.members.length){sTab="members";renderSettings();toast("담당자를 한 명 이상 남겨주세요.");return}
+  if(!lists.cats.length){sTab="cats";renderSettings();toast("구분을 하나 이상 남겨주세요.");return}
   if(!lists.customers.includes("내부"))lists.customers.push("내부");
   $("sSave").disabled=true;
   try{
@@ -1166,6 +1182,7 @@ $("delBtn").onclick=()=>{$("delConfirm").hidden=false;$("delBtn").hidden=true};
 $("delNo").onclick=()=>{$("delConfirm").hidden=true;$("delBtn").hidden=false};
 $("delYes").onclick=del;
 $("copyReport").onclick=copyReport;
+$("f-cat").onchange=e=>{const n=e.target.value==="__new";$("f-cat-new").hidden=!n;if(n)$("f-cat-new").focus()};
 $("f-vendor").onchange=e=>{const n=e.target.value==="__new";$("f-vendor-new").hidden=!n;if(n)$("f-vendor-new").focus()};
 $("sTabs").onclick=e=>{const b=e.target.closest("[data-list]");if(!b)return;sTab=b.dataset.list;renderSettings()};
 $("s-add").onclick=addListItem;
@@ -1237,7 +1254,7 @@ async function refresh(){
   loading=true;
   try{
     const d=await api.load();
-    if(d.lists){st.lists={members:(d.lists.members&&d.lists.members.length)?[...d.lists.members]:DEFAULT_LISTS.members,customers:(d.lists.customers&&d.lists.customers.length)?[...d.lists.customers]:DEFAULT_LISTS.customers,vendors:Array.isArray(d.lists.vendors)?[...d.lists.vendors]:[]}}
+    if(d.lists){st.lists={members:(d.lists.members&&d.lists.members.length)?[...d.lists.members]:DEFAULT_LISTS.members,customers:(d.lists.customers&&d.lists.customers.length)?[...d.lists.customers]:DEFAULT_LISTS.customers,vendors:Array.isArray(d.lists.vendors)?[...d.lists.vendors]:[],cats:Array.isArray(d.lists.cats)&&d.lists.cats.length?[...d.lists.cats]:[...CATS]}}
     st.items=d.items||[];st.loaded=true;render();
     if(st.sumFor&&!$("sumDrawer").hidden)renderSummary();
   }catch(e){
