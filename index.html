@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>고객품질팀 주간 업무</title>
 <link rel="icon" href="favicon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#1E4E6B">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <style>
@@ -479,6 +482,16 @@ td.wk .wdate{background:var(--surface)}
 .ndate{font-size:12px;color:var(--muted);margin-bottom:12px}
 .nbody{font-size:14.5px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;border-top:1px solid var(--line);padding-top:12px}
 .nempty{padding:24px 0;text-align:center;color:var(--muted)}
+.nboard{margin-top:10px;border-top:2px solid var(--fg)}
+.nrow{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;padding:11px 4px;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.nrow:hover{background:var(--surface-2)}
+.nrow .nno{font-size:12px;color:var(--muted);text-align:center}
+.nrow .nt{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nrow.read .nt{font-weight:500;color:var(--muted)}
+.nrow .nd{font-size:12px;color:var(--muted)}
+.nrow .nnew{margin-left:6px}
+.nbhead{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;padding:7px 4px;font-size:12px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--line)}
+.nbhead span:first-child{text-align:center}
 .nnav{display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-size:12.5px;color:var(--muted)}
 .nnav .btn{min-width:30px;height:28px;padding:0 6px}
 .nnew{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;color:#fff;background:var(--danger,#C0392B);border-radius:999px;padding:1px 7px;vertical-align:middle}
@@ -553,6 +566,7 @@ td.wk .wdate{background:var(--surface)}
       <button class="btn ghost" id="thisWeek">이번주로</button>
     </div>
     <div class="actions">
+      <button class="btn" id="installBtn" type="button" hidden title="바탕화면·시작 메뉴에 바로가기 아이콘을 만들어요">⬇ 바탕화면에 추가</button>
       <button class="btn nbtn" id="noticeBtn" aria-label="공지사항"><span aria-hidden="true">📢</span> 공지<span class="ndot" id="noticeDot" hidden></span></button>
       <button class="btn" id="copyReport">보고용 복사</button>
       <button class="btn" id="openSettings">목록 관리</button>
@@ -730,7 +744,9 @@ td.wk .wdate{background:var(--surface)}
     <div class="nbody" id="ntBody"></div>
   </div>
   <div class="nempty" id="ntEmpty" hidden>지금 올라와 있는 공지가 없어요.</div>
+  <div id="ntBoard" hidden><div class="nboard"><div class="nbhead"><span>번호</span><span>제목</span><span>게시일</span></div><div id="ntRows"></div></div></div>
   <div class="mfoot">
+    <button class="btn" id="ntBack" type="button" hidden>☰ 목록</button>
     <button class="btn ghost nadmin" id="ntAdmin" type="button">공지 관리</button>
     <span class="spacer"></span>
     <label class="nhide" id="ntHideWrap"><input type="checkbox" id="ntHide"> 이 공지 다시 보지 않기</label>
@@ -1712,11 +1728,21 @@ async function loadNotice(){
   }catch(e){}
 }
 function anyModalOpen(){return !$("noticeModal").hidden||!$("noticeEdit").hidden}
+let ntMode="view";
+function fillBoard(){
+  const act=activeNotices(),ss=seenSet();
+  $("ntView").hidden=true;$("ntNav").hidden=true;$("ntBack").hidden=true;$("ntHideWrap").hidden=true;
+  $("ntEmpty").hidden=act.length>0;$("ntBoard").hidden=!act.length;
+  $("ntRows").innerHTML=act.map((n,i)=>`<button type="button" class="nrow${ss.has(n.id)?" read":""}" data-ni="${i}"><span class="nno mono">${act.length-i}</span><span class="nt">${esc(n.title)}${ss.has(n.id)?"":'<span class="nnew">NEW</span>'}</span><span class="nd mono">${esc(fmtDT(n.createdAt).slice(0,10))}</span></button>`).join("");
+  $("ntOk").textContent="닫기";
+}
 function fillNotice(){
+  if(ntMode==="board"){fillBoard();return}
+  $("ntBoard").hidden=true;$("ntBack").hidden=false;
   const n=ntQ[ntI],ok=!!n;
-  $("ntView").hidden=!ok;$("ntEmpty").hidden=ok;$("ntHideWrap").hidden=!ok;
+  $("ntView").hidden=!ok;$("ntEmpty").hidden=ok;$("ntHideWrap").hidden=!ok||!ntPopup;
   if(ok){$("ntTitle").textContent=n.title;$("ntBody").textContent=n.body||"";$("ntDate").textContent=fmtDT(n.createdAt)+" 게시"+(n.updatedAt&&n.createdAt&&n.updatedAt.slice(0,16)!==n.createdAt.slice(0,16)?` · ${fmtDT(n.updatedAt)} 수정`:"");
-    $("ntNew").hidden=seenSet().has(n.id);}
+    $("ntNew").hidden=seenSet().has(n.id);if(!ntPopup){markSeen(n.id);paintNoticeDot()}}
   const many=ntQ.length>1;$("ntNav").hidden=!many;$("ntPos").textContent=`${ntI+1} / ${ntQ.length}`;
   $("ntPrev").disabled=ntI===0;$("ntNext").disabled=ntI>=ntQ.length-1;
   const last=ntI>=ntQ.length-1;
@@ -1725,9 +1751,9 @@ function fillNotice(){
 }
 // list 를 주면 그 공지들을 차례로(팝업), 없으면 게시 중인 공지 전체를 최신순으로
 function openNotice(list,popup){
-  ntPopup=!!popup;ntQ=Array.isArray(list)?list:activeNotices();ntI=0;
+  ntPopup=!!popup;ntQ=Array.isArray(list)?list:activeNotices();ntI=0;ntMode=popup?"view":"board";
   fillNotice();$("noticeEdit").hidden=true;$("mscrim").hidden=false;$("noticeModal").hidden=false;setTimeout(()=>$("ntOk").focus(),30)}
-function leaveCurrent(){const n=ntQ[ntI];if(n&&$("ntHide").checked)markSeen(n.id)}
+function leaveCurrent(){if(ntMode!=="view")return;const n=ntQ[ntI];if(n&&(!ntPopup||$("ntHide").checked))markSeen(n.id)}
 function stepNotice(d){leaveCurrent();ntI=Math.max(0,Math.min(ntQ.length-1,ntI+d));fillNotice()}
 function closeNotice(){
   if(!$("noticeModal").hidden)leaveCurrent();
@@ -1740,7 +1766,7 @@ async function sha256hex(t){
 function isAdminSession(){try{return sessionStorage.getItem("weekly-notice-admin")==="1"}catch(e){return false}}
 let neWant="";
 function openNoticeEdit(){
-  neWant=(!$("noticeModal").hidden&&ntQ[ntI])?ntQ[ntI].id:"";
+  neWant=(!$("noticeModal").hidden&&ntMode==="view"&&ntQ[ntI])?ntQ[ntI].id:"";
   $("noticeModal").hidden=true;$("mscrim").hidden=false;$("noticeEdit").hidden=false;$("neErr").hidden=true;
   const unlocked=isAdminSession();
   $("nePw").hidden=unlocked;$("neForm").hidden=!unlocked;$("nePwErr").hidden=true;$("ne-pw").value="";
@@ -1763,6 +1789,8 @@ function fillNoticeForm(pick){
 }
 $("ne-pick").onchange=e=>{fillNoticeForm(e.target.value);$("ne-title").focus()};
 $("noticeBtn").onclick=()=>openNotice();
+$("ntRows").onclick=e=>{const r=e.target.closest("[data-ni]");if(!r)return;ntPopup=false;ntQ=activeNotices();ntI=+r.dataset.ni;ntMode="view";fillNotice();$("ntBack").focus()};
+$("ntBack").onclick=()=>{leaveCurrent();ntPopup=false;ntMode="board";fillNotice()};
 $("ntPrev").onclick=()=>stepNotice(-1);$("ntNext").onclick=()=>stepNotice(1);
 $("ntOk").onclick=()=>{if(ntPopup&&ntI<ntQ.length-1)stepNotice(1);else closeNotice()};$("ntClose").onclick=closeNotice;
 $("ntAdmin").onclick=openNoticeEdit;
@@ -1796,6 +1824,17 @@ $("neRemove").onclick=async()=>{
   catch(x){$("neErr").textContent="처리하지 못했어요. 잠시 후 다시 눌러주세요.";$("neErr").hidden=false}
 };
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&anyModalOpen()){e.stopImmediatePropagation();closeNotice()}},true);
+/* ---------- 바탕화면에 추가 (앱 설치) ---------- */
+let installEvt=null;
+if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){navigator.serviceWorker.register("sw.js").catch(()=>{})}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;$("installBtn").hidden=false});
+window.addEventListener("appinstalled",()=>{installEvt=null;$("installBtn").hidden=true;toast("바탕화면에 추가했어요")});
+$("installBtn").onclick=async()=>{
+  if(!installEvt)return;
+  installEvt.prompt();
+  try{const r=await installEvt.userChoice;if(r.outcome==="accepted")$("installBtn").hidden=true}catch(_){}
+  installEvt=null;
+};
 loadNotice();
 setInterval(()=>{if(document.visibilityState==="visible")loadNotice()},60000);
 
