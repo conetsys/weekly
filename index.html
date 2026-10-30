@@ -653,6 +653,31 @@ td.wk .wdate{background:var(--surface)}
 .gtbl tr.gerr td{background:color-mix(in srgb,var(--danger-bg) 45%,transparent)}
 .gtbl .gst{font-size:12.5px;min-width:200px}
 .top .tabs:has(+ .admbtn:not([hidden])){margin-right:0}
+.ttbl{min-width:820px}
+.ttbl tbody tr.trow{cursor:pointer}
+.ttbl tbody tr.trow:hover td{background:var(--surface-2)}
+.ttbl tbody tr.trow.on td{background:var(--accent-soft)}
+.ttbl tbody tr.trow.on td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.ttbl .chev{color:var(--muted);font-size:18px;text-align:center}
+.ttbl tr.tnew td{background:var(--need-bg)}
+.ttbl tr.tnew input{width:100%;font:inherit;border:1px solid var(--line-strong);background:var(--surface);color:var(--fg);border-radius:6px;padding:6px 8px}
+.tdet{gap:16px}
+.tdhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tdhead h3{font-size:17px}
+.tdhead .spacer{flex:1}
+.tsec{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:14px}
+.tsech{font-size:13.5px;font-weight:700;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.tlists{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.tl{border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;background:var(--bg);min-width:0}
+.tlh{display:flex;justify-content:space-between;align-items:baseline}
+.chips2{display:flex;flex-wrap:wrap;gap:6px;max-height:180px;overflow-y:auto}
+.chip2{display:inline-flex;align-items:center;gap:4px;font-size:13px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px 4px 3px 10px}
+.chip2.ro{padding:3px 10px}
+.chip2 small{color:var(--accent);font-weight:700}
+.chip2 button{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:11px;width:20px;height:20px;border-radius:50%}
+.chip2 button:hover{background:var(--danger-bg);color:var(--danger)}
+.tladd{display:flex;gap:6px}
+.tladd input{flex:1;min-width:0;font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:6px;padding:6px 8px}
 .admbtn{margin-right:auto}
 .top .actions{margin-left:auto}
 @media (max-width:720px){.adf{grid-template-columns:1fr}.adbar input[type=search]{min-width:0;flex:1 1 100%;order:-1}.top .actions{flex-wrap:wrap}.brand{flex-wrap:wrap}}
@@ -1119,7 +1144,7 @@ td.wk .wdate{background:var(--surface)}
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const APP_VERSION = "2.1";
+const APP_VERSION = "2.2";
 // 화면 제목: {앱} = 앱 이름, {팀} = 지금 보고 있는 팀 이름 (팀 이름은 관리 → 팀에서 바꿔요)
 const APP_TITLE = "주간업무";
 // 로그인 화면에서 아이디 뒤에 자동으로 붙는 회사 메일 주소
@@ -2502,7 +2527,7 @@ async function openAdmin(){
   if(!st.me||!(st.me.is_admin||st.me.is_registrar))return;
   closeAll();$("adminPanel").hidden=false;
   // 열 때마다 처음 모양으로: 사람 탭, 필터·검색·등록 표 비우기
-  Object.assign(adm,{tab:"people",fTeam:"",fState:"",q:"",bulk:false,grid:[],imp:{}});
+  Object.assign(adm,{tab:"people",fTeam:"",fState:"",q:"",bulk:false,grid:[],imp:{},selTeam:null,newTeam:false,tdraft:null});
   $("adBody").innerHTML='<div class="adwrap"><p class="hint">불러오는 중…</p></div>';
   await loadAdmin();
 }
@@ -2719,31 +2744,69 @@ $("adDlg").addEventListener("submit",async e=>{
   }catch(x){err(errText(x))}
 });
 $("adScrim").onclick=closeDlg;
+/* ----- 팀: 위에 팀 목록 표, 고르면 아래에 그 팀 정보 ----- */
+const T_LISTS=[["projects","대상사업","예: PKMR"],["customers","고객사","예: 한화시스템"],["vendors","협력사","예: 대호정밀"],["cats","구분","예: 수검"]];
+function tDraftOf(id){const t=st.teams.find(x=>x.id===id);if(!t)return null;const L=t.lists||{};
+  return {id:t.id,name:t.name,sort:t.sort,lists:Object.fromEntries(T_LISTS.map(([k])=>[k,[...(Array.isArray(L[k])?L[k]:[])]])),dirty:false}}
 function teamsHtml(){
-  const cnt=id=>adm.people.filter(p=>p.team_id===id&&p.active).length;
-  return `<p class="hint" style="margin:0">팀 만들기, 팀 이름·순서, 팀 기본 목록은 관리자만 바꿀 수 있어요. 팀 기본 목록은 처음 쓰는 사람이 받는 목록이고, 각자 '내 목록'에서 자기에게 맞게 바꿔요.</p>
-  <div class="tgrid">${st.teams.map(t=>{const L=t.lists||{},imp=adm.imp[t.id];return `<div class="adcard tlist" data-team="${esc(t.id)}">
-    <h3>${esc(t.name)} <span class="hint mono" style="font-weight:400">${esc(t.id)} · ${cnt(t.id)}명</span></h3>
-    <div class="adf"><div class="f"><label>팀 이름</label><input data-tf="name" value="${esc(t.name)}"></div><div class="f"><label>표시 순서</label><input data-tf="sort" type="number" value="${esc(t.sort)}"></div></div>
-    <div class="cols">${[["projects","대상사업"],["customers","고객사"],["vendors","협력사"],["cats","구분"]].map(([k,l])=>`<div><label>${l} (한 줄에 하나)</label><textarea data-tl="${k}">${esc((L[k]||[]).join("\n"))}</textarea></div>`).join("")}</div>
-    <div class="adbar"><span class="spacer"></span><button class="btn primary" type="button" data-tsave="${esc(t.id)}">이 팀 저장</button></div>
-    <details><summary style="cursor:pointer;font-weight:600;font-size:13.5px">지금 쓰는 화면의 업무 가져오기</summary>
+  if(!adm.selTeam||!st.teams.some(t=>t.id===adm.selTeam))adm.selTeam=st.teams[0]?st.teams[0].id:null;
+  if(adm.selTeam&&(!adm.tdraft||adm.tdraft.id!==adm.selTeam))adm.tdraft=tDraftOf(adm.selTeam);
+  const mem=id=>adm.people.filter(p=>p.team_id===id&&p.active);
+  const lead=id=>mem(id).filter(p=>p.role==="leader").map(p=>p.name).join(", ")||"-";
+  const nextSort=Math.max(0,...st.teams.map(t=>+t.sort||0))+10;
+  const rows=st.teams.map(t=>{const L=t.lists||{};const n=k=>(L[k]||[]).length;
+    return `<tr class="trow${t.id===adm.selTeam?" on":""}" data-tsel="${esc(t.id)}" tabindex="0">
+      <td class="mono">${esc(t.sort)}</td><td><b>${esc(t.name)}</b></td><td class="mono hint" style="margin:0">${esc(t.id)}</td>
+      <td>${mem(t.id).length}명</td><td>${esc(lead(t.id))}</td>
+      <td class="hint" style="margin:0">대상사업 ${n("projects")} · 고객사 ${n("customers")} · 협력사 ${n("vendors")} · 구분 ${n("cats")}</td>
+      <td class="chev">›</td></tr>`}).join("");
+  const newRow=adm.newTeam?`<tr class="tnew">
+      <td><input id="nt-sort" type="number" value="${nextSort}" aria-label="표시 순서"></td>
+      <td><input id="nt-name" placeholder="예: 구매팀" aria-label="팀 이름" autocomplete="off"></td>
+      <td><input id="nt-id" placeholder="예: purchase" aria-label="팀 코드 (영문 소문자)" autocomplete="off" spellcheck="false"></td>
+      <td colspan="3" class="hint" style="margin:0">팀 코드는 영문 소문자로, 나중에 바꾸지 않아요. 만든 뒤 아래에서 기본 목록을 채워요.</td>
+      <td><div class="acts"><button class="btn ghost" type="button" data-adact="ntcancel">취소</button><button class="btn primary" type="button" data-adact="newteam">만들기</button></div></td></tr>`:"";
+  const d=adm.tdraft,cur=st.teams.find(t=>t.id===adm.selTeam),imp=cur?adm.imp[cur.id]:"";
+  const detail=d&&cur?`<div class="adcard tdet" data-team="${esc(d.id)}">
+    <div class="tdhead"><h3>${esc(cur.name)} <span class="hint mono" style="font-weight:400;margin:0">${esc(cur.id)}</span></h3><span class="spacer"></span>
+      ${d.dirty?'<span class="pv-upd" style="font-size:13px">저장 안 된 변경이 있어요</span>':""}
+      <button class="btn primary" type="button" data-adact="tsave"${d.dirty?"":" disabled"}>변경 저장</button></div>
+    <div class="tsec"><div class="tsech">기본 정보</div>
+      <div class="adf"><div class="f"><label for="td-name">팀 이름</label><input id="td-name" value="${esc(d.name)}" autocomplete="off"></div>
+        <div class="f"><label for="td-sort">표시 순서 <span class="hint" style="font-weight:400;margin:0">(작을수록 위)</span></label><input id="td-sort" type="number" value="${esc(d.sort)}"></div></div></div>
+    <div class="tsec"><div class="tsech">팀 기본 목록 <span class="hint" style="font-weight:400;margin:0">새로 들어온 사람이 처음 받는 목록이에요. 각자 '목록 관리'에서 자기에게 맞게 바꿔요.</span></div>
+      <div class="tlists">${T_LISTS.map(([k,l,ph])=>`<div class="tl">
+        <div class="tlh"><b>${l}</b><span class="hint" style="margin:0">${d.lists[k].length}개</span></div>
+        <div class="chips2">${d.lists[k].map((v,ix)=>`<span class="chip2">${esc(v)}<button type="button" data-tdel="${k}:${ix}" aria-label="${esc(v)} 빼기">✕</button></span>`).join("")||'<span class="hint" style="margin:0">아직 없어요</span>'}</div>
+        <div class="tladd"><input data-tadd="${k}" placeholder="${ph}" autocomplete="off" aria-label="${l} 추가"><button class="btn" type="button" data-taddb="${k}">추가</button></div>
+      </div>`).join("")}</div>
+      <p class="hint" style="margin:0">한 칸에 여러 줄을 붙여넣으면 한꺼번에 추가돼요. Enter로도 추가할 수 있어요.</p></div>
+    <div class="tsec"><div class="tsech">팀원 ${mem(cur.id).length}명 <span class="hint" style="font-weight:400;margin:0">팀원 등록·변경은 '사람' 탭에서 해요</span></div>
+      <div class="chips2">${mem(cur.id).sort(personOrder).map(p=>`<span class="chip2 ro">${esc(p.name)}${p.role==="leader"?' <small>팀장</small>':""}</span>`).join("")||'<span class="hint" style="margin:0">아직 팀원이 없어요</span>'}</div></div>
+    <details class="tsec"${imp?" open":""}><summary class="tsech" style="cursor:pointer">지금 쓰는 화면의 업무 가져오기</summary>
       <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
       <p class="hint" style="margin:0">로그인 없이 쓰던 화면(예전 표)의 업무·목록·공지를 이 팀으로 옮겨요. 담당자는 <b>이름이 같은 팀원</b>에게 연결돼요. 예시 업무는 빼고 가져와요. 먼저 '미리 확인'으로 이름이 다 맞는지 보세요.</p>
-      <div class="adf"><div class="f"><label>예전 팀 구분값</label><input data-imp="src" value="${esc(t.id)}"></div><label class="chk" style="align-self:end"><input type="checkbox" data-imp="reset"> 이 팀 업무를 비우고 다시 가져오기</label></div>
-      <div class="adbar"><button class="btn" type="button" data-impgo="dry" data-t="${esc(t.id)}">미리 확인</button><button class="btn primary" type="button" data-impgo="run" data-t="${esc(t.id)}">가져오기</button></div>
+      <div class="adf"><div class="f"><label>예전 팀 구분값</label><input data-imp="src" value="${esc(cur.id)}"></div><label class="chk" style="align-self:end"><input type="checkbox" data-imp="reset"> 이 팀 업무를 비우고 다시 가져오기</label></div>
+      <div class="adbar"><button class="btn" type="button" data-impgo="dry" data-t="${esc(cur.id)}">미리 확인</button><button class="btn primary" type="button" data-impgo="run" data-t="${esc(cur.id)}">가져오기</button></div>
       ${imp?`<div class="impres">${imp}</div>`:""}</div></details>
-  </div>`}).join("")}
-  <div class="adcard" id="newTeam"><h3>새 팀 만들기</h3>
-    <div class="adf"><div class="f"><label for="nt-name">팀 이름</label><input id="nt-name" placeholder="예: 구매팀"></div><div class="f"><label for="nt-id">팀 코드 (영문 소문자)</label><input id="nt-id" placeholder="예: purchase" autocomplete="off"></div></div>
-    <p class="hint" style="margin:0">팀 코드는 저장할 때 쓰는 이름이라 나중에 바꾸지 않는 게 좋아요.</p>
-    <div class="adbar"><span class="spacer"></span><button class="btn primary" type="button" data-adact="newteam">팀 만들기</button></div></div>
-  </div>`;
+  </div>`:"";
+  return `<div class="adbar"><p class="hint" style="margin:0">팀을 누르면 아래에 그 팀 정보가 나와요. 팀 만들기·이름·순서·기본 목록은 관리자만 바꿀 수 있어요.</p><span class="spacer"></span>
+    <button class="btn primary" type="button" data-adact="ntopen"${adm.newTeam?" disabled":""}>+ 팀 만들기</button></div>
+  <div class="adtbl"><table class="ttbl"><thead><tr><th style="width:70px">순서</th><th>팀 이름</th><th>팀 코드</th><th>인원</th><th>팀장</th><th>팀 기본 목록</th><th style="width:30px"></th></tr></thead>
+    <tbody>${newRow}${rows||'<tr><td colspan="7" class="hint">아직 팀이 없어요.</td></tr>'}</tbody></table></div>
+  ${detail}`;
+}
+function tAdd(k,raw){
+  const d=adm.tdraft;if(!d)return;const vals=String(raw||"").split(/\r?\n|\t/).map(x=>x.trim()).filter(Boolean);let n=0;
+  vals.forEach(v=>{if(!d.lists[k].includes(v)){d.lists[k].push(v);n++}});
+  if(n){d.dirty=true;renderAdmin();const inp=document.querySelector(`[data-tadd="${k}"]`);if(inp)inp.focus()}
+  else if(vals.length)toast("이미 목록에 있어요.");
 }
 $("adTabs").onclick=e=>{const b=e.target.closest("[data-ad]");if(!b)return;adm.tab=b.dataset.ad;renderAdmin()};
 $("adClose").onclick=()=>{$("adminPanel").hidden=true;closeDlg();paintUser();refresh()};
 $("adBody").addEventListener("input",e=>{
   if(e.target.id==="adQ"){adm.q=e.target.value;const pos=e.target.selectionStart;renderAdmin();const q=$("adQ");q.focus();q.setSelectionRange(pos,pos)}
+  if(e.target.id==="td-name"||e.target.id==="td-sort"){const d=adm.tdraft;if(d){d[e.target.id==="td-name"?"name":"sort"]=e.target.value;if(!d.dirty){d.dirty=true;const b=document.querySelector('[data-adact="tsave"]');if(b)b.disabled=false}}}
   if(e.target.id==="adDomain"){adm.domain=e.target.value.replace(/^@+/,"").trim();try{localStorage.setItem("wk-mail-domain",adm.domain)}catch(_){}gRefresh()}
   const g=e.target.dataset&&e.target.dataset.g;if(g){const [i,f]=g.split(":");const r=adm.grid[+i];if(r){r[f]=e.target.type==="checkbox"?e.target.checked:e.target.value;if(f==="adm"&&r.adm){r.reg=true;const rb=document.querySelector(`[data-g="${i}:reg"]`);if(rb)rb.checked=true}gRefresh()}}
 });
@@ -2765,20 +2828,24 @@ $("adBody").addEventListener("click",async e=>{
     if(k==="gadd"){for(let n=0;n<5;n++)adm.grid.push(gBlank());gRender()}
     if(k==="gclear"){adm.grid=Array.from({length:5},gBlank);gRender()}
     if(k==="gcommit")await commitGrid();
-    if(k==="newteam"){const name=$("nt-name").value.trim(),id=$("nt-id").value.trim().toLowerCase();
-      if(!name||!/^[a-z][a-z0-9_-]{1,29}$/.test(id)){toast("팀 이름과 영문 소문자 팀 코드를 넣어주세요.");return}
-      try{await api.saveTeam({id,name,sort:(Math.max(0,...st.teams.map(t=>+t.sort||0))+10),lists:{cats:[...CATS],customers:["내부"],vendors:[]}},true);toast(`${name}을(를) 만들었어요`);await loadAdmin();paintUser()}catch(x){toast(x.code==="23505"?"이미 있는 팀 코드예요.":errText(x))}}
+    if(k==="ntopen"){adm.newTeam=true;renderAdmin();setTimeout(()=>$("nt-name").focus(),30)}
+    if(k==="ntcancel"){adm.newTeam=false;renderAdmin()}
+    if(k==="newteam"){const name=$("nt-name").value.trim(),id=$("nt-id").value.trim().toLowerCase(),sort=+$("nt-sort").value||10;
+      if(!name){toast("팀 이름을 넣어주세요.");$("nt-name").focus();return}
+      if(!/^[a-z][a-z0-9_-]{1,29}$/.test(id)){toast("팀 코드는 영문 소문자로 시작하는 2~30자로 넣어주세요. 예: purchase");$("nt-id").focus();return}
+      try{await api.saveTeam({id,name,sort,lists:{projects:[],customers:["내부"],vendors:[],cats:[...CATS]}},true);toast(`${name}을(를) 만들었어요. 아래에서 기본 목록을 채워주세요.`);
+        adm.newTeam=false;adm.selTeam=id;adm.tdraft=null;await loadAdmin();paintUser()}catch(x){toast(x.code==="23505"?"이미 있는 팀 코드예요.":errText(x))}}
+    if(k==="tsave"){const d=adm.tdraft;if(!d)return;if(!d.name.trim()){toast("팀 이름을 넣어주세요.");return}
+      try{await api.saveTeam({id:d.id,name:d.name.trim(),sort:+d.sort||0,lists:d.lists},false);toast(`${d.name.trim()} 정보를 저장했어요`);adm.tdraft=null;await loadAdmin();paintUser()}catch(x){toast(errText(x))}}
     return}
   const gd=e.target.closest("[data-gdel]");if(gd){adm.grid.splice(+gd.dataset.gdel,1);if(!adm.grid.length)adm.grid.push(gBlank());gRender();return}
   const ed=e.target.closest("[data-edit]");if(ed){personDlg(ed.dataset.edit);return}
   const rs=e.target.closest("[data-reset]");if(rs){const p=adm.people.find(x=>x.email===rs.dataset.reset);
     confirmDlg("비밀번호 초기화",`<b>${esc(p.name)}</b> 님의 비밀번호를 <b>0426</b>으로 초기화할까요? 다음 로그인 때 본인이 새 6자리를 정해요.`,"초기화",false,async()=>{await api.resetPin(p.email);toast(`${p.name} 님 비밀번호를 0426으로 초기화했어요`);await loadAdmin()});return}
   const ul=e.target.closest("[data-unlock]");if(ul){try{await api.unlock(ul.dataset.unlock);toast("잠금을 풀었어요");await loadAdmin()}catch(x){toast(errText(x))}return}
-  const ts=e.target.closest("[data-tsave]");if(ts){const c=ts.closest("[data-team]"),id=c.dataset.team,t=st.teams.find(x=>x.id===id);
-    const lines=k=>[...new Set(c.querySelector(`[data-tl="${k}"]`).value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean))];
-    const name=c.querySelector('[data-tf="name"]').value.trim();if(!name){toast("팀 이름을 넣어주세요.");return}
-    try{await api.saveTeam({id,name,sort:+c.querySelector('[data-tf="sort"]').value||t.sort,lists:{projects:lines("projects"),customers:lines("customers"),vendors:lines("vendors"),cats:lines("cats")}},false);toast(`${name} 정보를 저장했어요`);await loadAdmin();paintUser()}catch(x){toast(errText(x))}
-    return}
+  const tr=e.target.closest("[data-tsel]");if(tr){const id=tr.dataset.tsel;if(id!==adm.selTeam){if(adm.tdraft&&adm.tdraft.dirty){confirmDlg("저장 안 된 변경","지금 팀에서 고친 내용이 아직 저장되지 않았어요. 저장하지 않고 다른 팀으로 갈까요?","저장 안 하고 이동",true,async()=>{adm.selTeam=id;adm.tdraft=null;renderAdmin()});return}adm.selTeam=id;adm.tdraft=null;renderAdmin();const dt=document.querySelector(".tdet");if(dt)dt.scrollIntoView({block:"nearest"})}return}
+  const td=e.target.closest("[data-tdel]");if(td){const [k,ix]=td.dataset.tdel.split(":");adm.tdraft.lists[k].splice(+ix,1);adm.tdraft.dirty=true;renderAdmin();return}
+  const tb=e.target.closest("[data-taddb]");if(tb){const k=tb.dataset.taddb;tAdd(k,document.querySelector(`[data-tadd="${k}"]`).value);return}
   const ig=e.target.closest("[data-impgo]");if(ig){const id=ig.dataset.t,c=ig.closest("[data-team]");const src=c.querySelector('[data-imp="src"]').value.trim(),reset=c.querySelector('[data-imp="reset"]').checked,dry=ig.dataset.impgo==="dry";
     const run=async()=>{const r=await api.importLegacy(src,id,dry,reset);
       adm.imp[id]=r.demo?"체험 화면에서는 가져오기를 할 수 없어요.":`${dry?"<b>미리 확인 결과</b> (아직 저장 안 함)":"<b>가져왔어요</b>"}<br>업무 ${r.items}건 · 예시 제외 ${r.samples_skipped}건 · 공지 ${r.notices}건 · 목록 ${r.lists?"있음":"없음"}<br>${r.unmatched&&r.unmatched.length?`<span class="pv-err">팀원 명단에 없는 담당자: ${r.unmatched.map(esc).join(", ")}</span> — 이 업무는 담당자 없이 옮겨져 아무도 고칠 수 없어요. 이름을 맞춰 등록한 뒤 다시 가져오세요.`:'<span class="pv-new">모든 담당자가 팀원과 연결돼요.</span>'}`;
@@ -2787,6 +2854,12 @@ $("adBody").addEventListener("click",async e=>{
     else confirmDlg("업무 가져오기",`'${esc(src)}'의 업무를 <b>${esc(teamName(id))}</b>(으)로 가져올까요?${reset?" <b>이 팀에 있던 새 구조 업무는 모두 지워져요.</b>":" 같은 업무는 최신 내용으로 덮어써요."}`,"가져오기",reset,run);
     return}
 });
+$("adBody").addEventListener("keydown",e=>{
+  const k=e.target.dataset&&e.target.dataset.tadd;if(k&&e.key==="Enter"){e.preventDefault();tAdd(k,e.target.value);return}
+  if(e.key==="Enter"&&e.target.matches&&e.target.matches("[data-tsel]")){e.preventDefault();e.target.click();return}
+  if(e.key==="Enter"&&e.target.closest&&e.target.closest(".tnew")){e.preventDefault();document.querySelector('[data-adact="newteam"]').click()}
+});
+$("adBody").addEventListener("paste",e=>{const k=e.target.dataset&&e.target.dataset.tadd;if(!k)return;const t=(e.clipboardData||window.clipboardData).getData("text");if(/[\n\t]/.test(t)){e.preventDefault();tAdd(k,t)}});
 document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("adDlg").hidden){e.stopImmediatePropagation();closeDlg();return}if(!$("userMenu").hidden){$("userMenu").hidden=true;return}},true);
 
 /* ---------- 실험: 캘린더를 화면 아래 끝까지 ---------- */
