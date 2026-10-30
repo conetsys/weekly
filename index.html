@@ -1968,7 +1968,7 @@ $("monthView").onclick=e=>{
   if(e.target.closest("[data-mpclose]")){closeMpop();return}
   const ad=e.target.closest("[data-addday]");if(ad){e.stopPropagation();closeMpop();addOnDay(ad.dataset.addday);return}
   const mo=e.target.closest("[data-more]");
-  if(mo&&!matchMedia("(max-width:720px)").matches){e.stopPropagation();const k=mo.dataset.more;if(st.mPop===k){closeMpop();return}st.mSel=k;st.mPop=null;renderMonth();openMpop(k);return}
+  if(mo&&!matchMedia("(max-width:720px)").matches&&innerWidth<1000){e.stopPropagation();const k=mo.dataset.more;if(st.mPop===k){closeMpop();return}st.mSel=k;st.mPop=null;renderMonth();openMpop(k);return}
   if(e.target.closest(".mpop")&&!e.target.closest("[data-id]"))return;
   if(st.mPop&&!e.target.closest("[data-id]")){closeMpop()}
   const seg=e.target.closest("[data-id]");if(seg){openSummary(seg.dataset.id);return}
