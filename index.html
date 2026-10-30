@@ -652,6 +652,9 @@ td.wk .wdate{background:var(--surface)}
 .gtbl .bad{border-color:var(--danger)!important;background:var(--danger-bg)!important}
 .gtbl tr.gerr td{background:color-mix(in srgb,var(--danger-bg) 45%,transparent)}
 .gtbl .gst{font-size:12.5px;min-width:200px}
+.top .tabs:has(+ .admbtn:not([hidden])){margin-right:0}
+.admbtn{margin-right:auto}
+.top .actions{margin-left:auto}
 @media (max-width:720px){.adf{grid-template-columns:1fr}.adbar input[type=search]{min-width:0;flex:1 1 100%;order:-1}.top .actions{flex-wrap:wrap}.brand{flex-wrap:wrap}}
 
 /* ---------- 업무 창 구역 ---------- */
@@ -734,6 +737,23 @@ td.wk .wdate{background:var(--surface)}
   .aver{display:none}
 }
 .bmark{width:22px;height:auto;flex:none}
+
+/* ---------- 앱 설치 안내 ---------- */
+.insm{width:min(560px,calc(100% - 24px))}
+.inslead{margin:10px 0 12px;font-size:13.5px;color:var(--muted);line-height:1.6}
+.instabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.instabs button{border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:13.5px;font-weight:600;border-radius:999px;padding:6px 14px;cursor:pointer}
+.instabs button[aria-selected="true"]{background:#077A3A;border-color:#077A3A;color:#fff}
+.insnow{margin-bottom:12px;width:100%;justify-content:center;height:42px;background:#077A3A;border-color:#077A3A}
+.insteps{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:1.6}
+.insnote{margin:12px 0 0;font-size:13px;color:var(--muted);background:var(--surface-2);border-radius:8px;padding:9px 12px;line-height:1.6}
+.insqr{display:flex;gap:14px;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.insqr #insQr{flex:none;width:132px;height:132px;background:#fff;border-radius:8px;padding:6px;display:grid;place-items:center;border:1px solid var(--line)}
+.insqr #insQr img,.insqr #insQr canvas{width:120px!important;height:120px!important}
+.insqr p{margin:4px 0 6px;font-size:13px;color:var(--muted);line-height:1.6}
+.insqr code{font-size:11.5px;overflow-wrap:anywhere;color:var(--muted)}
+@media (max-width:560px){.insqr{display:none}}
+.ainstall{border:0;background:transparent;color:#077A3A;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;padding:4px 0;text-align:left;text-decoration:underline;text-underline-offset:3px}
 </style>
 
 <style>html,body{margin:0}[hidden]{display:none!important}</style>
@@ -746,6 +766,7 @@ td.wk .wdate{background:var(--surface)}
       <button class="tab" role="tab" id="tab-write" aria-selected="true">작성</button>
       <button class="tab" role="tab" id="tab-review" aria-selected="false">점검</button>
     </div>
+    <button class="btn admbtn" id="adminBtn" type="button" hidden>⚙ 관리</button>
     <div class="weeknav" id="weekNav" aria-label="주차 이동">
       <button class="btn icon" id="prevWeek" aria-label="이전 주">◀</button>
       <div class="label"><b id="weekTitle">이번주</b><span id="weekRange" class="mono"></span></div>
@@ -753,11 +774,10 @@ td.wk .wdate{background:var(--surface)}
       <button class="btn ghost" id="thisWeek">이번주로</button>
     </div>
     <div class="actions">
-      <button class="btn" id="installBtn" type="button" hidden title="바탕화면·시작 메뉴에 바로가기 아이콘을 만들어요">⬇ 바탕화면에 추가</button>
+      <button class="btn" id="installBtn" type="button" title="PC 바탕화면이나 휴대폰 홈 화면에 앱으로 설치하는 방법">📲 앱 설치</button>
       <button class="btn nbtn" id="noticeBtn" aria-label="공지사항"><span aria-hidden="true">📢</span> 공지<span class="ndot" id="noticeDot" hidden></span></button>
       <button class="btn" id="copyReport">보고용 복사</button>
-      <button class="btn" id="openSettings">내 목록</button>
-      <button class="btn" id="adminBtn" type="button" hidden>관리</button>
+      <button class="btn" id="openSettings">목록 관리</button>
       <button class="btn" id="userBtn" type="button" aria-haspopup="menu" aria-expanded="false"><span id="userName">나</span> ▾</button>
     </div>
   </div>
@@ -899,7 +919,7 @@ td.wk .wdate{background:var(--surface)}
 </aside>
 
 <aside class="drawer" id="settings" hidden role="dialog" aria-labelledby="sTitle">
-  <div class="dhead"><h2 id="sTitle">내 목록</h2><button class="btn ghost icon" id="sClose" aria-label="닫기">✕</button></div>
+  <div class="dhead"><h2 id="sTitle">목록 관리</h2><button class="btn ghost icon" id="sClose" aria-label="닫기">✕</button></div>
   <div class="dbody">
     <div class="tabs" role="tablist" aria-label="목록 종류" id="sTabs" style="align-self:flex-start">
       <button class="tab" role="tab" data-list="members" aria-selected="true">팀원 색</button>
@@ -914,7 +934,7 @@ td.wk .wdate{background:var(--surface)}
       <button class="btn primary" id="s-add" type="button">추가</button>
     </div>
     <div class="lst" id="s-list"></div>
-    <p class="hint" style="margin:0" id="sFoot">내 목록은 업무를 쓸 때 고르기 편하게 해주는 목록이에요. 나에게만 적용되고 다른 사람 목록에는 영향이 없어요. 지워도 이미 쓴 업무 내용은 그대로 남아요.</p>
+    <p class="hint" style="margin:0" id="sFoot">이 목록은 업무를 쓸 때 고르기 편하게 해주는 목록이에요. 나에게만 적용되고 다른 사람 목록에는 영향이 없어요. 지워도 이미 쓴 업무 내용은 그대로 남아요.</p>
   </div>
   <div class="dfoot"><button class="btn ghost" id="sReset" type="button">팀 기본 목록으로 되돌리기</button><span class="spacer"></span><button class="btn" id="sCancel" type="button">취소</button><button class="btn primary" id="sSave" type="button">저장</button></div>
 </aside>
@@ -991,6 +1011,7 @@ td.wk .wdate{background:var(--surface)}
         <button class="ago" type="submit" id="liBtn">로그인</button>
         <div class="afirst">처음이세요? 비밀번호 <b>0426</b><button type="button" class="aq" id="liTipBtn" aria-expanded="false" aria-controls="liTip" aria-label="처음 로그인 안내">?</button></div>
         <p class="atip" id="liTip" hidden>처음엔 0426 네 자리만 넣고 로그인하세요. 이어서 나만 아는 숫자 6자리로 바꾸는 화면이 나와요. 비밀번호를 잊었으면 등록 담당자에게 초기화를 요청하세요.</p>
+        <button type="button" class="ainstall" id="liInstall">📲 휴대폰·PC에 앱으로 설치하기</button>
       </form>
       <form id="pinForm" class="aform" novalidate hidden>
         <h2 id="pinTitle">새 비밀번호 정하기</h2>
@@ -1026,6 +1047,45 @@ td.wk .wdate{background:var(--surface)}
 <div class="modal" id="adDlg" hidden role="dialog" aria-modal="true" aria-labelledby="adDlgTitle" style="z-index:56"></div>
 <div class="mscrim" id="adScrim" hidden style="z-index:55"></div>
 
+<div class="mscrim" id="insScrim" hidden style="z-index:70"></div>
+<div class="modal insm" id="installModal" hidden role="dialog" aria-modal="true" aria-labelledby="insTitle" style="z-index:71">
+  <div class="mtop"><span class="mtag" id="insTitle">📲 앱으로 설치하기</span><button class="btn ghost icon" id="insClose" type="button" aria-label="닫기">✕</button></div>
+  <p class="inslead">설치하면 바탕화면이나 홈 화면의 아이콘으로 바로 열려요. 주소창 없이 앱처럼 쓸 수 있어요.</p>
+  <div class="instabs" role="tablist" aria-label="기기 고르기">
+    <button type="button" role="tab" data-ins="pc">💻 PC</button>
+    <button type="button" role="tab" data-ins="android">🤖 안드로이드</button>
+    <button type="button" role="tab" data-ins="ios">🍎 아이폰</button>
+  </div>
+  <div class="inspanel" data-ip="pc">
+    <button class="btn primary insnow" type="button" data-insnow hidden>지금 설치하기</button>
+    <ol class="insteps">
+      <li><b>크롬</b>이나 <b>엣지</b>로 이 주소를 열어요.</li>
+      <li>주소창 오른쪽 끝의 <b>설치 아이콘</b>(모니터에 화살표 모양 ⊕)을 눌러요.</li>
+      <li>아이콘이 안 보이면 오른쪽 위 <b>⋮</b>(엣지는 <b>…</b>) 메뉴 → <b>전송, 저장 및 공유 → 페이지를 앱으로 설치</b> (엣지: <b>앱 → 이 사이트를 앱으로 설치</b>)</li>
+      <li><b>설치</b>를 누르면 바탕화면과 시작 메뉴에 '주간업무' 아이콘이 생겨요.</li>
+    </ol>
+    <div class="insqr"><div id="insQr" aria-hidden="true"></div><div><b>휴대폰으로 열기</b><p>휴대폰 카메라로 이 QR을 찍으면 이 주소가 바로 열려요. 거기서 안드로이드·아이폰 방법대로 설치하세요.</p><code id="insUrl"></code></div></div>
+  </div>
+  <div class="inspanel" data-ip="android" hidden>
+    <button class="btn primary insnow" type="button" data-insnow hidden>지금 설치하기</button>
+    <ol class="insteps">
+      <li><b>크롬</b>으로 이 주소를 열어요.</li>
+      <li>오른쪽 위 <b>⋮</b> 메뉴를 눌러요.</li>
+      <li><b>앱 설치</b> 또는 <b>홈 화면에 추가</b>를 누르고 <b>설치</b>를 눌러요.</li>
+      <li>홈 화면에 '주간업무' 아이콘이 생겨요.</li>
+    </ol>
+    <p class="insnote"><b>삼성 인터넷</b>을 쓰면: 아래쪽 <b>≡</b> 메뉴 → <b>현재 페이지 추가 → 홈 화면</b></p>
+  </div>
+  <div class="inspanel" data-ip="ios" hidden>
+    <ol class="insteps">
+      <li><b>사파리</b>로 이 주소를 열어요. (카카오톡 안에서 열렸다면 오른쪽 아래 <b>나침반</b> 버튼으로 사파리에서 열기)</li>
+      <li>아래쪽 가운데 <b>공유 버튼</b>(네모에서 위로 화살표 ⬆)을 눌러요.</li>
+      <li>목록을 아래로 내려 <b>홈 화면에 추가</b>를 눌러요.</li>
+      <li>오른쪽 위 <b>추가</b>를 누르면 홈 화면에 '주간업무' 아이콘이 생겨요.</li>
+    </ol>
+    <p class="insnote">아이폰은 '지금 설치하기' 버튼을 쓸 수 없어서 위 순서로만 설치할 수 있어요.</p>
+  </div>
+</div>
 <div class="toast" id="toast" hidden role="status"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.0/dist/umd/supabase.js"></script>
@@ -1716,7 +1776,7 @@ function copyReport(){
 /* ---------- settings ---------- */
 let sEdit=null,sTab="members",sColor0=null;
 function openSettings(){
-  if(!canAddHere()){toast("내 목록은 내 팀 화면에서 바꿀 수 있어요.");return}
+  if(!canAddHere()){toast("목록 관리는 내 팀 화면에서 할 수 있어요.");return}
   sEdit={};
   for(const k of Object.keys(LIST_INFO))sEdit[k]=(st.lists[k]||[]).map(x=>({orig:x,val:x}));
   {const pc=personColors();sEdit.members.forEach(x=>x.color=pcol(pc,x.orig));}sColorOpen=null;
@@ -1782,7 +1842,7 @@ async function saveSettings(){
   $("sSave").disabled=true;
   try{
     await api.setPrefs(newColor,lists);
-    st.me.my_lists=lists;closeAll();toast("내 목록을 저장했어요");refreshSoon();
+    st.me.my_lists=lists;closeAll();toast("목록을 저장했어요");refreshSoon();
   }catch(e){toast(e&&e.code==="color_taken"?"같은 팀의 다른 사람이 쓰는 색이에요. 다른 색을 골라주세요.":errText(e))}
   finally{$("sSave").disabled=false}
 }
@@ -2261,13 +2321,34 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&(!$("noticeModal").
 /* ---------- 바탕화면에 추가 (앱 설치) ---------- */
 let installEvt=null;
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){navigator.serviceWorker.register("sw.js").catch(()=>{})}
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;$("installBtn").hidden=false});
-window.addEventListener("appinstalled",()=>{installEvt=null;$("installBtn").hidden=true;toast("바탕화면에 추가했어요")});
-$("installBtn").onclick=async()=>{
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;paintInstall()});
+window.addEventListener("appinstalled",()=>{installEvt=null;paintInstall();closeInstall();toast("앱으로 설치했어요")});
+// 앱(설치된 아이콘)으로 열었으면 설치 버튼을 숨김
+const isApp=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+const devKind=()=>{const u=navigator.userAgent;return /iPhone|iPad|iPod/i.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1)?"ios":/Android/i.test(u)?"android":"pc"};
+function paintInstall(){$("installBtn").hidden=isApp();$("liInstall").hidden=isApp();document.querySelectorAll("[data-insnow]").forEach(b=>b.hidden=!installEvt)}
+function insTab(k){document.querySelectorAll("[data-ins]").forEach(b=>b.setAttribute("aria-selected",b.dataset.ins===k));document.querySelectorAll("[data-ip]").forEach(p=>p.hidden=p.dataset.ip!==k)}
+let qrDone=false;
+function drawQr(){
+  if(qrDone)return;const url=location.href.split("#")[0];$("insUrl").textContent=url;
+  const go=()=>{try{new QRCode($("insQr"),{text:url,width:120,height:120,correctLevel:QRCode.CorrectLevel.M});qrDone=true}catch(_){}};
+  if(window.QRCode){go();return}
+  const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";sc.onload=go;sc.onerror=()=>{$("insQr").textContent="QR을 불러오지 못했어요"};document.head.appendChild(sc);
+}
+function openInstall(){paintInstall();insTab(devKind());drawQr();$("insScrim").hidden=false;$("installModal").hidden=false;setTimeout(()=>$("insClose").focus(),30)}
+function closeInstall(){$("installModal").hidden=true;$("insScrim").hidden=true}
+$("insClose").onclick=closeInstall;$("insScrim").onclick=closeInstall;
+document.querySelector(".instabs").onclick=e=>{const b=e.target.closest("[data-ins]");if(b){insTab(b.dataset.ins);if(b.dataset.ins==="pc")drawQr()}};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("installModal").hidden){e.stopImmediatePropagation();closeInstall()}},true);
+$("liInstall").onclick=openInstall;
+document.querySelectorAll("[data-insnow]").forEach(b=>b.onclick=async()=>{
   if(!installEvt)return;
   installEvt.prompt();
-  try{const r=await installEvt.userChoice;if(r.outcome==="accepted")$("installBtn").hidden=true}catch(_){}
-  installEvt=null;
+  try{await installEvt.userChoice}catch(_){}
+  installEvt=null;paintInstall();
+});
+paintInstall();
+$("installBtn").onclick=()=>{openInstall();
 };
 /* ---------- 로그인 화면 ---------- */
 const LAST_EMAIL="wk-last-email";
@@ -2369,7 +2450,7 @@ function paintUser(){
   const m=st.me;if(!m)return;
   const tn=teamName(st.team);
   const ttl=TITLE_FORMAT.replace("{앱}",APP_TITLE).replace("{팀}",tn||"");$("brandTitle").textContent=ttl;document.title=ttl;
-  $("userName").textContent=m.name;
+  $("userName").textContent=`내정보 - ${m.name}`;
   const reg=m.is_admin||m.is_registrar;
   $("adminBtn").hidden=!reg;$("miAdmin").hidden=!reg;
   $("openSettings").hidden=!canAddHere();
