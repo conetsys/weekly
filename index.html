@@ -2146,12 +2146,13 @@ const teamName=id=>(st.teams.find(t=>t.id===id)||{}).name||id;
 const myTeamScope=()=>st.me?st.me.team_id:"";
 function normRow(n){return {id:n.id,scope:n.scope,title:n.title,body:n.body||"",popup:n.popup!==false,active:n.active!==false,createdAt:n.created_at,updatedAt:n.updated_at}}
 // 보이는 공지: 전체 공지 + 내 팀 공지 (관리자도 팀 탭에는 내 팀 것만)
-const activeNotices=scope=>notices.filter(n=>n.active&&n.title&&(scope==="all"?n.scope==="all":scope==="team"?n.scope===myTeamScope():(n.scope==="all"||n.scope===myTeamScope())))
+// 공지는 관리자가 쓰는 전체 공지 하나의 목록만 써요 (팀 공지는 보이지 않음)
+const activeNotices=()=>notices.filter(n=>n.active&&n.title&&n.scope==="all")
   .sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
 const unseenNotices=()=>{const ss=seenSet();return activeNotices().filter(n=>!ss.has(n.id))};
 function paintNoticeDot(){$("noticeDot").hidden=!unseenNotices().length}
-const canWriteNotice=scope=>!!st.me&&((scope==="all"&&st.me.is_admin)||(scope===myTeamScope()&&st.me.role==="leader"));
-const canAnyNotice=()=>canWriteNotice("all")||canWriteNotice(myTeamScope());
+const canWriteNotice=scope=>!!st.me&&scope==="all"&&!!st.me.is_admin;
+const canAnyNotice=()=>canWriteNotice("all");
 async function loadNotice(){
   if(!st.me)return;
   try{
@@ -2159,7 +2160,7 @@ async function loadNotice(){
     const changed=JSON.stringify(n)!==JSON.stringify(notices);
     notices=n;paintNoticeDot();
     const ss=seenSet();
-    const pop=[...activeNotices("all"),...activeNotices("team")].filter(x=>x.popup!==false&&!ss.has(x.id));
+    const pop=activeNotices().filter(x=>x.popup!==false&&!ss.has(x.id));
     if(!noticeShownOnce&&pop.length&&!anyModalOpen())openNotice(pop,true);
     else if(changed&&!$("noticeModal").hidden&&!ntPopup)fillNotice();
     noticeShownOnce=true;
@@ -2169,11 +2170,12 @@ function anyModalOpen(){return !$("noticeModal").hidden||!$("noticeEdit").hidden
 let ntMode="view";
 function fillBoard(){
   const act=activeNotices(ntScope),ss=seenSet();
+  $("ntTabs").hidden=true;
   document.querySelectorAll("#ntTabs [data-ns]").forEach(b=>{const k=b.dataset.ns,l=activeNotices(k),un=l.filter(n=>!ss.has(n.id)).length;
     b.setAttribute("aria-selected",k===ntScope);b.innerHTML=`${k==="all"?"전체 공지":esc(teamName(myTeamScope()))+" 공지"}<span class="cnt">${l.length}${un?` · 새 글 ${un}`:""}</span>`});
   $("ntView").hidden=true;$("ntNav").hidden=true;$("ntBack").hidden=true;$("ntHideWrap").hidden=true;
   $("ntBoard").hidden=false;$("ntEmpty").hidden=act.length>0;
-  $("ntEmpty").textContent=ntScope==="all"?"올라와 있는 전체 공지가 없어요.":"올라와 있는 팀 공지가 없어요.";
+  $("ntEmpty").textContent="올라와 있는 공지가 없어요.";
   $("ntRows").innerHTML=act.map((n,i)=>`<button type="button" class="nrow${ss.has(n.id)?" read":""}" data-ni="${i}"><span class="nno mono">${act.length-i}</span><span class="nt">${esc(n.title)}${ss.has(n.id)?"":'<span class="nnew">NEW</span>'}</span><span class="nd mono">${esc(fmtDT(n.createdAt).slice(0,10))}</span></button>`).join("");
   $("ntOk").textContent="닫기";$("ntAdmin").hidden=!canAnyNotice();
 }
@@ -2182,7 +2184,7 @@ function fillNotice(){
   $("ntBoard").hidden=true;$("ntBack").hidden=false;
   const n=ntQ[ntI],ok=!!n;
   $("ntView").hidden=!ok;$("ntEmpty").hidden=ok;$("ntHideWrap").hidden=!ok||!ntPopup;
-  if(ok){$("ntTitle").innerHTML=`<span class="nscope${n.scope==="all"?" all":""}">${n.scope==="all"?"전체":esc(teamName(n.scope))}</span>${esc(n.title)}`;
+  if(ok){$("ntTitle").textContent=n.title;
     $("ntBody").textContent=n.body||"";$("ntDate").textContent=fmtDT(n.createdAt)+" 게시"+(n.updatedAt&&n.createdAt&&n.updatedAt.slice(0,16)!==n.createdAt.slice(0,16)?` · ${fmtDT(n.updatedAt)} 수정`:"");
     $("ntNew").hidden=seenSet().has(n.id);if(!ntPopup){markSeen(n.id);paintNoticeDot()}}
   const many=ntQ.length>1;$("ntNav").hidden=!many;$("ntPos").textContent=`${ntI+1} / ${ntQ.length}`;
@@ -2206,10 +2208,11 @@ let neWant="",neEditId="";
 function openNoticeEdit(){
   neWant=(!$("noticeModal").hidden&&ntMode==="view"&&ntQ[ntI])?ntQ[ntI].id:"";
   const want=notices.find(n=>n.id===neWant);
-  const scopes=[["all","전체 공지 (모든 팀)"],[myTeamScope(),`${teamName(myTeamScope())} 공지`]].filter(([k])=>canWriteNotice(k));
+  const scopes=[["all","전체 공지"]].filter(([k])=>canWriteNotice(k));
   if(!scopes.length)return;
   $("ne-scope").innerHTML=scopes.map(([k,l])=>`<option value="${esc(k)}">${esc(l)}</option>`).join("");
   $("ne-scope").value=want&&canWriteNotice(want.scope)?want.scope:(ntMode==="board"&&ntScope==="team"&&canWriteNotice(myTeamScope())?myTeamScope():scopes[0][0]);
+  $("ne-scope").closest(".f").hidden=true;
   $("noticeModal").hidden=true;$("mscrim").hidden=false;$("noticeEdit").hidden=false;$("neErr").hidden=true;
   fillNoticeForm(want&&canWriteNotice(want.scope)?want.id:"");
   setTimeout(()=>$("ne-title").focus(),30);
@@ -2224,7 +2227,7 @@ function fillNoticeForm(pick){
   $("ne-title").value=n?n.title:"";$("ne-body").value=n?(n.body||""):"";
   $("ne-pop").checked=n?n.popup!==false:true;$("neRemove").hidden=!n;
   $("neSave").textContent=n?"수정 저장":"게시";
-  $("neHint").textContent=n?"고친 내용은 바로 반영돼요. 이미 읽은 사람에게 다시 팝업으로 뜨지는 않아요.":sc==="all"?"모든 팀 사람에게 보여요. 안 읽은 사람에게는 접속할 때 팝업으로 떠요.":`${teamName(sc)} 사람에게만 보여요. 안 읽은 사람에게는 접속할 때 팝업으로 떠요.`;
+  $("neHint").textContent=n?"고친 내용은 바로 반영돼요. 이미 읽은 사람에게 다시 팝업으로 뜨지는 않아요.":sc==="all"?"모든 사람에게 보여요. 안 읽은 사람에게는 접속할 때 팝업으로 떠요.":`${teamName(sc)} 사람에게만 보여요. 안 읽은 사람에게는 접속할 때 팝업으로 떠요.`;
   $("neErr").hidden=true;
 }
 $("ne-scope").onchange=()=>fillNoticeForm("");
