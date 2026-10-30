@@ -1144,7 +1144,7 @@ td.wk .wdate{background:var(--surface)}
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const APP_VERSION = "2.2";
+const APP_VERSION = "2.3";
 // 화면 제목: {앱} = 앱 이름, {팀} = 지금 보고 있는 팀 이름 (팀 이름은 관리 → 팀에서 바꿔요)
 const APP_TITLE = "주간업무";
 // 로그인 화면에서 아이디 뒤에 자동으로 붙는 회사 메일 주소
@@ -2549,7 +2549,7 @@ function renderAdmin(){
   document.querySelectorAll("#adTabs [data-ad]").forEach(b=>b.setAttribute("aria-selected",b.dataset.ad===adm.tab));
   $("adTabTeams").hidden=!isAdm();
   $("adBody").innerHTML=`<div class="adwrap">${adm.tab==="teams"&&isAdm()?teamsHtml():peopleHtml()}</div>`;
-  if(adm.bulk&&adm.tab==="people")gRefresh();
+  if(adm.bulk)gRefresh();
 }
 function peopleHtml(){
   const all=adm.people,cnt=k=>all.filter(p=>pState(p).k===k).length;
@@ -2568,7 +2568,10 @@ function peopleHtml(){
   </div>
   ${adm.bulk?gridCardHtml():""}
   ${firstN?`<p class="hint" style="margin:0">처음 비밀번호(0426) 그대로인 사람이 ${firstN}명 있어요. 0426은 모두가 아는 번호라, 빨리 로그인해서 바꾸도록 안내해 주세요.</p>`:""}
-  <div class="adtbl"><table>
+  ${peopleTable(rows)}`;
+}
+function peopleTable(rows,emptyMsg){
+  return `<div class="adtbl"><table>
     <thead><tr><th>이름</th><th>회사 메일</th><th>소속</th><th>권한 <span class="hint" style="font-weight:400">(체크하면 바로 저장)</span></th><th>상태</th><th>마지막 로그인</th><th style="text-align:right">관리</th></tr></thead>
     <tbody>${rows.map(p=>{const s_=pState(p),o=adm.ov[p.email]||{},lockOk=!isAdm()&&p.is_admin;
       return `<tr class="${p.active?"":"off"}">
@@ -2576,7 +2579,7 @@ function peopleHtml(){
         <td class="em" title="${esc(p.email)}">${esc(p.email)}</td><td>${esc(teamName(p.team_id)||"-")}</td><td>${permBoxes(p,lockOk)}</td>
         <td><span class="sdot ${s_.k}">${esc(s_.t)}</span></td>
         <td class="mono" style="font-size:12px">${o.last_login?esc(fmtDT(o.last_login)):"-"}</td>
-        <td><div class="acts">${s_.k==="lock"?`<button class="btn" type="button" data-unlock="${esc(p.email)}">잠금 풀기</button>`:""}${p.active&&!lockOk&&s_.k!=="never"?`<button class="btn" type="button" data-reset="${esc(p.email)}">0426 초기화</button>`:""}${lockOk?'<span class="hint" style="margin:0">관리자만 수정</span>':`<button class="btn" type="button" data-edit="${esc(p.email)}">수정</button>`}</div></td></tr>`}).join("")||`<tr><td colspan="7" class="hint">조건에 맞는 사람이 없어요.</td></tr>`}</tbody>
+        <td><div class="acts">${s_.k==="lock"?`<button class="btn" type="button" data-unlock="${esc(p.email)}">잠금 풀기</button>`:""}${p.active&&!lockOk&&s_.k!=="never"?`<button class="btn" type="button" data-reset="${esc(p.email)}">0426 초기화</button>`:""}${lockOk?'<span class="hint" style="margin:0">관리자만 수정</span>':`<button class="btn" type="button" data-edit="${esc(p.email)}">수정</button>`}</div></td></tr>`}).join("")||`<tr><td colspan="7" class="hint">${esc(emptyMsg||"조건에 맞는 사람이 없어요.")}</td></tr>`}</tbody>
   </table></div>`;
 }
 /* ----- 권한 체크박스 (사람 목록) ----- */
@@ -2596,7 +2599,7 @@ async function setPerm(email,k,on,el){
 
 /* ----- 여러 명 등록: 표에 직접 쓰거나 엑셀에서 붙여넣기 ----- */
 const G_FIELDS=["email","name","team","leader","reg","adm"];
-const gBlank=()=>({email:"",name:"",team:adm.fTeam||st.me.team_id,leader:false,reg:false,adm:false});
+const gBlank=()=>({email:"",name:"",team:(adm.tab==="teams"?adm.selTeam:adm.fTeam)||st.me.team_id,leader:false,reg:false,adm:false});
 function gDomain(){return (adm.domain||"").replace(/^@+/,"").trim()}
 function gEmail(v){v=String(v||"").trim().toLowerCase();if(v&&!v.includes("@")&&gDomain())v+="@"+gDomain();return v}
 function gridCardHtml(){
@@ -2689,14 +2692,14 @@ async function commitGrid(){
     adm.bulk=false;adm.grid=[];await loadAdmin();refreshSoon();
   }catch(e){toast(errText(e));gRefresh()}
 }
-function personDlg(email){
+function personDlg(email,presetTeam){
   const p=email?adm.people.find(x=>x.email===email):null,o=p?adm.ov[p.email]||{}:{};
   const self=p&&p.email===st.me.email;
   $("adDlg").innerHTML=`<div class="mtop"><span class="mtag" id="adDlgTitle">${p?"사람 정보 수정":"한 명 등록"}</span><button class="btn ghost icon" type="button" data-dlg="close" aria-label="닫기">✕</button></div>
   <form id="pForm" novalidate class="adf" style="margin-top:12px">
     <div class="f full"><label for="pf-email">회사 메일 (아이디)</label><input id="pf-email" type="email" value="${p?esc(p.email):""}" ${p?"readonly":""} placeholder="name@company.com">${p?'<span class="hint" style="margin:0">메일은 바꿀 수 없어요. 바뀌었으면 새로 등록하고 이 사람은 퇴사 처리해 주세요.</span>':""}</div>
     <div class="f"><label for="pf-name">이름</label><input id="pf-name" value="${p?esc(p.name):""}" autocomplete="off"></div>
-    <div class="f"><label for="pf-team">소속</label><select id="pf-team">${st.teams.map(t=>`<option value="${esc(t.id)}"${p&&p.team_id===t.id?" selected":""}>${esc(t.name)}</option>`).join("")}</select></div>
+    <div class="f"><label for="pf-team">소속</label><select id="pf-team">${st.teams.map(t=>`<option value="${esc(t.id)}"${(p?p.team_id:presetTeam)===t.id?" selected":""}>${esc(t.name)}</option>`).join("")}</select></div>
     <div class="f"><label for="pf-role">역할</label><select id="pf-role"><option value="member">팀원</option><option value="leader"${p&&p.role==="leader"?" selected":""}>팀장 (팀 공지 쓰기)</option></select></div>
     ${isAdm()?`<div class="f"><span style="font-size:12.5px;font-weight:600">추가 권한 (관리자만 지정)</span>
       <label class="chk"><input type="checkbox" id="pf-reg"${p&&p.is_registrar?" checked":""}> 등록 담당자 (사람 등록·초기화)</label>
@@ -2781,8 +2784,10 @@ function teamsHtml(){
         <div class="tladd"><input data-tadd="${k}" placeholder="${ph}" autocomplete="off" aria-label="${l} 추가"><button class="btn" type="button" data-taddb="${k}">추가</button></div>
       </div>`).join("")}</div>
       <p class="hint" style="margin:0">한 칸에 여러 줄을 붙여넣으면 한꺼번에 추가돼요. Enter로도 추가할 수 있어요.</p></div>
-    <div class="tsec"><div class="tsech">팀원 ${mem(cur.id).length}명 <span class="hint" style="font-weight:400;margin:0">팀원 등록·변경은 '사람' 탭에서 해요</span></div>
-      <div class="chips2">${mem(cur.id).sort(personOrder).map(p=>`<span class="chip2 ro">${esc(p.name)}${p.role==="leader"?' <small>팀장</small>':""}</span>`).join("")||'<span class="hint" style="margin:0">아직 팀원이 없어요</span>'}</div></div>
+    <div class="tsec"><div class="tsech" style="align-items:center">팀원 ${mem(cur.id).length}명${adm.people.some(p=>p.team_id===cur.id&&!p.active)?` <span class="hint" style="font-weight:400;margin:0">(퇴사 ${adm.people.filter(p=>p.team_id===cur.id&&!p.active).length}명 포함 표시)</span>`:""}
+        <span style="flex:1"></span><button class="btn" type="button" data-adact="bulk">여러 명 등록 (표·엑셀)</button><button class="btn primary" type="button" data-adact="addteam" data-t="${esc(cur.id)}">+ 이 팀에 한 명 등록</button></div>
+      ${adm.bulk?gridCardHtml():""}
+      ${peopleTable(adm.people.filter(p=>p.team_id===cur.id).sort((a,b)=>(a.active?0:1)-(b.active?0:1)||personOrder(a,b)),"아직 이 팀에 등록된 사람이 없어요. 위 버튼으로 등록하세요.")}</div>
     <details class="tsec"${imp?" open":""}><summary class="tsech" style="cursor:pointer">지금 쓰는 화면의 업무 가져오기</summary>
       <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
       <p class="hint" style="margin:0">로그인 없이 쓰던 화면(예전 표)의 업무·목록·공지를 이 팀으로 옮겨요. 담당자는 <b>이름이 같은 팀원</b>에게 연결돼요. 예시 업무는 빼고 가져와요. 먼저 '미리 확인'으로 이름이 다 맞는지 보세요.</p>
@@ -2802,7 +2807,7 @@ function tAdd(k,raw){
   if(n){d.dirty=true;renderAdmin();const inp=document.querySelector(`[data-tadd="${k}"]`);if(inp)inp.focus()}
   else if(vals.length)toast("이미 목록에 있어요.");
 }
-$("adTabs").onclick=e=>{const b=e.target.closest("[data-ad]");if(!b)return;adm.tab=b.dataset.ad;renderAdmin()};
+$("adTabs").onclick=e=>{const b=e.target.closest("[data-ad]");if(!b)return;if(adm.tab!==b.dataset.ad){adm.bulk=false;adm.grid=[]}adm.tab=b.dataset.ad;renderAdmin()};
 $("adClose").onclick=()=>{$("adminPanel").hidden=true;closeDlg();paintUser();refresh()};
 $("adBody").addEventListener("input",e=>{
   if(e.target.id==="adQ"){adm.q=e.target.value;const pos=e.target.selectionStart;renderAdmin();const q=$("adQ");q.focus();q.setSelectionRange(pos,pos)}
@@ -2823,6 +2828,7 @@ $("adBody").addEventListener("click",async e=>{
   const a=e.target.closest("[data-adact]");
   if(a){const k=a.dataset.adact;
     if(k==="add")personDlg(null);
+    if(k==="addteam")personDlg(null,a.dataset.t);
     if(k==="bulk"){adm.bulk=true;renderAdmin();gRefresh();setTimeout(()=>{const f=document.querySelector('[data-g="0:email"]');if(f)f.focus()},30)}
     if(k==="bulkclose"){adm.bulk=false;renderAdmin()}
     if(k==="gadd"){for(let n=0;n<5;n++)adm.grid.push(gBlank());gRender()}
@@ -2843,7 +2849,7 @@ $("adBody").addEventListener("click",async e=>{
   const rs=e.target.closest("[data-reset]");if(rs){const p=adm.people.find(x=>x.email===rs.dataset.reset);
     confirmDlg("비밀번호 초기화",`<b>${esc(p.name)}</b> 님의 비밀번호를 <b>0426</b>으로 초기화할까요? 다음 로그인 때 본인이 새 6자리를 정해요.`,"초기화",false,async()=>{await api.resetPin(p.email);toast(`${p.name} 님 비밀번호를 0426으로 초기화했어요`);await loadAdmin()});return}
   const ul=e.target.closest("[data-unlock]");if(ul){try{await api.unlock(ul.dataset.unlock);toast("잠금을 풀었어요");await loadAdmin()}catch(x){toast(errText(x))}return}
-  const tr=e.target.closest("[data-tsel]");if(tr){const id=tr.dataset.tsel;if(id!==adm.selTeam){if(adm.tdraft&&adm.tdraft.dirty){confirmDlg("저장 안 된 변경","지금 팀에서 고친 내용이 아직 저장되지 않았어요. 저장하지 않고 다른 팀으로 갈까요?","저장 안 하고 이동",true,async()=>{adm.selTeam=id;adm.tdraft=null;renderAdmin()});return}adm.selTeam=id;adm.tdraft=null;renderAdmin();const dt=document.querySelector(".tdet");if(dt)dt.scrollIntoView({block:"nearest"})}return}
+  const tr=e.target.closest("[data-tsel]");if(tr){const id=tr.dataset.tsel;if(id!==adm.selTeam){if(adm.tdraft&&adm.tdraft.dirty){confirmDlg("저장 안 된 변경","지금 팀에서 고친 내용이 아직 저장되지 않았어요. 저장하지 않고 다른 팀으로 갈까요?","저장 안 하고 이동",true,async()=>{adm.selTeam=id;adm.tdraft=null;renderAdmin()});return}adm.selTeam=id;adm.tdraft=null;adm.bulk=false;adm.grid=[];renderAdmin();const dt=document.querySelector(".tdet");if(dt)dt.scrollIntoView({block:"nearest"})}return}
   const td=e.target.closest("[data-tdel]");if(td){const [k,ix]=td.dataset.tdel.split(":");adm.tdraft.lists[k].splice(+ix,1);adm.tdraft.dirty=true;renderAdmin();return}
   const tb=e.target.closest("[data-taddb]");if(tb){const k=tb.dataset.taddb;tAdd(k,document.querySelector(`[data-tadd="${k}"]`).value);return}
   const ig=e.target.closest("[data-impgo]");if(ig){const id=ig.dataset.t,c=ig.closest("[data-team]");const src=c.querySelector('[data-imp="src"]').value.trim(),reset=c.querySelector('[data-imp="reset"]').checked,dry=ig.dataset.impgo==="dry";
