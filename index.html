@@ -754,6 +754,29 @@ td.wk .wdate{background:var(--surface)}
 .insqr code{font-size:11.5px;overflow-wrap:anywhere;color:var(--muted)}
 @media (max-width:560px){.insqr{display:none}}
 .ainstall{border:0;background:transparent;color:#077A3A;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;padding:4px 0;text-align:left;text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- 실험: 달력 2/3 · 날짜 목록 1/3 ---------- */
+@media (min-width:1000px){
+  #monthView{display:grid;grid-template-columns:minmax(0,2fr) minmax(300px,1fr);align-items:stretch}
+  #monthView .mhead{grid-column:1/-1}
+  /* 화면 높이에 꽉 차게: 높이는 아래 스크립트가 정함 */
+  #monthView.fit{grid-template-rows:auto minmax(0,1fr);margin-bottom:0}
+  #monthView.fit .mcal{display:flex;flex-direction:column;min-height:0;overflow-y:auto}
+  #monthView.fit .mrow{flex:1 0 auto}
+  #monthView .mcal{min-width:0}
+  /* 목록은 달력 높이에 맞추고(contain:size), 많아지면 목록 안에서만 스크롤 */
+  #monthView .mlist{border-top:0;border-left:1px solid var(--line-strong);display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--surface);contain:size}
+  #monthView .mlist h3{position:sticky;top:0;background:var(--surface);padding-bottom:8px;margin-bottom:4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  #monthView .mitems{flex:1;min-height:0;overflow-y:auto;padding-right:4px}
+  #monthView .mlist .mitem{grid-template-columns:6px minmax(0,1fr) auto;padding:8px 10px}
+  #monthView .mlist .mitem .mbar{grid-row:1/span 3}
+  #monthView .mlist .mitem .mwho{grid-column:2;font-size:12px;color:var(--muted)}
+  #monthView .mlist .mitem .mtask{grid-column:2/-1}
+  #monthView .mlist .mitem .mwhen{grid-column:2}
+}
+/* 같은 업무 함께 강조: 살짝 진하게만 (다른 것 흐리기·움직임 없음) */
+#monthView .mseg.hl{background:color-mix(in srgb,var(--c) 32%,var(--b))}
+#monthView .mitem.hl{border-color:var(--c);background:var(--b)}
 </style>
 
 <style>html,body{margin:0}[hidden]{display:none!important}</style>
@@ -1096,7 +1119,7 @@ td.wk .wdate{background:var(--surface)}
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const APP_VERSION = "2.0-시험";
+const APP_VERSION = "2.1";
 // 화면 제목: {앱} = 앱 이름, {팀} = 지금 보고 있는 팀 이름 (팀 이름은 관리 → 팀에서 바꿔요)
 const APP_TITLE = "주간업무";
 // 로그인 화면에서 아이디 뒤에 자동으로 붙는 회사 메일 주소
@@ -2766,6 +2789,32 @@ $("adBody").addEventListener("click",async e=>{
 });
 document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("adDlg").hidden){e.stopImmediatePropagation();closeDlg();return}if(!$("userMenu").hidden){$("userMenu").hidden=true;return}},true);
 
+/* ---------- 실험: 캘린더를 화면 아래 끝까지 ---------- */
+function fitMonth(){
+  const mv=$("monthView");if(!mv)return;
+  if(mv.hidden||innerWidth<1000){mv.classList.remove("fit");mv.style.height="";return}
+  // 아래에 달력 한 주 칸만큼 여백을 남김: 남은 높이를 (주 수 + 1)로 나눠 한 칸 높이를 정함
+  const top=mv.getBoundingClientRect().top+scrollY;
+  const head=mv.querySelector(".mhead"),dow=mv.querySelector(".mdow"),n=mv.querySelectorAll(".mrow").length||5;
+  const fixed=(head?head.offsetHeight:0)+(dow?dow.offsetHeight:0)+2;
+  const row=(innerHeight-top-fixed)/(n+1);
+  mv.classList.add("fit");mv.style.height=Math.max(460,Math.round(fixed+row*n))+"px";
+}
+// 같은 업무 함께 강조
+let hlId=null;
+function setHl(id,from){
+  const mv=$("monthView");if(id===hlId)return;hlId=id;
+  mv.querySelectorAll(".hl").forEach(el=>el.classList.remove("hl"));
+  if(!id)return;
+  const sel=`[data-id="${CSS.escape(id)}"]`;
+  mv.querySelectorAll(".mseg"+sel+",.mitem"+sel).forEach(el=>el.classList.add("hl"));
+}
+$("monthView").addEventListener("mouseover",e=>{const t=e.target.closest(".mseg[data-id],.mitem[data-id]");setHl(t?t.dataset.id:null,t&&t.classList.contains("mseg")?"cal":"list")});
+$("monthView").addEventListener("mouseleave",()=>setHl(null));
+$("monthView").addEventListener("focusin",e=>{const t=e.target.closest(".mseg[data-id],.mitem[data-id]");if(t)setHl(t.dataset.id,t.classList.contains("mseg")?"cal":"list")});
+new MutationObserver(()=>{hlId=null}).observe($("monthView"),{childList:true});
+new MutationObserver(()=>requestAnimationFrame(fitMonth)).observe($("monthView"),{childList:true,attributes:true,attributeFilter:["hidden"]});
+addEventListener("resize",fitMonth);
 /* ---------- 시작 ---------- */
 let timersOn=false;
 async function startApp(){
