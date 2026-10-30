@@ -1,6 +1,6 @@
 {
- "name": "고객품질팀 주간 업무",
- "short_name": "품질 주간업무",
+ "name": "주간업무",
+ "short_name": "주간업무",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
