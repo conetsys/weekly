@@ -481,6 +481,21 @@ td.wk .wdate{background:var(--surface)}
 .modal h2{margin:4px 0 2px;font-size:20px;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
 .ndate{font-size:12px;color:var(--muted);margin-bottom:12px}
 .nbody{font-size:14.5px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;border-top:1px solid var(--line);padding-top:12px}
+.nbody.fmt{white-space:normal}
+.nbody.fmt p{margin:0 0 8px}
+.nbody.fmt a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.nbody.fmt ul{margin:4px 0 0;padding-left:18px}
+.nbody.fmt li{margin:2px 0}
+.nbody.fmt li::marker{color:var(--accent)}
+.nsec{display:grid;grid-template-columns:28px 1fr;gap:10px;padding:12px 14px;margin:0 0 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
+.nsec .nn{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:13px;display:grid;place-items:center;margin-top:1px}
+.nsec h4{margin:0 0 4px;font-size:15px;font-weight:700;line-height:1.5}
+.nsec .nc>*:last-child{margin-bottom:0}
+.nsec .nc p{margin:0 0 4px;color:var(--ink-2,inherit)}
+.nend{margin-top:12px;color:var(--muted);font-size:13.5px}
+.neprev{margin-top:8px;border:1px dashed var(--line);border-radius:10px;padding:10px 12px;max-height:260px;overflow:auto}
+.neprev .nbody{border-top:0;padding-top:0}
+.neprev-h{font-size:12px;color:var(--muted);margin-top:10px}
 .nempty{padding:24px 0;text-align:center;color:var(--muted)}
 .nboard{margin-top:10px;border-top:2px solid var(--fg)}
 .nrow{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;padding:11px 4px;text-align:left;font:inherit;color:inherit;cursor:pointer}
@@ -903,7 +918,8 @@ td.wk .wdate{background:var(--surface)}
       <div class="fsec-h"><span class="fnum">1</span><b id="secCommon">공통 정보</b><span class="fsub">어떤 일인지</span></div>
       <fieldset>
         <div class="f"><label for="f-owner">담당자 <i>*</i></label><select id="f-owner"></select></div>
-        <div class="f"><label for="f-customer">고객사 <i>*</i></label><select id="f-customer"></select></div>
+        <div class="f"><label for="f-customer">고객사 <i>*</i></label><select id="f-customer"></select>
+          <input id="f-customer-new" autocomplete="off" placeholder="새 고객사 이름" hidden aria-label="새 고객사 이름"></div>
         <div class="f"><label for="f-project">대상사업 <i>*</i></label><input id="f-project" list="dl-project" autocomplete="off" placeholder="눌러서 고르거나 새로 쓰기"></div>
         <div class="f"><label for="f-part">품목</label><input id="f-part" list="dl-part" autocomplete="off" placeholder="예: 기구물"></div>
         <div class="f"><label for="f-po">관리번호</label><input id="f-po" class="mono" autocomplete="off" placeholder="발주번호·클레임번호 등"></div>
@@ -911,7 +927,7 @@ td.wk .wdate{background:var(--surface)}
           <input id="f-vendor-new" autocomplete="off" placeholder="새 협력사 이름" hidden aria-label="새 협력사 이름"></div>
         <div class="f"><label for="f-cat">구분 <i>*</i></label><select id="f-cat"></select>
           <input id="f-cat-new" autocomplete="off" placeholder="새 구분 이름" hidden aria-label="새 구분 이름"></div>
-        <p class="hint">대상사업·협력사가 목록에 없으면 새로 쓰세요. 저장할 때 내 목록에도 추가돼요.</p>
+        <p class="hint">고객사·대상사업·협력사·구분이 목록에 없으면 새로 쓰거나 '+ 새 …'를 고르세요. 저장할 때 목록 관리에도 추가돼요.</p>
       </fieldset>
     </section>
     <section class="fsec fsec-cur" aria-labelledby="wLegend">
@@ -1020,7 +1036,8 @@ td.wk .wdate{background:var(--surface)}
     <div class="f" style="margin-bottom:10px"><label for="ne-scope">공지 종류</label><select id="ne-scope"></select></div>
     <div class="nepick"><label for="ne-pick" class="sr">편집할 공지</label><select id="ne-pick"></select></div>
     <div class="f"><label for="ne-title">제목 <i>*</i></label><input id="ne-title" autocomplete="off" placeholder="예: 10월 마감 일정 안내"></div>
-    <div class="f" style="margin-top:12px"><label for="ne-body">내용 <i>*</i></label><textarea id="ne-body" rows="8" placeholder="팀원들에게 알릴 내용을 적어주세요. 줄바꿈은 그대로 보여요."></textarea></div>
+    <div class="f" style="margin-top:12px"><label for="ne-body">내용 <i>*</i></label><textarea id="ne-body" rows="10" placeholder="팀원들에게 알릴 내용을 적어주세요.&#10;&#10;1. 제목   → 번호 카드로 보여요&#10;- 항목   → 점 목록으로 보여요&#10;**굵게** → 굵은 글씨, 주소는 자동으로 링크가 돼요"></textarea>
+          <div class="neprev-h">미리보기 · <b>1.</b> 제목 / <b>-</b> 항목 / <b>**굵게**</b></div><div class="neprev"><div class="nbody fmt" id="ne-prev"></div></div></div>
     <label class="nhide" style="margin-top:12px"><input type="checkbox" id="ne-pop" checked> 접속할 때 팝업으로 띄우기</label>
     <p class="hint" style="margin:6px 0 0" id="neHint"></p>
     <p class="err" id="neErr" hidden></p>
@@ -1145,7 +1162,7 @@ td.wk .wdate{background:var(--surface)}
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const APP_VERSION = "2.4";
+const APP_VERSION = "2.6";
 // 화면 제목: {앱} = 앱 이름, {팀} = 지금 보고 있는 팀 이름 (팀 이름은 관리 → 팀에서 바꿔요)
 const APP_TITLE = "주간업무";
 // 로그인 화면에서 아이디 뒤에 자동으로 붙는 회사 메일 주소
@@ -1653,6 +1670,8 @@ function openDrawer(id,presetOwner,focusNext){
   fillSelect($("f-owner"),[ow],ow);$("f-owner").disabled=true;
   const custs=[...new Set([...st.lists.customers,it?.customer].filter(Boolean))];
   fillSelect($("f-customer"),custs,it?.customer||custs[0]);
+  $("f-customer").insertAdjacentHTML("beforeend",'<option value="__new">+ 새 고객사…</option>');$("f-customer").value=it?.customer||custs[0];
+  $("f-customer-new").hidden=true;$("f-customer-new").value="";
   $("f-project").value=it?.project||"";$("f-part").value=it?.part||"";$("f-po").value=it?.po||"";
   fillVendor(it&&it.vendor!=="확인 필요"?it.vendor||"":"");
   fillCat(it?.category||catsList()[0]);
@@ -1744,13 +1763,14 @@ async function save(){
   if(st.editing==="__new"&&!canAddHere())return;
   const W=st.week;
   const vSel=$("f-vendor").value,isNewVendor=vSel==="__new";
-  const v={owner:st.editing==="__new"?st.me.name:(st.items.find(i=>i._id===st.editing)||{}).owner,customer:$("f-customer").value,project:$("f-project").value.trim(),part:$("f-part").value.trim(),po:$("f-po").value.trim(),vendor:(isNewVendor?$("f-vendor-new").value:vSel).trim(),category:($("f-cat").value==="__new"?$("f-cat-new").value:$("f-cat").value).trim()};
+  const v={owner:st.editing==="__new"?st.me.name:(st.items.find(i=>i._id===st.editing)||{}).owner,customer:($("f-customer").value==="__new"?$("f-customer-new").value:$("f-customer").value).trim(),project:$("f-project").value.trim(),part:$("f-part").value.trim(),po:$("f-po").value.trim(),vendor:(isNewVendor?$("f-vendor-new").value:vSel).trim(),category:($("f-cat").value==="__new"?$("f-cat-new").value:$("f-cat").value).trim()};
   const task=$("w-task").value.trim(),due=$("w-due").value,memo=$("w-memo").value.trim();
   const status=(document.querySelector('input[name="w-status"]:checked')||{}).value||"진행";
   const errs=[],bad=[];
   if(!v.project){errs.push("대상사업");bad.push("f-project")}
   if(isNewVendor&&!v.vendor){errs.push("새 협력사 이름");bad.push("f-vendor-new")}
   if(!v.category){errs.push("새 구분 이름");bad.push("f-cat-new")}
+  if(!v.customer){errs.push("새 고객사 이름");bad.push("f-customer-new")}
   const isNew=st.editing==="__new";
   const existing=isNew?null:st.items.find(i=>i._id===st.editing);
   const N=nextKey(W);
@@ -1772,10 +1792,11 @@ async function save(){
   try{
     const ref=isNew?st.db.collection("items").doc():st.db.doc("items/"+existing._id);
     await ref.set(body);
-    const addV=v.vendor&&!(st.lists.vendors||[]).includes(v.vendor),addC=v.category&&!catsList().includes(v.category),addP=v.project&&!(st.lists.projects||[]).includes(v.project);
-    if(addV||addC||addP){
+    const addV=v.vendor&&!(st.lists.vendors||[]).includes(v.vendor),addC=v.category&&!catsList().includes(v.category),addP=v.project&&!(st.lists.projects||[]).includes(v.project),addU=v.customer&&!(st.lists.customers||[]).includes(v.customer);
+    if(addV||addC||addP||addU){
       const nl=Object.assign({},st.lists,{cats:[...catsList()]});
       if(addP)nl.projects=[...(st.lists.projects||[]),v.project];
+      if(addU)nl.customers=[...(st.lists.customers||[]),v.customer];
       if(addV)nl.vendors=[...(st.lists.vendors||[]),v.vendor];
       if(addC)nl.cats=[...nl.cats,v.category];
       try{await st.db.doc("config/lists").set(nl)}catch(_){}
@@ -2012,6 +2033,7 @@ function addOnDay(k){
 }
 document.addEventListener("mousedown",e=>{if(st.mPop&&!e.target.closest(".mpop")&&!e.target.closest("[data-more]")&&!e.target.closest("#sumDrawer")&&!e.target.closest("#drawer"))closeMpop()});
 $("calView").onclick=e=>{const a=e.target.closest("[data-add]");if(a){if(canAddHere())openDrawer(null,st.me.name);return}const b=e.target.closest("[data-id]");if(b)openSummary(b.dataset.id)};
+$("f-customer").onchange=e=>{const n=e.target.value==="__new";$("f-customer-new").hidden=!n;if(n)$("f-customer-new").focus()};
 $("f-cat").onchange=e=>{const n=e.target.value==="__new";$("f-cat-new").hidden=!n;if(n)$("f-cat-new").focus()};
 $("f-vendor").onchange=e=>{const n=e.target.value==="__new";$("f-vendor-new").hidden=!n;if(n)$("f-vendor-new").focus()};
 $("sTabs").onclick=e=>{const b=e.target.closest("[data-list]");if(!b)return;sTab=b.dataset.list;renderSettings()};
@@ -2301,7 +2323,7 @@ function fillNotice(){
   const n=ntQ[ntI],ok=!!n;
   $("ntView").hidden=!ok;$("ntEmpty").hidden=ok;$("ntHideWrap").hidden=!ok||!ntPopup;
   if(ok){$("ntTitle").textContent=n.title;
-    $("ntBody").textContent=n.body||"";$("ntDate").textContent=fmtDT(n.createdAt)+" 게시"+(n.updatedAt&&n.createdAt&&n.updatedAt.slice(0,16)!==n.createdAt.slice(0,16)?` · ${fmtDT(n.updatedAt)} 수정`:"");
+    $("ntBody").className="nbody fmt";$("ntBody").innerHTML=fmtNotice(n.body||"");$("ntDate").textContent=fmtDT(n.createdAt)+" 게시"+(n.updatedAt&&n.createdAt&&n.updatedAt.slice(0,16)!==n.createdAt.slice(0,16)?` · ${fmtDT(n.updatedAt)} 수정`:"");
     $("ntNew").hidden=seenSet().has(n.id);if(!ntPopup){markSeen(n.id);paintNoticeDot()}}
   const many=ntQ.length>1;$("ntNav").hidden=!many;$("ntPos").textContent=`${ntI+1} / ${ntQ.length}`;
   $("ntPrev").disabled=ntI===0;$("ntNext").disabled=ntI>=ntQ.length-1;
@@ -2311,6 +2333,31 @@ function fillNotice(){
   $("ntHide").checked=false;
 }
 // list 를 주면 그 공지들을 차례로(팝업), 없으면 게시판
+function fmtInline(t){
+  let h=esc(t);
+  h=h.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+  h=h.replace(/(https?:\/\/[^\s<]+[^\s<.,)])/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+  return h;
+}
+function fmtNotice(body){
+  const lines=String(body||"").replace(/\r/g,"").split("\n");
+  let out="",sec=null,list=null,para=[],gap=false;
+  const flushP=()=>{if(para.length){const h=(sec?"<p>":'<p class="nend">')+para.map(fmtInline).join("<br>")+"</p>";if(sec)sec.c+=h;else out+=h;para=[]}};
+  const flushL=()=>{if(list){const h="<ul>"+list.map(x=>"<li>"+fmtInline(x)+"</li>").join("")+"</ul>";if(sec)sec.c+=h;else out+=h;list=null}};
+  const flushS=()=>{flushP();flushL();if(sec){out+=`<div class="nsec"><span class="nn">${esc(sec.n)}</span><div class="nc"><h4>${fmtInline(sec.t)}</h4>${sec.c}</div></div>`;sec=null}};
+  for(const raw of lines){
+    const l=raw.trim();
+    let m;
+    if(!l){flushP();flushL();gap=true;continue}
+    if((m=l.match(/^(\d{1,2})[.)]\s+(.+)$/))){flushS();sec={n:m[1],t:m[2].replace(/^\*\*(.+)\*\*$/,"$1"),c:""};gap=false;continue}
+    if((m=l.match(/^[-•·*]\s+(.+)$/))){flushP();(list=list||[]).push(m[1]);gap=false;continue}
+    if(gap&&sec&&sec.c){flushS()}
+    gap=false;flushL();
+    para.push(l);
+  }
+  flushS();
+  return out;
+}
 function openNotice(list,popup){
   ntPopup=!!popup;ntQ=Array.isArray(list)?list:activeNotices(ntScope);ntI=0;ntMode=popup?"view":"board";
   fillNotice();$("noticeEdit").hidden=true;$("mscrim").hidden=false;$("noticeModal").hidden=false;setTimeout(()=>$("ntOk").focus(),30)}
@@ -2340,7 +2387,7 @@ function fillNoticeForm(pick){
   $("ne-pick").innerHTML=`<option value="">+ 새 공지 쓰기</option>`+act.map(n=>`<option value="${esc(n.id)}">${esc(fmtDT(n.createdAt).slice(5,10))} · ${esc(n.title)}</option>`).join("");
   $("ne-pick").value=neEditId;
   const n=act.find(x=>x.id===neEditId);
-  $("ne-title").value=n?n.title:"";$("ne-body").value=n?(n.body||""):"";
+  $("ne-title").value=n?n.title:"";$("ne-body").value=n?(n.body||""):"";$("ne-prev").innerHTML=fmtNotice($("ne-body").value);
   $("ne-pop").checked=n?n.popup!==false:true;$("neRemove").hidden=!n;
   $("neSave").textContent=n?"수정 저장":"게시";
   $("neHint").textContent=n?"고친 내용은 바로 반영돼요. 이미 읽은 사람에게 다시 팝업으로 뜨지는 않아요.":sc==="all"?"모든 사람에게 보여요. 안 읽은 사람에게는 접속할 때 팝업으로 떠요.":`${teamName(sc)} 사람에게만 보여요. 안 읽은 사람에게는 접속할 때 팝업으로 떠요.`;
@@ -2355,6 +2402,7 @@ $("ntBack").onclick=()=>{leaveCurrent();ntPopup=false;ntMode="board";fillNotice(
 $("ntPrev").onclick=()=>stepNotice(-1);$("ntNext").onclick=()=>stepNotice(1);
 $("ntOk").onclick=()=>{if(ntPopup&&ntI<ntQ.length-1)stepNotice(1);else closeNotice()};$("ntClose").onclick=closeNotice;
 $("ntAdmin").onclick=openNoticeEdit;
+$("ne-body").addEventListener("input",()=>{$("ne-prev").innerHTML=fmtNotice($("ne-body").value)});
 $("neClose").onclick=closeNotice;$("neCancel").onclick=closeNotice;
 $("mscrim").onclick=closeNotice;
 $("neForm").addEventListener("submit",async e=>{
