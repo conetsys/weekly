@@ -819,6 +819,69 @@ td.wk .wdate{background:var(--surface)}
 #monthView .mitem.hl{border-color:var(--c);background:var(--b)}
 </style>
 
+<style>
+.lvwrap{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow-x:auto}
+.lvt{width:100%;min-width:880px!important;table-layout:auto!important;border-collapse:collapse;font-size:13.5px}
+.lvt thead th{position:sticky;top:0;background:var(--surface);font-size:12px;font-weight:600;color:var(--muted);text-align:left;padding:9px 10px;border-bottom:2px solid var(--line-strong);white-space:nowrap}
+.lvt td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.lvt td+td,.lvt th+th{border-left:1px solid var(--line)}
+.lvt .c-ck{width:40px;padding:2px 4px;text-align:center}
+.lvt .c-cat{width:1%;white-space:nowrap;text-align:center}
+.lvt .c-cat .cat{display:inline-block;min-width:48px;text-align:center;padding:3px 8px;font-size:12px;font-weight:400;border-radius:5px;background:var(--surface-2);border:1px solid var(--line);color:var(--fg)}
+.lvt .c-task{font-weight:700;min-width:220px;overflow-wrap:anywhere}
+.lvt .c-proj{white-space:nowrap;font-weight:400}
+.lvt .c-cust,.lvt .c-part{color:var(--muted);white-space:nowrap}
+.lvt .c-due{white-space:nowrap;font-family:var(--font-mono);color:var(--muted);width:1%;font-size:12.5px}
+.lvt .c-due.late{color:var(--danger)}.lvt .c-due.today{color:var(--accent)}
+.lvt .c-st{white-space:nowrap;width:1%}
+.lvt .c-own{white-space:nowrap;font-weight:400;width:1%}
+.lvt .c-own .pdot{margin-right:5px;width:8px;height:8px}
+.lvt tr.lv-row{cursor:pointer}
+.lvt tr.lv-row:hover td{background:var(--week)}
+.lvt tr.lv-row.done td{color:var(--muted)}
+.lvt tr.lv-row.done .c-task{text-decoration:line-through}
+.lvt tr.lv-row.done .cat{opacity:.6}
+.lvt tr.lv-gr td{background:var(--surface-2);padding:0;border-left:0}
+.lv-gh{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:13px;font-weight:700;width:100%;border:0;background:transparent;text-align:left;color:var(--fg);font-family:inherit}
+.lv-gh .n{font-family:var(--font-mono);font-weight:500;color:var(--muted)}
+.lv-gh.late{color:var(--danger)}.lv-gh.today{color:var(--accent)}
+.lv-gh.tog{cursor:pointer}.lv-gh.tog:hover{background:var(--line)}
+.lv-gh .car{margin-left:auto;font-weight:500;color:var(--muted);font-size:12px}
+.lv-ck{width:32px;height:32px;display:grid;place-items:center;border:0;background:transparent;cursor:pointer;padding:0;margin:auto}
+.lv-ck i{width:18px;height:18px;border:2px solid var(--line-strong);border-radius:5px;display:grid;place-items:center;font-style:normal;font-size:12px;color:transparent;background:var(--surface);transition:background .12s,border-color .12s}
+.lv-ck:hover i{border-color:var(--accent)}
+.lv-ck.on i{background:var(--done);border-color:var(--done);color:#fff}
+.lv-ck:disabled{cursor:default}.lv-ck:disabled i{border-style:dashed;opacity:.6}
+.lv-plan{font-size:11px;color:var(--muted)}
+.lv-st{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:999px;margin-right:3px}
+.lv-st.prog{background:var(--prog-bg);color:var(--prog)}.lv-st.wait{background:var(--wait-bg);color:var(--wait)}.lv-st.done{background:var(--done-bg);color:var(--done)}.lv-st.carry{background:var(--need-bg);color:var(--need)}.lv-st.plan{background:var(--surface-2);color:var(--muted)}
+.lv-top{display:flex;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap}
+.lvt .c-drag{width:26px;padding:0 0 0 4px;text-align:center}
+.lv-hd{display:inline-grid;place-items:center;width:22px;height:30px;cursor:grab;color:var(--line-strong);font-size:16px;touch-action:none;user-select:none;border-radius:4px}
+.lv-hd:hover{color:var(--accent);background:var(--surface-2)}
+.lvt tr.lv-row td{transition:background .15s}
+.lvt tr.lv-dragging{position:relative;z-index:3}
+.lvt tr.lv-dragging td{background:var(--surface)!important}
+.lvt tr.lv-lift{filter:drop-shadow(0 10px 18px rgba(20,30,40,.18)) drop-shadow(0 2px 4px rgba(20,30,40,.10))}
+.lvt tr.lv-lift td{background:var(--week)!important}
+.lvt tr.lv-dragging .lv-hd{cursor:grabbing;color:var(--accent);background:var(--accent-soft)}
+body.lv-grabbing,body.lv-grabbing *{cursor:grabbing!important;user-select:none}
+.lv-hd{transition:color .15s,background .15s}
+.lv-reset{border:0;background:transparent;color:var(--accent);text-decoration:underline;font:inherit;font-size:inherit;cursor:pointer;padding:0}
+.lv-sum{display:flex;gap:6px}
+.lv-sort{display:inline-flex;align-items:center;gap:2px;background:var(--surface-2);border-radius:8px;padding:3px;flex-wrap:wrap}
+.lv-sort .dlab{font-size:12px;color:var(--muted);padding:0 6px}
+.lv-sort button{border:0;background:transparent;font:inherit;font-size:12.5px;padding:5px 10px;border-radius:6px;cursor:pointer;color:var(--fg)}
+.lv-sort button[aria-pressed="true"]{background:var(--surface);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.lv-sh{border:0;background:transparent;font:inherit;font-weight:600;color:inherit;padding:0;cursor:pointer;display:inline-flex;gap:4px;align-items:center;white-space:nowrap}
+.lv-sh .ar{font-size:10px;opacity:.45}.lvt th.on{color:var(--accent)}.lvt th.on .ar{opacity:1}
+.lv-f{display:inline-block;font-size:11.5px;font-weight:400;padding:1px 7px;border-radius:999px;white-space:nowrap;font-family:var(--font-body)}
+.lv-f.late{background:var(--danger-bg);color:var(--danger)}.lv-f.today{background:var(--accent-soft);color:var(--accent)}
+.lv-f.week{background:transparent;color:var(--muted);font-weight:500;padding-left:0}.lv-f.next{background:var(--surface-2);color:var(--muted)}.lv-f.done{background:var(--done-bg);color:var(--done)}
+.lvt .c-due .dd{margin-right:6px}
+.lv-empty{padding:40px 16px;text-align:center;color:var(--muted);line-height:1.7;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+@media (max-width:640px){.lvt{min-width:600px!important}.lvt .c-cust,.lvt .c-part{display:none}}
+</style>
 <style>html,body{margin:0}[hidden]{display:none!important}</style>
 </head>
 <body>
@@ -864,8 +927,9 @@ td.wk .wdate{background:var(--surface)}
       <div id="summary" style="display:flex;flex-wrap:wrap;gap:8px"></div>
       <span class="spacer"></span>
       <div class="donemode viewmode" role="group" aria-label="보기 방식">
-        <button type="button" data-layout="table">▤ 표로 보기</button>
         <button type="button" data-layout="month">▦ 캘린더로 보기</button>
+        <button type="button" data-layout="table">▤ 표로 보기</button>
+        <button type="button" data-layout="list">☰ 목록으로 보기</button>
         <button type="button" data-layout="gantt" id="ganttBtn" hidden>3주 일정</button>
       </div>
       <div class="donemode" id="doneMode" role="group" aria-label="끝난 일 표시">
@@ -882,6 +946,7 @@ td.wk .wdate{background:var(--surface)}
     </div>
     <div class="tablebox calbox" id="calView" hidden></div>
     <div class="monthwrap" id="monthView" hidden></div>
+    <div id="listView" hidden></div>
     <div class="tablebox" id="tableView">
       <table id="tbl">
         <colgroup><col class="c-work"><col class="c-prev"><col class="c-cur"><col class="c-next"></colgroup>
@@ -1162,7 +1227,7 @@ td.wk .wdate{background:var(--surface)}
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const APP_VERSION = "2.7";
+const APP_VERSION = "2.8";
 // 화면 제목: {앱} = 앱 이름, {팀} = 지금 보고 있는 팀 이름 (팀 이름은 관리 → 팀에서 바꿔요)
 const APP_TITLE = "주간업무";
 // 로그인 화면에서 아이디 뒤에 자동으로 붙는 회사 메일 주소
@@ -1210,7 +1275,7 @@ const nextKey=k=>keyOf(addDays(parseKey(k),7));
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 
 const st={items:[],loaded:false,lists:DEFAULT_LISTS,week:CUR,owner:store.get("wk-owner")||"전체",cat:"전체",cust:"전체",status:null,q:"",
-  view:store.get("wk-view")==="review"?"review":"write",moreOpen:false,layout:(v=>v==="cal"||v==="month"?"month":v==="gantt"?"gantt":"table")(store.get("wk-layout")),month:null,mSel:null,doneMode:["hide","recent","all"].includes(store.get("wk-done"))?store.get("wk-done"):(store.get("wk-alldone")==="1"?"all":"recent"),canWrite:true,db:null,editing:null,popFor:null,me:null,team:null,teams:[],people:[]};
+  view:store.get("wk-view")==="review"?"review":"write",moreOpen:false,layout:(v=>v==="cal"||v==="month"?"month":v==="gantt"?"gantt":v==="list"?"list":"table")(store.get("wk-layout")),month:null,mSel:null,doneMode:["hide","recent","all"].includes(store.get("wk-done"))?store.get("wk-done"):(store.get("wk-alldone")==="1"?"all":"recent"),canWrite:true,db:null,editing:null,popFor:null,me:null,team:null,teams:[],people:[]};
 const isMine=it=>!!it&&!!st.me&&it._email===st.me.email;
 const isMineId=id=>isMine(st.items.find(i=>i._id===id));
 const canAddHere=()=>!!st.me&&st.team===st.me.team_id;
@@ -1317,10 +1382,12 @@ function render(){
   if(st.layout==="gantt"&&!SHOW_GANTT)st.layout="month";
   $("ganttBtn").hidden=!SHOW_GANTT;
   document.querySelectorAll("[data-layout]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.layout===st.layout));
-  $("tableView").hidden=st.layout!=="table";$("calView").hidden=st.layout!=="gantt";$("monthView").hidden=st.layout!=="month";
+  $("tableView").hidden=st.layout!=="table";$("calView").hidden=st.layout!=="gantt";$("monthView").hidden=st.layout!=="month";$("listView").hidden=st.layout!=="list";
+
   $("weekNav").hidden=st.layout==="month";
   if(st.layout==="gantt"){renderCal(rows,shown,groups);return}
   if(st.layout==="month"){renderMonth();return}
+  if(st.layout==="list"){renderList(rows);return}
   let html="";const pc=personColors();
   for(const o of groups){
     const rs=rows.filter(r=>r.it.owner===o);
@@ -2231,7 +2298,7 @@ const dbShim={
   doc(path){const [c,id]=path.split("/");return {
     async set(data){
       if(c==="items"){const isNew=!st.items.some(i=>i._id===id);await api.setItem(id,stripPriv(data),isNew)}
-      else{const l={projects:data.projects||st.lists.projects||[],customers:data.customers||st.lists.customers,vendors:data.vendors||st.lists.vendors,cats:data.cats||st.lists.cats};await api.setPrefs(null,l);if(st.me)st.me.my_lists=l}
+      else{const l={projects:data.projects||st.lists.projects||[],customers:data.customers||st.lists.customers,vendors:data.vendors||st.lists.vendors,cats:data.cats||st.lists.cats};if(st.me&&st.me.my_lists&&Array.isArray(st.me.my_lists.order))l.order=st.me.my_lists.order;await api.setPrefs(null,l);if(st.me)st.me.my_lists=l}
       refreshSoon()},
     async delete(){await api.delItem(id);refreshSoon()},
     async update(patch){const it=st.items.find(i=>i._id===id);if(!it)return;await api.setItem(id,stripPriv(Object.assign({},it,patch)),false);refreshSoon()}
@@ -2993,6 +3060,130 @@ async function startApp(){
     setInterval(()=>{if(document.visibilityState==="visible")refresh()},15000);
     document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")refresh()});}
 }
+
+/* ---------- 목록 보기: 한 업무 한 줄, 기한 순. 체크하면 '완료' ---------- */
+let lvSort={key:"",dir:1};
+const LV_SORTS=[["","기본 순서"],["due","기한"],["flag","일정 상태"],["cat","구분"],["proj","대상사업"],["cust","고객사"],["own","담당"]];
+function renderList(rows){
+  const W=st.week,N=nextKey(W),isCur=W===CUR,pc=personColors(),all=st.owner==="전체";
+  const canDrag=!lvSort.key;
+  const myOrd=(st.me&&st.me.my_lists&&Array.isArray(st.me.my_lists.order))?st.me.my_lists.order:[];
+  const list=[];let i=0;
+  for(const r of rows){
+    if(r.cur)list.push({r,e:r.cur,k:"cur",i:i++});
+    if(r.nxt&&!r.nxt.carried)list.push({r,e:r.nxt,k:"nxt",i:i++});
+  }
+  if(myOrd.length){const pos=new Map(lvKeys(myOrd).map((key,k)=>[key,k]));
+    list.sort((a,b)=>{const A=pos.get(a.r.it._id+"|"+a.k)??1e6+a.i,B=pos.get(b.r.it._id+"|"+b.k)??1e6+b.i;return A-B});list.forEach((x,k)=>x.i=k)}
+  // 일정 상태: 0 기한 지남, 1 오늘까지, 2 이번주, 3 다음주 계획, 4 완료
+  const flagOf=x=>{const e=x.e;if(x.k==="nxt")return 3;if(e.status==="완료")return 4;if(isCur&&e.due&&e.due<todayKey)return 0;if(isCur&&e.due===todayKey)return 1;return 2};
+  list.forEach(x=>x.f=flagOf(x));
+  const FL=[["late","기한 지남"],["today","오늘까지"],["week",isCur?"이번주":"이 주"],["next",isCur?"다음주 계획":"다음 주 계획"],["done","완료"]];
+  const stRank={대기:0,진행:1,완료:2};
+  const val={due:x=>x.e.due||"9999",flag:x=>x.f,cat:x=>x.r.it.category||"",proj:x=>x.r.it.project||"",cust:x=>x.r.it.customer||"",own:x=>x.r.it.owner||"",task:x=>x.e.task||"",part:x=>x.r.it.part||"",st:x=>x.k==="nxt"?3:stRank[x.e.status]??1};
+  if(lvSort.key&&val[lvSort.key]){const f=val[lvSort.key],d=lvSort.dir;
+    list.sort((a,b)=>{const A=f(a),B=f(b);const c=typeof A==="number"?A-B:String(A).localeCompare(String(B),"ko");return c*d||(a.e.due||"9999").localeCompare(b.e.due||"9999")||a.i-b.i})}
+  const line=x=>{const {r,e,k}=x;
+    const it=r.it,mine=isMine(it),done=x.f===4;
+    const ck=k==="nxt"?`<span class="lv-plan">계획</span>`
+      :`<button type="button" class="lv-ck${done?" on":""}" data-lvck="${esc(it._id)}" ${mine?"":"disabled"} aria-pressed="${done}" aria-label="${esc(e.task)} ${done?"완료 취소":"완료로 표시"}" title="${mine?(done?"체크를 풀면 '진행'으로 돌아가요":"체크하면 '완료'가 돼요"):"담당자 본인만 체크할 수 있어요"}"><i>✓</i></button>`;
+    const stc={진행:"prog",대기:"wait",완료:"done"}[e.status]||"prog";
+    const stHtml=(e.carried?'<span class="lv-st carry">이월</span>':"")+(k==="nxt"?"":`<span class="lv-st ${stc}">${esc(e.status||"진행")}</span>`);
+    const [fc,fl]=FL[x.f];
+    return `<tr class="lv-row${done?" done":""}" data-lvopen="${esc(it._id)}" data-lvkey="${esc(it._id+"|"+k)}" tabindex="0">${canDrag?`<td class="c-drag"><span class="lv-hd" data-lvdrag="1" title="끌어서 순서 바꾸기" aria-label="끌어서 순서 바꾸기">⠿</span></td>`:""}
+      <td class="c-cat"><span class="cat">${esc(it.category||"-")}</span></td>
+      <td class="c-task">${esc(e.task)}</td>
+      <td class="c-proj">${esc(it.project||"")}</td><td class="c-cust">${esc(it.customer||"")}</td><td class="c-part">${esc(it.part||"")}</td>
+      <td class="c-due">${e.due?`<span class="dd">~${esc(shortDate(e.due))}</span>`:""}<span class="lv-f ${fc}">${fl}</span></td>
+      <td class="c-st">${stHtml}</td>
+      ${all?`<td class="c-own"><i class="pdot" style="background:var(--pc${pcol(pc,it.owner)})"></i>${esc(it.owner||"")}</td>`:""}<td class="c-ck">${ck}</td></tr>`;
+  };
+  const th=(key,label,cls)=>{const on=lvSort.key===key;return `<th class="${cls||""}${on?" on":""}"><button type="button" class="lv-sh" data-lvsort="${key}" aria-sort="${on?(lvSort.dir>0?"ascending":"descending"):"none"}">${label}<span class="ar">${on?(lvSort.dir>0?"▲":"▼"):"↕"}</span></button></th>`};
+  const head=`<thead><tr>${canDrag?'<th class="c-drag" title="⠿를 끌어서 내 순서를 정할 수 있어요"></th>':""}${th("cat","구분","c-cat")}${th("task","할 일")}${th("proj","대상사업")}${th("cust","고객사","c-cust")}${th("part","품목","c-part")}${th("due","기한","c-due")}${th("st","상태")}${all?th("own","담당"):""}<th class="c-ck">완료</th></tr></thead>`;
+  const cnt=[0,0,0,0,0];list.forEach(x=>cnt[x.f]++);
+  const sortBar=`<div class="lv-sort" role="group" aria-label="정렬"><span class="dlab">정렬</span>${LV_SORTS.map(([k,l])=>`<button type="button" data-lvsort="${k}" aria-pressed="${lvSort.key===k}">${l}${lvSort.key===k&&k?(lvSort.dir>0?" ▲":" ▼"):""}</button>`).join("")}</div>`;
+  const sum=`<span class="lv-sum">${cnt[0]?`<span class="lv-f late">기한 지남 ${cnt[0]}</span>`:""}${cnt[1]?`<span class="lv-f today">오늘까지 ${cnt[1]}</span>`:""}</span>`;
+  $("listView").innerHTML=`<div class="lv-top">${canAddHere()?`<button class="btn" type="button" data-lvadd="1">+ 업무 추가</button>`:""}${sum}<span class="spacer" style="flex:1"></span>${canDrag?`<span class="hint" style="margin:0">⠿를 끌어서 내 순서로 바꿀 수 있어요${myOrd.length?' · <button type="button" class="lv-reset" data-lvreset="1">순서 처음대로</button>':""}</span>`:""}${sortBar}</div>`
+    +(list.length?`<div class="lvwrap"><table class="lvt">${head}<tbody>${list.map(line).join("")}</tbody></table></div>`:`<div class="lv-empty"><b>이 주에 할 일이 없어요</b><br>'+ 업무 추가'로 새 업무를 써보세요.</div>`);
+}
+$("listView").addEventListener("click",e=>{
+  const ck=e.target.closest("[data-lvck]");
+  if(ck){e.stopPropagation();if(ck.disabled)return;const on=ck.classList.contains("on");quickStatus(ck.dataset.lvck,on?"진행":"완료");return}
+  if(e.target.closest("[data-lvreset]")){saveMyOrder([]);return}
+  if(e.target.closest("[data-lvdrag]")||lvDragJust)return;
+  const so=e.target.closest("[data-lvsort]");if(so){const k=so.dataset.lvsort;if(!k)lvSort={key:"",dir:1};else if(lvSort.key===k)lvSort.dir*=-1;else lvSort={key:k,dir:1};render();return}
+  if(e.target.closest("[data-lvadd]")){if(canAddHere())openDrawer(null,st.me.name);return}
+  const row=e.target.closest("[data-lvopen]");
+  if(row)openSummary(row.dataset.lvopen)
+});
+let lvDrag=null,lvDragJust=false;
+// 저장된 순서: 줄 단위("업무id|cur" 이번주 할 일, "업무id|nxt" 다음주 계획). 예전처럼 업무id만 있으면 두 줄로 풀어서 읽음
+const lvKeys=a=>a.flatMap(x=>String(x).includes("|")?[x]:[x+"|cur",x+"|nxt"]);
+async function saveMyOrder(order){
+  const prev=st.me.my_lists||null;
+  const l=Object.assign({},prev||{});if(order.length)l.order=order;else delete l.order;
+  st.me.my_lists=Object.keys(l).length?l:null;render();
+  try{await api.setPrefs(null,st.me.my_lists||{order:[]});if(!order.length)toast("처음 순서로 돌아왔어요")}catch(e){st.me.my_lists=prev;render();toast(errText(e))}
+}
+/* 부드럽게 끌기: 잡은 줄은 손가락을 따라오고, 나머지 줄은 미끄러지듯 자리를 비켜줌 */
+const lvReduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function lvFlip(rows,mutate){
+  const before=new Map(rows.map(r=>[r,r.getBoundingClientRect().top]));
+  mutate();
+  for(const r of rows){const d=before.get(r)-r.getBoundingClientRect().top;if(!d||lvReduce)continue;
+    r.style.transition="none";r.style.transform=`translateY(${d}px)`;r.getBoundingClientRect();
+    r.style.transition="transform .18s cubic-bezier(.2,.8,.2,1)";r.style.transform=""}
+}
+function lvFollow(){const d=lvDrag;if(!d)return;
+  d.group.forEach(r=>{r.style.transition="none";r.style.transform=""});
+  const top=d.group[0].getBoundingClientRect().top;const dy=d.y-d.grab-top;
+  d.group.forEach(r=>r.style.transform=`translateY(${dy}px)`);
+}
+function lvTick(){const d=lvDrag;if(!d)return;
+  const edge=70,vh=innerHeight;let v=0;if(d.y>vh-edge)v=Math.min(14,(d.y-(vh-edge))/4);else if(d.y<edge)v=-Math.min(14,(edge-d.y)/4);
+  if(v){scrollBy(0,v);lvPlace()}
+  d.raf=requestAnimationFrame(lvTick);
+}
+function lvPlace(){const d=lvDrag;if(!d)return;
+  const others=[...d.tb.querySelectorAll("tr.lv-row")].filter(r=>!d.group.includes(r));
+  const mid=d.y-d.grab+d.h/2;let before=null;
+  for(const r of others){const b=r.getBoundingClientRect(),t=b.top-(parseFloat((r.style.transform.match(/-?[\d.]+/)||[0])[0])||0);if(mid<t+b.height/2){before=r;break}}
+  const cur=d.group[d.group.length-1].nextElementSibling;
+  if(before!==cur&&before!==d.group[0]){lvFlip(others,()=>d.group.forEach(r=>d.tb.insertBefore(r,before)));d.moved=true}
+  lvFollow();
+}
+$("listView").addEventListener("pointerdown",e=>{
+  const h=e.target.closest("[data-lvdrag]");if(!h||lvSort.key||e.button>0)return;
+  e.preventDefault();const tr=h.closest("tr");const tb=tr.parentElement;
+  const id=tr.dataset.lvkey;const group=[tr];
+  const top=group[0].getBoundingClientRect().top,bot=group[group.length-1].getBoundingClientRect().bottom;
+  group.forEach(r=>r.classList.add("lv-dragging","lv-lift"));document.body.classList.add("lv-grabbing");
+  lvDrag={id,group,tb,y:e.clientY,y0:e.clientY,grab:e.clientY-top,h:bot-top,moved:false,raf:0};
+  try{h.setPointerCapture(e.pointerId)}catch(_){}
+  lvDrag.raf=requestAnimationFrame(lvTick);
+});
+$("listView").addEventListener("pointermove",e=>{
+  const d=lvDrag;if(!d)return;d.y=e.clientY;if(Math.abs(d.y-d.y0)>3)d.moved=true;lvPlace();
+});
+function lvDrop(){
+  const d=lvDrag;if(!d)return;lvDrag=null;cancelAnimationFrame(d.raf);document.body.classList.remove("lv-grabbing");
+  d.group.forEach(r=>{r.style.transition=lvReduce?"none":"transform .2s cubic-bezier(.2,.8,.2,1)";r.style.transform="";r.classList.remove("lv-lift")});
+  setTimeout(()=>d.group.forEach(r=>r.classList.remove("lv-dragging")),lvReduce?0:220);
+  if(!d.moved)return;lvDragJust=true;setTimeout(()=>lvDragJust=false,50);
+  const vis=[...d.tb.querySelectorAll("tr.lv-row")].map(r=>r.dataset.lvkey);
+  const old=lvKeys((st.me.my_lists&&Array.isArray(st.me.my_lists.order))?st.me.my_lists.order:[]);
+  const has=x=>st.items.some(i=>i._id===x.split("|")[0]);
+  const nat=[];buildRows().forEach(r=>{nat.push(r.it._id+"|cur",r.it._id+"|nxt")});
+  const base=[...old.filter(has),...nat.filter(x=>!old.includes(x))];
+  const visSet=new Set(vis);let k=0;const full=base.map(x=>visSet.has(x)?vis[k++]:x);
+  vis.slice(k).forEach(x=>{if(!full.includes(x))full.push(x)});
+  // 내려앉는 움직임이 끝난 뒤 저장(다시 그리기)
+  setTimeout(()=>saveMyOrder([...new Set([...full,...old.filter(x=>!has(x))])].slice(0,800)),lvReduce?0:230);
+}
+$("listView").addEventListener("pointerup",lvDrop);
+$("listView").addEventListener("pointercancel",lvDrop);
+$("listView").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches("[data-lvopen]"))e.target.click()});
+
 $("localNote").hidden=CONFIGURED;
 (async()=>{
   try{const email=await api.sessionEmail();if(email){await afterLogin(email);return}}catch(_){}
