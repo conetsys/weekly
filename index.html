@@ -895,7 +895,7 @@ body.lv-grabbing,body.lv-grabbing *{cursor:grabbing!important;user-select:none}
 @media (max-width:640px){.lvt{min-width:600px!important}.lvt .c-cust,.lvt .c-part{display:none}}
 </style>
 <style>
-.top .actions #installBtn{order:1}.top .actions #copyReport{order:2}.top .actions #reportBtn{order:2}.top .actions #openSettings{order:3}.top .actions #noticeBtn{order:4}.top .actions #userBtn{order:5}
+.top .actions #installBtn{order:1}.top .actions #noticeBtn{order:2}.top .actions #reportBtn{order:3}.top .actions #copyReport{order:3}.top .actions #openSettings{order:4}.top .actions #userBtn{order:5}
 /* 2) 보기 바꾸기는 왼쪽 맨 앞, 끝난 일은 오른쪽, 숫자 요약은 아랫줄 */
 #writeView>.bar{display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"sum view done";row-gap:10px;column-gap:10px;align-items:start}
 .filters>.chips{flex:1 1 auto;min-width:0}
@@ -989,7 +989,7 @@ body.lv-grabbing,body.lv-grabbing *{cursor:grabbing!important;user-select:none}
       <button class="btn nbtn" id="noticeBtn" aria-label="공지사항"><span aria-hidden="true">📢</span> 공지<span class="ndot" id="noticeDot" hidden></span></button>
       <button class="btn" id="reportBtn" type="button" title="주간 업무 보고서 (보고용 체크·PPT 내보내기)">📝 보고서</button>
       <button class="btn" id="copyReport" hidden>보고용 복사</button>
-      <button class="btn" id="openSettings">목록 관리</button>
+      <button class="btn" id="openSettings">🗂️ 목록 관리</button>
       <button class="btn" id="userBtn" type="button" aria-haspopup="menu" aria-expanded="false"><span id="userName">나</span> ▾</button>
     </div>
   </div>
