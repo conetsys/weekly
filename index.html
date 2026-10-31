@@ -921,6 +921,8 @@ body.lv-grabbing,body.lv-grabbing *{cursor:grabbing!important;user-select:none}
 #writeView>.bar>.viewmode button,#writeView>.bar>#doneMode button{position:relative;z-index:1;transition:color .2s}
 #writeView>.bar>.viewmode button[aria-pressed="true"],#writeView>.bar>#doneMode button[aria-pressed="true"]{background:transparent!important;box-shadow:none!important}
 #writeView{position:relative;overflow-x:clip}
+/* 화면 오른쪽 스크롤바 자리를 늘 비워둠: 표(길다)→캘린더(짧다)로 바뀔 때 스크롤바가 사라지며 화면 전체가 옆으로 흔들리던 것 막기 */
+html{scrollbar-gutter:stable}
 .vghost{position:absolute!important;pointer-events:none;z-index:2;margin:0!important}
 @media (prefers-reduced-motion:reduce){.seg-ready .seg-ind{transition:none}}
 #summary .stat{padding:4px 10px}
@@ -1413,7 +1415,7 @@ body.lv-grabbing,body.lv-grabbing *{cursor:grabbing!important;user-select:none}
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const APP_VERSION = "2.16";
+const APP_VERSION = "2.17";
 // 화면 제목: {앱} = 앱 이름, {팀} = 지금 보고 있는 팀 이름 (팀 이름은 관리 → 팀에서 바꿔요)
 const APP_TITLE = "주간업무";
 // 로그인 화면에서 아이디 뒤에 자동으로 붙는 회사 메일 주소
