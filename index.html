@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap">
-<link rel="stylesheet" href="assets/3.5.0/app.css">
+<link rel="stylesheet" href="assets/3.5.1/app.css">
 
 </head>
 <body>
@@ -22,7 +22,6 @@
       <button class="tab" role="tab" id="tab-write" aria-selected="true">작성</button>
       <button class="tab" role="tab" id="tab-review" aria-selected="false">점검</button>
     </div>
-    <button class="btn admbtn" id="adminBtn" type="button" hidden>⚙ 관리</button>
     <div class="weeknav" id="weekNav" aria-label="주차 이동">
       <button class="btn icon" id="prevWeek" aria-label="이전 주">◀</button>
       <div class="label"><b id="weekTitle">이번주</b><span id="weekRange" class="mono"></span></div>
@@ -257,7 +256,7 @@
 <div class="umenu-pop" id="userMenu" hidden role="menu" aria-label="내 메뉴">
   <div class="umeta" id="userMeta"></div>
   <button type="button" role="menuitem" id="miPin">비밀번호 바꾸기</button>
-  <button type="button" role="menuitem" id="miAdmin" hidden>관리</button>
+  <button type="button" role="menuitem" id="miAdmin" hidden>⚙ 관리</button>
   <button type="button" role="menuitem" id="miLogout">로그아웃</button>
 </div>
 
@@ -383,15 +382,15 @@
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const APP_VERSION = "3.5.0";
+const APP_VERSION = "3.5.1";
 // 화면 제목: {앱} = 앱 이름, {팀} = 지금 보고 있는 팀 이름 (팀 이름은 관리 → 팀에서 바꿔요)
 const APP_TITLE = "Weekly Plan";
 // 로그인 화면에서 아이디 뒤에 자동으로 붙는 회사 메일 주소
 let MAIL_DOMAIN = "conet-sys.co.kr";
 const TITLE_FORMAT = "{앱} - {팀}";
 </script>
-<script>window.WK_BASE="assets/3.5.0/"</script>
-<script src="assets/3.5.0/core.js"></script>
+<script>window.WK_BASE="assets/3.5.1/"</script>
+<script src="assets/3.5.1/core.js"></script>
 
 </body>
 </html>
