@@ -1257,6 +1257,17 @@ body.ogdragging .ogeb,.oggh .ogeb{display:none}
 </style>
 <style>
 .rhythm h2 span{font-weight:400}
+.rhythm.none{border-top:3px solid var(--line-strong)}
+.rhythm h2{display:flex;align-items:center;gap:8px}.rhythm h2 .rback{margin-left:auto;font-size:12.5px;padding:4px 10px}
+.rteam{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line)}
+.rtsum{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:700;margin-right:8px;font-family:var(--font-mono)}
+.rtsum i,.rchip i{width:9px;height:9px;border-radius:50%;display:inline-block;background:var(--line-strong)}
+.rtsum i.red,.rchip.red i{background:#D64545}.rtsum i.yellow,.rchip.yellow i{background:#D9A400}.rtsum i.green,.rchip.green i{background:#0F9D8A}
+.rtsum i{margin-left:4px}
+.rchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:4px 10px;font:inherit;font-size:13px;color:var(--fg);cursor:pointer}
+.rchip small{font-family:var(--font-mono);font-size:11px;color:var(--muted)}.rchip:hover{border-color:var(--line-strong)}
+.rchip.red{border-color:color-mix(in srgb,#D64545 45%,var(--line))}.rchip.yellow{border-color:color-mix(in srgb,#D9A400 45%,var(--line))}
+
 .rhgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:0;align-items:stretch}
 .rcol{padding:14px 20px 16px;min-width:0}.rcol+.rcol{border-left:1px solid var(--line)}
 .rhadd{align-self:flex-start;margin-top:4px}
@@ -1659,7 +1670,7 @@ body.ogdragging .ogeb,.oggh .ogeb{display:none}
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const APP_VERSION = "3.2.0";
+const APP_VERSION = "3.3.0";
 // 화면 제목: {앱} = 앱 이름, {팀} = 지금 보고 있는 팀 이름 (팀 이름은 관리 → 팀에서 바꿔요)
 const APP_TITLE = "Weekly Plan";
 // 로그인 화면에서 아이디 뒤에 자동으로 붙는 회사 메일 주소
@@ -2499,7 +2510,7 @@ $("rows").onclick=e=>{
   const pl=e.target.closest("[data-plan]");if(pl){openDrawer(pl.dataset.plan,null,true);return}
   const tr=e.target.closest("tr[data-id]");if(tr)openSummary(tr.dataset.id)};
 $("rows").onkeydown=e=>{if(e.key==="Enter"&&e.target.matches("tr[data-id]"))openSummary(e.target.dataset.id)};
-$("reviewView").onclick=e=>{const ad=e.target.closest("[data-rhadd]");if(ad){st.view="write";store.set("wk-view","write");render();if(canAddHere())openDrawer(null,st.me.name);return}const b=e.target.closest("[data-id]");if(b)openSummary(b.dataset.id)};
+$("reviewView").onclick=e=>{const ad=e.target.closest("[data-rhadd]");const rw=e.target.closest("[data-rhwho]");if(rw){pickOwner(rw.dataset.rhwho);return}if(ad){st.view="write";store.set("wk-view","write");render();if(canAddHere())openDrawer(null,st.me.name);return}const b=e.target.closest("[data-id]");if(b)openSummary(b.dataset.id)};
 $("pop").onclick=e=>{const b=e.target.closest("[data-set]");if(b&&st.popFor)quickStatus(st.popFor,b.dataset.set)};
 document.addEventListener("click",e=>{if(!$("pop").hidden&&!e.target.closest("#pop")&&!e.target.closest("[data-qs]"))closePop();
   if(!$("vpop").hidden&&!e.target.closest("#vpop")&&!e.target.closest("[data-fixv]"))closeVpop()});
@@ -4545,9 +4556,29 @@ function wkStampDone(data,prev){
     if(x.status==="완료"){if(!x.done_at)x.done_at=(pe&&pe.status==="완료"&&pe.done_at)||todayKey}else delete x.done_at;out.weeks[k]=x});
   return out}
 /* ---------- 점검 → 내 리듬 (개인) ---------- */
+// 누구의 리듬을 볼지: 본인은 항상, 팀장은 내 팀원, 관리자는 모든 팀의 사람
+function rhCanSee(name){if(!st.me)return false;if(st.me.is_admin)return true;if(st.team!==st.me.team_id)return false;return name===st.me.name||st.me.role==="leader"}
 function myRhythmHtml(base){
-  if(!st.me||st.team!==st.me.team_id)return "";
-  const me=st.me.name,W=st.week,mine=st.items.filter(it=>it.owner===me);
+  if(!st.me)return "";
+  const self=st.team===st.me.team_id?st.me.name:null,boss=!!st.me.is_admin||(st.me.role==="leader"&&st.team===st.me.team_id);
+  const pick=st.owner&&st.owner!=="전체"?st.owner:null;
+  const who=pick?(rhCanSee(pick)?pick:null):self;
+  const strip=boss&&!pick?rhStrip(base):"";
+  if(!who)return strip?`<div class="panel rhythm none"><h2>팀원 리듬 <span>${esc(rangeOf(st.week))} · 이름을 누르면 그 사람의 리듬을 자세히 봐요</span></h2>${strip}</div>`:"";
+  return rhPanel(base,who,strip);
+}
+function rhLevel(base,name){const dd=d=>d?Math.round((parseKey(d)-parseKey(todayKey))/864e5):null;
+  const rows=(base||[]).filter(r=>r.it.owner===name&&r.cur&&r.cur.task),open=rows.filter(r=>r.cur.status!=="완료");
+  const late=open.filter(r=>r.late||(r.cur.due&&dd(r.cur.due)<0)).length,soon=open.filter(r=>!r.late&&r.cur.due&&dd(r.cur.due)>=0&&dd(r.cur.due)<=2).length;
+  return {t:rows.length,d:rows.length-open.length,late,lv:!rows.length?"none":late>=2?"red":(late===1||soon>=2)?"yellow":"green"}}
+function rhStrip(base){const names=[...new Set([...(st.lists.members||[]),...(base||[]).map(r=>r.it.owner).filter(Boolean)])];
+  const L=names.map(n=>({n,...rhLevel(base,n)})).filter(x=>x.t||(st.lists.members||[]).includes(x.n));
+  const ord={red:0,yellow:1,green:2,none:3};L.sort((a,b)=>ord[a.lv]-ord[b.lv]||a.n.localeCompare(b.n,"ko"));
+  const cnt=k=>L.filter(x=>x.lv===k).length;
+  return `<div class="rteam"><span class="rsub" style="margin:0 4px 0 0;min-height:0">팀원 리듬</span><span class="rtsum"><i class="red"></i>${cnt("red")} <i class="yellow"></i>${cnt("yellow")} <i class="green"></i>${cnt("green")}</span>
+    ${L.map(x=>`<button type="button" class="rchip ${x.lv}" data-rhwho="${esc(x.n)}" title="${x.t?`${x.d}/${x.t}건 완료${x.late?` · 기한 지남 ${x.late}건`:""}`:"이번 주 할 일 없음"}"><i></i>${esc(x.n)}<small>${x.t?`${x.d}/${x.t}`:"-"}</small></button>`).join("")}</div>`}
+function rhPanel(base,me,strip){
+  const W=st.week,mine=st.items.filter(it=>it.owner===me),isMe=me===st.me.name&&st.team===st.me.team_id;
   const dd=d=>d?Math.round((parseKey(d)-parseKey(todayKey))/864e5):null;
   const stat=k=>{let t=0,d=0,on=0,dn=0;mine.forEach(it=>{const e=(it.weeks||{})[k];if(!e||!e.task)return;t++;if(e.status==="완료"){d++;if(e.done_at&&e.due){dn++;if(e.done_at<=e.due)on++}}});return {k,t,d,on,dn,r:t?d/t:null}};
   const ks=[];let k=W;for(let i=0;i<8;i++){ks.unshift(k);k=prevKey(k)}
@@ -4568,7 +4599,7 @@ function myRhythmHtml(base){
     else if(avg!==null){const g=cur.r-avg;lines.push(`최근 4주 평균 ${pct(avg)}%${Math.abs(g)<.05?"과 비슷해요":g>0?`보다 <b class="up">${pct(g)}%p 높아요</b>`:`보다 <b class="down">${pct(-g)}%p 낮아요</b>`}`)}}
   if(late.length)lines.push(`<b class="down">기한 지난 일 ${late.length}건</b>이 있어요`);
   if(soon.length)lines.push(`이틀 안에 끝내야 할 일 <b>${soon.length}건</b>`);
-  if(!cur.t)lines.push(W>=CUR?"이번 주 할 일을 먼저 써 두면 리듬을 보여드려요.":"이 주에 쓴 할 일이 없어요.");
+  if(!cur.t)lines.push(W>=CUR?(isMe?"이번 주 할 일을 먼저 써 두면 리듬을 보여드려요.":"이번 주에 쓴 할 일이 아직 없어요."):"이 주에 쓴 할 일이 없어요.");
   const allDn=S.reduce((a,x)=>a+x.dn,0),allOn=S.reduce((a,x)=>a+x.on,0);
   // 먼저 할 일 (기한 기준)
   const top=[...open].sort((a,b)=>{const x=a.e.due||"9999",y=b.e.due||"9999";return x.localeCompare(y)||(b.e.carried?1:0)-(a.e.carried?1:0)}).slice(0,5);
@@ -4589,10 +4620,10 @@ function myRhythmHtml(base){
     ${pts.map((pt,i)=>pt?`<circle cx="${pt[0]}" cy="${pt[1]}" r="${i===S.length-1?5:3.2}" class="${i===S.length-1?"cur":"pt"}"><title>${shortRange(S[i].k)} · ${S[i].d}/${S[i].t}건 완료 (${pct(S[i].r)}%)</title></circle>`:"").join("")}
     ${S.map((x,i)=>`<text x="${px(i)}" y="${H-4}" class="lb${i===S.length-1?" on":""}">${shortDate(x.k)}</text>`).join("")}
     <text x="${Wd-16}" y="${py(1)-4}" class="ax">100%</text></svg>`;
-  return `<div class="panel rhythm ${lv}"><h2>내 리듬 <span>${esc(me)} · ${esc(rangeOf(W))}</span></h2>
-    <div class="rhgrid">
+  return `<div class="panel rhythm ${lv}"><h2>${isMe?"내 리듬":`${esc(me)} 님의 리듬`} <span>${isMe?esc(me)+" · ":""}${esc(rangeOf(W))}</span>${!isMe?`<button type="button" class="btn ghost rback" data-rhwho="전체">← 전체로</button>`:""}</h2>
+    ${strip}<div class="rhgrid">
       <div class="rcol rsig"><div class="rsub">${W===CUR?"이번 주":W>CUR?"다음 주":shortRange(W)} 상태</div><div class="rlamp"><i></i><b>${head}</b></div><ul>${lines.map(l=>`<li>${l}</li>`).join("")}</ul>
-        ${!cur.t&&W>=CUR?`<button class="btn primary rhadd" type="button" data-rhadd="1">+ ${W===CUR?"이번 주":"다음 주"} 할 일 작성하기</button>`:""}
+        ${!cur.t&&W>=CUR&&isMe?`<button class="btn primary rhadd" type="button" data-rhadd="1">+ ${W===CUR?"이번 주":"다음 주"} 할 일 작성하기</button>`:""}
         ${allDn?`<p class="rnote">최근 8주 기한 안에 끝낸 비율 <b>${pct(allOn/allDn)}%</b> <span>(완료 날짜가 기록된 ${allDn}건 기준)</span></p>`:`<p class="rnote">완료 날짜를 오늘부터 기록해요. 쌓이면 '기한 안에 끝낸 비율'도 보여드려요.</p>`}</div>
       <div class="rcol rgraph"><div class="rsub">최근 8주 완료율 <span>— 점선은 4주 평균</span></div>${svg}</div>
       <div class="rcol rtops"><div class="rsub">먼저 할 일 <span>— 기한이 가까운 순서</span></div>${topHtml}</div>
