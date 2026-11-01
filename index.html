@@ -1461,7 +1461,7 @@ html{scrollbar-gutter:stable}
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const APP_VERSION = "3.0.0";
+const APP_VERSION = "3.0.1";
 // 화면 제목: {앱} = 앱 이름, {팀} = 지금 보고 있는 팀 이름 (팀 이름은 관리 → 팀에서 바꿔요)
 const APP_TITLE = "Weekly Plan";
 // 로그인 화면에서 아이디 뒤에 자동으로 붙는 회사 메일 주소
@@ -2936,7 +2936,7 @@ function paintUser(){
   $("openSettings").hidden=!canAddHere();
   const multi=m.is_admin&&st.teams.length>1;
   $("teamSwitch").hidden=!multi;
-  if(multi){$("teamSwitch").innerHTML=st.teams.map(t=>`<option value="${esc(t.id)}">${esc(t.name)}${t.id===m.team_id?" (내 팀)":""}</option>`).join("");$("teamSwitch").value=st.team}
+  if(multi){$("teamSwitch").innerHTML=[...st.teams].sort((x,y)=>(y.id===m.team_id)-(x.id===m.team_id)).map(t=>`<option value="${esc(t.id)}">${esc(t.name)}${t.id===m.team_id?" (내 팀)":""}</option>`).join("");$("teamSwitch").value=st.team}
   $("userMeta").innerHTML=`<b>${esc(m.name)}${m.role==="leader"?'<span class="rtag">팀장</span>':""}${m.is_admin?'<span class="rtag adm">관리자</span>':m.is_registrar?'<span class="rtag reg">등록 담당자</span>':""}</b><span>${esc(m.email)}</span><br><span>${esc(teamName(m.team_id))}</span>`;
 }
 $("teamSwitch").onchange=e=>{st.team=e.target.value;store.set("wk-team-"+st.me.email,st.team);st.owner=st.team===st.me.team_id?st.me.name:"전체";st.items=[];closeAll();paintUser();render();refresh()};
