@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>주간업무</title>
+<title>Weekly Plan</title>
 <link rel="icon" href="favicon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -1060,12 +1060,16 @@ html{scrollbar-gutter:stable}
   .rz-pw{position:static;justify-self:center;margin-top:28px}
 }
 </style>
+<style>
+.brand svg.bmark{width:26px;height:26px;flex:none;display:block}
+.brand h1#brandTitle{font-family:Manrope,var(--font-body);font-weight:800;letter-spacing:-.02em}
+</style>
 <style>html,body{margin:0}[hidden]{display:none!important}</style>
 </head>
 <body>
 <header class="top">
   <div class="wrap">
-    <div class="brand"><img class="bmark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABKCAYAAAAL8lK4AAATlElEQVR42tWcf4ylV3nfP9/nvHdmdm2MYrD5FUISSFDWBaw6SG1iPF5MJDehaUI7VhNoFVEJR6WJ2kTIWRsyO8UOS1oq4rRUgqC0adU/PM3PBkow4I6xiprWTqGxVVoi0hAgWYJx7N2dmXvfc77945z33ndm1sa7/rmze+fHvee+7znPeX58n+/znCue6q/19eCKB8QNm3nx3OrFHelIKb7S4nuYlZer5BcaXUp4CWIm9JcuPkmnP7L4QnJ8Nuf4LCc++fX5de5YS9y/aTYo5zs9PaULB9jYqJM7dv1lEbvXm/yDEt8LeqkjlkFgQylQqL8PMwthBRLQFwN/Cv59JX6nJH2Uja2/AGBtLbG5WQA/GwQg7liL+Y7fvHqlQv8A/LdZihdRhHKB3radEVCiTb1o34wMMraAIEUwaQNy+QpJv+a89AFu+/iX5kIfBP6MCGA8gfXXv1qzchMuf4fltMQ0g5li1cXUO4dC2EYets8mj6fnvQIRBYRCEw4J7/YPKuv2cvrwCX75Y7tNG/LTL4D11Y6NrZ71qw6L575Txf/Y6BDT3qC+LVrDTYtBgYhmAjZV15sZZDw3D41kISGBwZhsypImCfr8Pzr8k7MT99w7n8vTrQGTm46+Jk/8ITpe6508dVFW0CELq9QFDQuBQSB7N7kIZApuMqlCaqOaHFT/sk22cI+6i5T0cAn/GLfe/VGMhlFPrQDWCR68fsKhR34mVpZ+wUsB2z0kYaW6zmFjy16tbjt5VtdleyEdabEaNQ1Rk6Rd/WYx0QW28Ha+kT9+wYc5csTfzCecvwCMuPGqjjd8Zzn0mS+9cGelezuTyUxmBo42JIio3j0KZKRQMQ4IoFQHGICzQEWSIbBzs3aXuaYQWJaqdIyRLeFSx4aKE4nexUvLt8Puw1yxZW4gP7l+3k9h+HxKQjLxaC915+XptVH4mdXnxzJvoEcFIJWlCJkSGTLgKBEKFIW6yZQ21jgo0GH64qqjEUEpRaFhtqU4UCgkE5hS6vgU0UIjIbldOsI5EyolQ0TkMkkd2zv3sfGZP3y0EKlzluQGhXd834tjqfsIXbrSfbNHCflAEK92blHnqZG3b0GPAtbIHzb1GsKihBo4cvvdWriC5hIX10bD/3qlvv+GZ/4B3nfPvWcTgs558ceuvkzRfVyJKz3Nu1hRPfuwMM0d1/zqHiG8dtvxQveMOyBBFp5y8KbzkOiD7xnmIINdiLSMyxe9svzXOH7n1ziOxtC5OwebN7zxcMwe+Y8OXemdMgVN5hNIUgvw3jNhWXtCX/XYlker9EIw4/Uyj2Ve4INhbYPUUgsPgxDLXF3qq72nrHTfwfbOryB+mPV1wcZ8afG4sMLmWoDR7iO/6k7X+Ew/td3Nw1IabU00BSxA70X01iiS79cONEwYD+GtLduDHQ23QPW5sUYN0nS7ziDBaisdO/1US93fjGNHf5yNjcLaWnr8JtCgZRxbfae7eLdP99uSJ252p6gCmJumgULBFhEmHPu0qZr9YLpjHW7gyAIV7GbTOvu2mGIRiBhQY4OYY1OoWlGIFCT/iZd5DRtbp4fZdI9n8dx07Q+54930Ba2kQ3PJDd9Cza+13SskuwrH0ZzYAGEN5CYpz1EPCs03LqI5wzK2a5CES3O6LhU0RtT7zH0NI2c4UrNc8KHJd3J69g+BXxzg8mNrwB1rifuPmN27riLicnImQZczkFRSQaRhV5VyioL7YbZOWZEnMqXikyF0ZcmJUgiZYmUyybF3LqnGtrnWDH9nyDGEm1ISiVxKQo4Kt6OkgnMUp1DKJBKlZHK9aNFXOXztfRzf8GND5QsN7JznV/dYYCeOHb2BJf24pxlQgpKrlOlQSRQFuBDkZoiAY+7YQsbO9T4qsgshWU7UpLe3aTCnSFAsZ4i2oyFcEtAjFSUJK1kk2bbIFAsp5qFiSBqM50AhgFK9CqGgzw/ah97O++483Z013h/fMP3Rl+H8IeguIaVm7zHyvlHVdH/cbjFp8EEeDNRzRw/Z0AWsNA3vmQMccg/9ILOAllAN67OqL6hUiRcJUkst9oRERtEihmgDungZn9r5T8BvHBTA8XXQhnUsv4eJLvF2vy3UzX35HjzjBtTkeWgSIFfwFlpkfUWmuBhJS2mJvv86p/xRrE8npT/LCZjmV0j+IUVc596GfooUxtUBqjTfqbpahxeptYVlxhmn9m2ODaZ3aEmhHzX8ug44vRs2c7rl6OuNP+FZzkiVyBhid1ngEmKhcjKm5nmaQ12NMECmJ8UEbIL3u+iXuO2u/3c2C0zvPPqmgm+n6CXM8gyUSB7Fw1EEGZMo4xWXKid5HwgFkyJRypfd60odUP8H1qSXn9xSF9/vnPtq+2dBDd4HqN1iN0B4lLwDdma567C/Eugn8rs/dec8zB45KR64vF7tyEnBVmGDwvrqKzTjd229UrnMCHULoe6DyuP5aB8sznXDFkBF1TmEku0f1oGY/87VN0rx28z6RmPp7OnT2QKI5Tm5OaBBqbCUlsD3Tch/d3rr3f+X9dWO41v5UcPQ266a8MF7Z9xy9OVS2XLPi2VPkWIh3KYFhb3Ikn0mUMYwsUmwOLMUE/flF7Un7N1+/ZJObv8+K92rmWbUkHKp1MZCnfeAjhGgLiNH2Eg7TTqY5XvdlTewsfXQ4+brhnE3rV6rCZ9AkXDDBzQiNQ+eVRCuPrrNY24vY7MpLNDicod3Z3+gPZnezatXyv5XFBeSQpJq3lQRuiQ3oFqpuCG9H1mnXDkbigvCjphSfCMntr4w+JhzJVrj5mve6k5vZWa7lCTUYwINaEVVK6LSDKh6Z2S3vE9zPajfs4sSSV97+hDH+QKr9ceVsD2BIsZY2vD8w5OiM7PlPZM9BGwfBs4AsyImWTDZx67MSvshpmE0C3Yu+Tq3f2y6Pwc/LxaqQteDzu/8N6RZ9FzNXv+TTr5NfZ4i0iK80CidwbTnUKTMU3zbmudhNooO87/9vOXrecedZx7DbT4LoPDxrQzr4Z27foKULnWWh7qNRto7R12Ouvw5pVWdgNVYk4w53Ek75bf8jjtPn7PdP81f1ZHku65Q+K+y02dwpjhjZxdnu/1uMoX6ukt9vtSH2msu0ZOS2S1fLiv+cA2vm4Vn8VdU3MIPeKmb1EydkJBCQTS6IYaylkWxGis/MJlqnGbYpTBJQXAHG1sPsbaWHk915hnPBo2uqeRCDSfeAzO90JURsiINDMWCvhJ09LlYvgMQR448qxdfzfznrv4WKf4AeBmZ3OpQtHi/4NsGLzgIIEYCcINBXUqU8r/8R5d/L5ubs2ez85ubQJcmr5J4sXPpKwnnQnGp9l4Koj1cjIqhWBRMcXb1CyZjZoQKwX9mc3PKHWvxbF88QFfEVZ6kibLm6euYUrPUOLrG5SU/CofvrgIy3X1hMUJimb58EZeClKgMjSXZNpHdUyJJCjxASw/40nPOzg522QY+eyF4/4UPuGMtsUniyMng4curClxycry/PVwecDjgj+HSQ+YLwCuAL4xGXfqc+p6NzemFpQGf+dISly0nTi2ZS04eBJhnZhP4MpyemMuAB7fhUuBB6s8zM3F4Ys48LA5PZhccKRrLy3f6kL8VpoWp055815jUVSh8ic3uKN2tCEJ0E9jOma5bYupNwz851z6dZxgH+FXAJfSjfP8AAap59XVeq8nsKXR4Raj3c6v9A5sXiAYYYEbBpRUKtAD4IxQ0tLAtYEEjPSyjyPSaYO1ecCagUOfWfLYods0LujUnjLIo28aiDu8yotmkoJTDF5oAohYdBlQ/VB1HZMGe5rYRAPCI4lgUZF8EwP2bvmAEYHFqvDLtq9Z6T/fFCAAF47YOkQ3St/JT1y838kMXhgbk8iB2adxnqVDH9WEXFWVYwOEhBSZTf1YK0solU8pLObz9omd/BjAWQOHPWOoCacIkOibR0aWOLnVOqSPUEZHoUnKkRIrOkTpSdJqkNlYThxKHJxcTXA1QmyouBCeYYsulfBvh7VZGbBig8j7YIZBzS/3kUvv0WjlsoILlnlImEN+O0ZMSBp8KQnRjTuY/DTD7ib1XT88kf+r6ZS7ZfWFF/WmvZFaAPgzbjRsG+iJWgFNZdKPxs13DITg0C7rJI2x8/EHO0u79OBdf33PTG76NPldBrOxAv6SGXw9esy+iK6IPz1/f6YOVNr6PWpI+Nf0Gv7T10HCfjotOHVaJ31PwUqKf1RMKzQymsejFZbuSoQJ2oUyM6Bes0RIFb5sciTL9qo9dfTVL93wdzoESrwWaGo1uuuZfK6Zv8aRkTDBLUHLrE5eHEvyekN1XbOq+r0AlipgCM4yLSLn3pKwCD7GO2MAdJ+75Bsde93l36ZXs5IxqMVTW6PDGwBMstFJW6/EdYwNByZmVpe9W373PG/x93nbVBO795nY3sMfrq50y/4YUb2an9yB1Uavhiy6wNp8xez9uqBIQXTuN4uylLmmWf5t/fs/nxg2TteInfQQHtc21Mjzt2EIG5VaFq4wwZORcu0IGNkj1gbIJ2O5niL8XN73u7Xzw3hlrazE/QnO2XV9f7bhhM/ML1z1Pxb9JF2/Wdp7WerMqKz3ce3ioPWjzqK1Hi+el9royyCplZnQrAA88oL2O6pajL1Pu/xDrIqTy2GWsBpBTg89DK4rHSWSlj0nqrDjGe7ZOzBd7xZq4/6S44nKPDzx160e/r2R/iKQj3u2nKuo87i0cs7ValH+FWqmm1nLnClmGEwVkLXcTprNf9Xvvfuv+TFWskdgk6+dWf52l9CZN88wmzUtHrcf3QGdqavcfSNKaRzW2cHhLMcuTjlx+06TjvOdTnzuoAdd9t2b9TwvfaFKnnGdGqVWc9vjFcUWsBuXWOZLqNEfNp0PvTLEJEg8TS6/m1o//6f4yneZdITe//m+U5I8yzbswbjpqN9nvqb3nu0fc4CipaCTrMivMfNpwj5TutctXFHoB1pXgq5nwLczKVI5CNNax7Ck9nT1Q7O9d2CsvgTMrkxVP889y4r/8i7PxFJov48arunj+xf/dh5dfw06/aCpatGUvssEhSpTF01p4oj0ooM4/ozC12aqF+NRenOU5HSlUj1oMjQ/7iqAHa6Jn69Zowmk9AJye/jevcDVcW9jYOOCMO8AcXw8+uDHTu655h/v+LZSySyldbd8szaKapdV8OOZ6YBehJg2leiqsDLYz72ynlMysVNdaawpDkbFx0blU0FmG/XPrQI/aJ9/yMquy826tpSom5EVYiNoXkHMwVbLjvWzc1bO+dUHQ9E87Kj3YJMVqsM0L8aRwuAvoq6Jvz6I2Cgy601DgJFx7BpYE2zDbhyYHJDe8Zxi/f0yXzCSLflm4LwfG9Vn0RTznIi8mQb3fMFazYBZmxgrd7M957UvOfLOjtXsnMnSG33ztLSTd5L4/3Tw9QmFZc4c4OL6oCGFOm0SY0k5zVe3Xols+PC8lNPrVubESC98ltX5y5yJisJSGvhoaHQ6OedyYVUpPxEWg+7yjH+H9W395toN5jy6AIf4fv/45mp35DF0cYSebFBplic3cGu5SddnjcwEetQjOT5LsOecytBdpv7fcX20axf0m7MFvmz0nTtwX0yH15WvuVq7mxCf/z+M5Spv2pYrAerDx4R1e9+3/NRRvJpTabN2aJOdHHCyKwLUVrTq91o7X4FHdn+G5+Wu1rXLxb7iuxwcCMZYtrGF80XB/a7gyMsWZiFDEIyn8g+XE1udYW0t84APl/JxDwwZxbPUtXu7+HTuzWWuCXECwUGOKhZBL5ZNqTA1pOPMsu5KnoRGPvqDYBjAzTKUimko/ezhu1tpjh+Rn1Aaoei4olhEPh/Wj+b13fYrV1Y6tJ3p0tvUOdTevvqusdP+0ng4bq3+bZ4wu1Y+45BipcRkdZDoLst7Tf9iEMBRj9yKWfX2KrUvJ0/4b2H+Lf3b3p89l8d+MtFBLGUv8/NEfQ+kFlL7QMyGsqo4WXShkoeRSXHBJQ0ZZMUT0rcHItcEopRbjK0qsRyE6kmb13Ktm9XlNKI7GVzI01VcMoqBoBvQkLZVTs7t4/6fve2r6kS6UgxOPlm0+KbTVHWuJ+0+Kr55Suuy5P+KO72G3P0Uota6iWlnKTq1IUg1bDkLRPhmiplhjJIeCqB8UUTID6gSrVDtwzSeMi0KEC7AcuajMZr/GJct/zldPiRe9MZ/rByecO2/X2IfJLauv6RP/nsPLV+jUrGpo7K2OLM4J7DvxPUbrQ7fh4mTXuOhSg4D3NUQfWoIz0133/ml2Dv9bLv3Y7Ak1YJ4H8Vgd8Nuumuh5F20I/6xDS8y8MxTRqB8GsQAvB+J6dYYjdNRwzFCGbJKqDi5jB5O0XCFT/IflWLplZ/jIjGeEuR0aq4HuXdeuFus2Qt9vg2a5Mkl2EBp/dMDiyP88zI0y/MVpkyGMGLtjKYliCH8y6E7k2z75iTFifSap68UHpRiln7/2TcX8I8GqJ0nqC+4LFPdDw83ixJD3VOZqEao521BiklAnPM074N+L4F/m27Y+sXB0GzxRtX+yuPsDn9rSbVz32ly8Jvs6il9JxEW1f8Dspc3aQcpQ+6icpvLZDxL6rEIfKfh3ufWuz88j0Q1r8VQ0XTw5Ie6OtcTaZplXVtfW0uRVf/FX8kx/3S5XkP1dWC+BcjHmELKJeBjrIaQ/IfH5QPfmkv4nt935xT0CfuABPZXdJv8fGx122HtVw34AAAAASUVORK5CYII=" alt=""><h1 id="brandTitle">주간업무</h1><span class="bver" id="bVer"></span><select class="sel" id="teamSwitch" hidden aria-label="볼 팀 고르기"></select></div>
+    <div class="brand"><svg class="bmark" viewBox="0 0 512 512" role="img" aria-label="Rhy:se"><rect width="512" height="512" rx="112" fill="#10201D"></rect><rect x="76" y="76" width="360" height="360" rx="86" fill="none" stroke="#F4F7F6" stroke-width="30"></rect><g transform="translate(134,168) scale(1.6267)"><circle cx="12" cy="62" r="16" fill="#F4F7F6"></circle><path d="M12 62 H48 L60 22 L76 86 L90 46 L98 62 H138" fill="none" stroke="#F4F7F6" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="138" cy="62" r="16" fill="#F4F7F6"></circle></g></svg><h1 id="brandTitle">Weekly Plan</h1><span class="bver" id="bVer"></span><select class="sel" id="teamSwitch" hidden aria-label="볼 팀 고르기"></select></div>
     <div class="tabs" role="tablist" aria-label="화면">
       <button class="tab" role="tab" id="tab-write" aria-selected="true">작성</button>
       <button class="tab" role="tab" id="tab-review" aria-selected="false">점검</button>
@@ -1139,7 +1143,7 @@ html{scrollbar-gutter:stable}
 </main>
 <section id="reportPage" hidden aria-label="주간 업무 보고서">
   <div class="rp-top"><div class="wrap rp-bar">
-    <button class="btn" id="rpBack" type="button">← 주간업무로</button>
+    <button class="btn" id="rpBack" type="button">← Weekly Plan</button>
     <h2>주간 업무 보고서<small id="rpTeamName"></small></h2>
     <div class="tabs" id="rpTabs" role="tablist"><button class="tab" role="tab" type="button" data-rt="mine">내 보고서</button><button class="tab" role="tab" type="button" data-rt="team">팀 보고서</button></div>
     <div class="rp-week"><button class="btn icon" id="rpPrev" type="button" aria-label="이전 주">◀</button><span class="lbl" id="rpWeekLbl"></span><button class="btn icon" id="rpNext" type="button" aria-label="다음 주">▶</button><button class="btn ghost" id="rpThis" type="button">이번주로</button></div>
@@ -1381,7 +1385,7 @@ html{scrollbar-gutter:stable}
       <li><b>크롬</b>이나 <b>엣지</b>로 이 주소를 열어요.</li>
       <li>주소창 오른쪽 끝의 <b>설치 아이콘</b>(모니터에 화살표 모양 ⊕)을 눌러요.</li>
       <li>아이콘이 안 보이면 오른쪽 위 <b>⋮</b>(엣지는 <b>…</b>) 메뉴 → <b>전송, 저장 및 공유 → 페이지를 앱으로 설치</b> (엣지: <b>앱 → 이 사이트를 앱으로 설치</b>)</li>
-      <li><b>설치</b>를 누르면 바탕화면과 시작 메뉴에 '주간업무' 아이콘이 생겨요.</li>
+      <li><b>설치</b>를 누르면 바탕화면과 시작 메뉴에 'rhy:se' 아이콘이 생겨요.</li>
     </ol>
     <div class="insqr"><div id="insQr" aria-hidden="true"></div><div><b>휴대폰으로 열기</b><p>휴대폰 카메라로 이 QR을 찍으면 이 주소가 바로 열려요. 거기서 안드로이드·아이폰 방법대로 설치하세요.</p><code id="insUrl"></code></div></div>
   </div>
@@ -1391,7 +1395,7 @@ html{scrollbar-gutter:stable}
       <li><b>크롬</b>으로 이 주소를 열어요.</li>
       <li>오른쪽 위 <b>⋮</b> 메뉴를 눌러요.</li>
       <li><b>앱 설치</b> 또는 <b>홈 화면에 추가</b>를 누르고 <b>설치</b>를 눌러요.</li>
-      <li>홈 화면에 '주간업무' 아이콘이 생겨요.</li>
+      <li>홈 화면에 'rhy:se' 아이콘이 생겨요.</li>
     </ol>
     <p class="insnote"><b>삼성 인터넷</b>을 쓰면: 아래쪽 <b>≡</b> 메뉴 → <b>현재 페이지 추가 → 홈 화면</b></p>
   </div>
@@ -1400,7 +1404,7 @@ html{scrollbar-gutter:stable}
       <li><b>사파리</b>로 이 주소를 열어요. (카카오톡 안에서 열렸다면 오른쪽 아래 <b>나침반</b> 버튼으로 사파리에서 열기)</li>
       <li>아래쪽 가운데 <b>공유 버튼</b>(네모에서 위로 화살표 ⬆)을 눌러요.</li>
       <li>목록을 아래로 내려 <b>홈 화면에 추가</b>를 눌러요.</li>
-      <li>오른쪽 위 <b>추가</b>를 누르면 홈 화면에 '주간업무' 아이콘이 생겨요.</li>
+      <li>오른쪽 위 <b>추가</b>를 누르면 홈 화면에 'rhy:se' 아이콘이 생겨요.</li>
     </ol>
     <p class="insnote">아이폰은 '지금 설치하기' 버튼을 쓸 수 없어서 위 순서로만 설치할 수 있어요.</p>
   </div>
@@ -1415,9 +1419,9 @@ html{scrollbar-gutter:stable}
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const APP_VERSION = "2.17";
+const APP_VERSION = "2.19";
 // 화면 제목: {앱} = 앱 이름, {팀} = 지금 보고 있는 팀 이름 (팀 이름은 관리 → 팀에서 바꿔요)
-const APP_TITLE = "주간업무";
+const APP_TITLE = "Weekly Plan";
 // 로그인 화면에서 아이디 뒤에 자동으로 붙는 회사 메일 주소
 const MAIL_DOMAIN = "conet-sys.co.kr";
 const TITLE_FORMAT = "{앱} - {팀}";
@@ -3581,7 +3585,7 @@ function renderMine(W,N){
   const n=rows.filter(r=>isRep(r.it,W)).length;
   $("rpBody").innerHTML=`
     <div class="rp-guide"><span class="rp-step">1</span><div><b>보고할 업무를 체크하세요.</b> ${rpPeriod(W)}에 쓴 업무가 보고서 양식으로 정리돼 있어요. 체크한 줄만 팀장님의 팀 보고서로 올라가요.
-      <div class="hint" style="margin:4px 0 0">내용을 고치려면 '주간업무로' 돌아가서 업무를 수정하세요. 고친 내용은 여기 바로 반영돼요.</div></div></div>
+      <div class="hint" style="margin:4px 0 0">내용을 고치려면 '← Weekly Plan'으로 돌아가서 업무를 수정하세요. 고친 내용은 여기 바로 반영돼요.</div></div></div>
     <div class="rp-tools"><span class="rp-count">보고용 <b>${n}</b> / ${rows.length}건</span>
       <button class="btn" type="button" data-rall="1" ${rows.length?"":"disabled"}>모두 체크</button><button class="btn ghost" type="button" data-rall="0" ${n?"":"disabled"}>모두 해제</button></div>
     ${rows.length?`<div class="rp-tblwrap"><table class="rp-tbl"><thead><tr><th class="rck">보고용</th>${rpHead(W,N)}</tr></thead><tbody>
@@ -3592,7 +3596,7 @@ function renderMine(W,N){
     <p class="hint">고객사가 '내부'이거나 대상사업이 없는 업무는 보고서 아래 <b>비고</b> 칸으로 들어가요.</p>
     <h3 class="rp-h">내 보고 미리보기 <span class="hint" style="margin:0">보고용으로 체크한 업무가 팀 보고서에 이렇게 들어가요</span></h3>
     ${slidePreview(rpGroup(rows.filter(r=>isRep(r.it,W))),W,N,rpLeaderName())}`
-    :`<div class="rp-empty"><b>${rpPeriod(W)}에 쓴 업무가 없어요.</b><br>주간업무 화면에서 이번주 할일·다음주 계획을 먼저 써주세요.</div>`}`;
+    :`<div class="rp-empty"><b>${rpPeriod(W)}에 쓴 업무가 없어요.</b><br>Weekly Plan 화면에서 이번주 할일·다음주 계획을 먼저 써주세요.</div>`}`;
 }
 function renderTeamRp(W,N){
   const key=st.team+"|"+W;

@@ -1,6 +1,6 @@
 {
- "name": "주간업무",
- "short_name": "주간업무",
+ "name": "rhy:se",
+ "short_name": "rhy:se",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
