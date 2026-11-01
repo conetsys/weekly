@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap">
-<link rel="stylesheet" href="assets/3.4.2/app.css">
+<link rel="stylesheet" href="assets/3.5.0/app.css">
 
 </head>
 <body>
@@ -243,7 +243,7 @@
     <div class="f"><label for="ne-title">제목 <i>*</i></label><input id="ne-title" autocomplete="off" placeholder="예: 10월 마감 일정 안내"></div>
     <div class="f" style="margin-top:12px"><label for="ne-body">내용 <i>*</i></label><textarea id="ne-body" rows="10" placeholder="팀원들에게 알릴 내용을 적어주세요.&#10;&#10;1. 제목   → 번호 카드로 보여요&#10;- 항목   → 점 목록으로 보여요&#10;**굵게** → 굵은 글씨, 주소는 자동으로 링크가 돼요"></textarea>
           <div class="neprev-h">미리보기 · <b>1.</b> 제목 / <b>-</b> 항목 / <b>**굵게**</b></div><div class="neprev"><div class="nbody fmt" id="ne-prev"></div></div></div>
-    <label class="nhide" style="margin-top:12px"><input type="checkbox" id="ne-pop" checked> 접속할 때 팝업으로 띄우기</label>
+    <div class="neopts"><label class="nhide"><input type="checkbox" id="ne-pop" checked> 접속할 때 팝업으로 띄우기</label><label class="nhide"><input type="checkbox" id="ne-pin"> 📌 맨 위에 고정</label></div>
     <p class="hint" style="margin:6px 0 0" id="neHint"></p>
     <p class="err" id="neErr" hidden></p>
     <div class="mfoot">
@@ -383,15 +383,15 @@
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const APP_VERSION = "3.4.2";
+const APP_VERSION = "3.5.0";
 // 화면 제목: {앱} = 앱 이름, {팀} = 지금 보고 있는 팀 이름 (팀 이름은 관리 → 팀에서 바꿔요)
 const APP_TITLE = "Weekly Plan";
 // 로그인 화면에서 아이디 뒤에 자동으로 붙는 회사 메일 주소
 let MAIL_DOMAIN = "conet-sys.co.kr";
 const TITLE_FORMAT = "{앱} - {팀}";
 </script>
-<script>window.WK_BASE="assets/3.4.2/"</script>
-<script src="assets/3.4.2/core.js"></script>
+<script>window.WK_BASE="assets/3.5.0/"</script>
+<script src="assets/3.5.0/core.js"></script>
 
 </body>
 </html>
