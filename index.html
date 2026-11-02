@@ -1,14 +1,15 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" class="wk-lock">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Weekly Plan</title>
-<link rel="icon" href="favicon.png?v=3.6.0">
-<link rel="manifest" href="manifest.webmanifest?v=3.6.0">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.6.0">
+<link rel="icon" href="favicon.png?v=3.6.2">
+<link rel="manifest" href="manifest.webmanifest?v=3.6.2">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.6.2">
 <meta name="theme-color" content="#10201D">
 <style>/* 시작 가림막: 로그인 확인이 끝날 때까지 업무 화면이 비치지 않게 */
+html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-lock,.wk-lock body{overflow:hidden}   /* 인트로 중엔 오른쪽 스크롤바 자리(흰 줄)도 어둡게 */
 .wkboot{position:fixed;inset:0;z-index:95;background:#10201D;display:grid;place-items:center}
 .wkboot i{width:20px;height:20px;border-radius:50%;background:#F4F7F6;box-shadow:0 0 0 4px #18B094;opacity:0;animation:wkbIn .3s ease-out .5s forwards,wkbBeat 1.1s ease-in-out .8s infinite}
 @keyframes wkbIn{to{opacity:1}}@keyframes wkbBeat{0%,100%{transform:scale(1)}15%{transform:scale(1.35)}30%{transform:scale(1)}45%{transform:scale(1.2)}60%{transform:scale(1)}}
@@ -16,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap">
-<link rel="stylesheet" href="assets/3.6.0/app.css">
+<link rel="stylesheet" href="assets/3.6.2/app.css">
 
 </head>
 <body>
@@ -388,15 +389,15 @@
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const APP_VERSION = "3.6.0";
+const APP_VERSION = "3.6.2";
 // 화면 제목: {앱} = 앱 이름, {팀} = 지금 보고 있는 팀 이름 (팀 이름은 관리 → 팀에서 바꿔요)
 const APP_TITLE = "Weekly Plan";
 // 로그인 화면에서 아이디 뒤에 자동으로 붙는 회사 메일 주소
 let MAIL_DOMAIN = "conet-sys.co.kr";
 const TITLE_FORMAT = "{앱} - {팀}";
 </script>
-<script>window.WK_BASE="assets/3.6.0/"</script>
-<script src="assets/3.6.0/core.js"></script>
+<script>window.WK_BASE="assets/3.6.2/"</script>
+<script src="assets/3.6.2/core.js"></script>
 
 </body>
 </html>
