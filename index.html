@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Weekly Plan</title>
-<link rel="icon" href="favicon.png?v=3.11.1">
-<link rel="manifest" href="manifest.webmanifest?v=3.11.1">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.11.1">
+<link rel="icon" href="favicon.png?v=3.12.0">
+<link rel="manifest" href="manifest.webmanifest?v=3.12.0">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.12.0">
 <meta name="theme-color" content="#10201D">
 <style>/* 시작 가림막: 로그인 확인이 끝날 때까지 업무 화면이 비치지 않게 */
 html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-lock,.wk-lock body{overflow:hidden}   /* 인트로 중엔 오른쪽 스크롤바 자리(흰 줄)도 어둡게 */
@@ -17,7 +17,7 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap">
-<link rel="stylesheet" href="assets/3.11.1/app.css">
+<link rel="stylesheet" href="assets/3.12.0/app.css">
 
 </head>
 <body>
@@ -127,7 +127,11 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
   <form class="dbody" id="form" novalidate>
     <p class="ro-note" id="roNote" hidden>다른 사람의 업무라 볼 수만 있어요. 업무는 담당자 본인만 고칠 수 있어요.</p>
     <section class="fsec fsec-common" aria-labelledby="secCommon">
-      <div class="fsec-h"><span class="fnum">1</span><b id="secCommon">공통 정보</b><span class="fsub">어떤 일인지</span></div>
+      <div class="fsec-h"><span class="fnum">1</span><b id="secCommon">공통 정보</b><span class="fsub">어떤 일인지</span><button type="button" class="fpull" id="pullBtn" hidden aria-expanded="false" aria-controls="pullBox">↺ 지난 업무에서 가져오기</button><button type="button" class="fpull" id="cloneBtn" hidden title="고객사·대상사업·품목을 가져와 새 업무를 써요">↺ 이 정보로 새 업무</button></div>
+      <div class="pullbox" id="pullBox" hidden>
+        <div class="pullhd"><input id="pullQ" type="search" autocomplete="off" placeholder="고객사 · 대상사업 · 품목 · 지난 할일로 찾기" aria-label="지난 업무 찾기"><span class="pullinfo"><span id="pullCnt"></span><span class="hint" style="margin:0">내 업무만 · 고객사 · 대상사업 · 품목이 채워져요</span></span></div>
+        <div class="pulllist" id="pullList" role="listbox" aria-label="지난 업무"></div>
+      </div>
       <fieldset>
         <div class="f"><label for="f-owner">담당자 <i>*</i></label><select id="f-owner"></select></div>
         <div class="f"><label for="f-customer">고객사 <i>*</i></label><select id="f-customer"></select>
@@ -135,10 +139,11 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
         <div class="f"><label for="f-project">대상사업 <i>*</i></label><input id="f-project" list="dl-project" autocomplete="off" placeholder="눌러서 고르거나 새로 쓰기"></div>
         <div class="f"><label for="f-part">품목</label><input id="f-part" list="dl-part" autocomplete="off" placeholder="예: 기구물"></div>
         <div class="f"><label for="f-po">관리번호</label><input id="f-po" class="mono" autocomplete="off" placeholder="발주번호·클레임번호 등"></div>
-        <div class="f"><label for="f-vendor">협력사</label><select id="f-vendor"></select>
+        <div class="f"><label for="f-vendor">협력사 <i id="vReq" hidden>*</i></label><select id="f-vendor"></select>
           <input id="f-vendor-new" autocomplete="off" placeholder="새 협력사 이름" hidden aria-label="새 협력사 이름"></div>
         <div class="f"><label for="f-cat">구분 <i>*</i></label><select id="f-cat"></select>
           <input id="f-cat-new" autocomplete="off" placeholder="새 구분 이름" hidden aria-label="새 구분 이름"></div>
+        <p class="pullnote" id="pullNote" hidden>↺ 가져온 업무예요. 이번 일의 <b>협력사</b>와 <b>구분</b>을 골라 주세요 (외주가 없으면 '협력사 없음').</p>
         <p class="hint">고객사·대상사업·협력사·구분이 목록에 없으면 새로 쓰거나 '+ 새 …'를 고르세요. 저장할 때 내 목록에도 추가돼요.</p>
       </fieldset>
     </section>
@@ -420,15 +425,15 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const APP_VERSION = "3.11.1";
+const APP_VERSION = "3.12.0";
 // 화면 제목: {앱} = 앱 이름, {팀} = 지금 보고 있는 팀 이름 (팀 이름은 관리 → 팀에서 바꿔요)
 const APP_TITLE = "Weekly Plan";
 // 로그인 화면에서 아이디 뒤에 자동으로 붙는 회사 메일 주소
 let MAIL_DOMAIN = "conet-sys.co.kr";
 const TITLE_FORMAT = "{앱} - {팀}";
 </script>
-<script>window.WK_BASE="assets/3.11.1/"</script>
-<script src="assets/3.11.1/core.js"></script>
+<script>window.WK_BASE="assets/3.12.0/"</script>
+<script src="assets/3.12.0/core.js"></script>
 
 </body>
 </html>
