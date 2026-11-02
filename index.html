@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Weekly Plan</title>
-<link rel="icon" href="favicon.png?v=3.12.0">
-<link rel="manifest" href="manifest.webmanifest?v=3.12.0">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.12.0">
+<link rel="icon" href="favicon.png?v=3.13.0">
+<link rel="manifest" href="manifest.webmanifest?v=3.13.0">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.13.0">
 <meta name="theme-color" content="#10201D">
 <style>/* 시작 가림막: 로그인 확인이 끝날 때까지 업무 화면이 비치지 않게 */
 html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-lock,.wk-lock body{overflow:hidden}   /* 인트로 중엔 오른쪽 스크롤바 자리(흰 줄)도 어둡게 */
@@ -17,7 +17,7 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap">
-<link rel="stylesheet" href="assets/3.12.0/app.css">
+<link rel="stylesheet" href="assets/3.13.0/app.css">
 
 </head>
 <body>
@@ -38,11 +38,11 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
     </div>
     <div class="actions">
       <button class="btn" id="installBtn" type="button" title="PC 바탕화면이나 휴대폰 홈 화면에 앱으로 설치하는 방법">📲 앱 설치</button>
-      <button class="btn nbtn" id="noticeBtn" aria-label="공지사항"><span aria-hidden="true">📢</span> 공지<span class="ndot" id="noticeDot" hidden></span></button>
+      <button class="btn nbtn" id="noticeBtn" aria-label="팀 공지 · 알림"><span aria-hidden="true">📣</span> 팀 공지<span class="ndot" id="noticeDot" hidden></span></button>
       <button class="btn" id="reportBtn" type="button" title="주간 업무 보고서 (보고용 체크·PPT 내보내기)">📝 보고서</button>
       <button class="btn" id="copyReport" hidden>보고용 복사</button>
       <button class="btn" id="openSettings">🗂️ 내 목록</button>
-      <button class="btn" id="userBtn" type="button" aria-haspopup="menu" aria-expanded="false"><span id="userName">나</span> ▾</button>
+      <button class="btn" id="userBtn" type="button" aria-haspopup="menu" aria-expanded="false"><span id="userName">나</span> ▾<span class="ndot" id="userDot" hidden></span></button>
     </div>
   </div>
 </header>
@@ -147,6 +147,10 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
         <p class="hint">고객사·대상사업·협력사·구분이 목록에 없으면 새로 쓰거나 '+ 새 …'를 고르세요. 저장할 때 내 목록에도 추가돼요.</p>
       </fieldset>
     </section>
+    <section class="fsec fsec-wait" id="waitSec" hidden aria-labelledby="secWait">
+      <div class="fsec-h"><span class="fnum wfn">📦</span><b id="secWait">입고·회신 대기</b><span class="fsub">밖에서 와야 하는 것</span><button type="button" class="fpull" id="waitAdd">+ 추가</button></div>
+      <div class="wedit" id="waitList"></div>
+    </section>
     <section class="fsec fsec-cur" aria-labelledby="wLegend">
       <div class="fsec-h"><span class="fnum">2</span><b id="wLegend">이번주 할일</b><span class="wkdate mono" id="wDates"></span></div>
       <fieldset>
@@ -225,6 +229,7 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
       <button class="tab" role="tab" data-list="vendors" aria-selected="false">협력사</button>
       <button class="tab" role="tab" data-list="cats" aria-selected="false">구분</button>
       <button class="tab" role="tab" data-list="reasons" aria-selected="false">미룬 이유</button>
+      <button class="tab" role="tab" data-list="waitTypes" id="sTabWait" aria-selected="false" hidden>대기 종류</button>
     </div>
     <p class="hint" id="sHint" style="margin:0"></p>
     <div class="addline">
@@ -247,13 +252,21 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
 
 <datalist id="dl-project"></datalist><datalist id="dl-part"></datalist><datalist id="dl-vendor"></datalist>
 <div class="mscrim" id="mscrim" hidden></div>
+<div class="modal" id="modsModal" hidden role="dialog" aria-modal="true" aria-labelledby="modsTitle">
+  <div class="mtop"><span class="mtag">🧩 기능 더하기</span><span class="spacer"></span><button class="btn ghost icon" id="modsClose" type="button" aria-label="닫기">✕</button></div>
+  <h2 id="modsTitle">필요한 기능만 골라 켜세요</h2>
+  <p class="hint" style="margin:0 0 10px">나에게만 적용돼요. 언제든 다시 끌 수 있고, 꺼도 넣어 둔 기록은 지워지지 않아요.</p>
+  <div class="modlist" id="modsList"></div>
+  <div class="mfoot"><span class="spacer"></span><button class="btn primary" id="modsOk" type="button">닫기</button></div>
+</div>
 <div class="modal" id="noticeModal" hidden role="dialog" aria-modal="true" aria-labelledby="ntTitle">
-  <div class="mtop"><span class="mtag">📢 공지사항</span><span class="nnav" id="ntNav" hidden><button class="btn ghost icon" id="ntPrev" type="button" aria-label="이전 공지">◀</button><span class="mono" id="ntPos"></span><button class="btn ghost icon" id="ntNext" type="button" aria-label="다음 공지">▶</button></span><button class="btn ghost icon" id="ntClose" aria-label="닫기">✕</button></div>
+  <div class="mtop"><span class="mtag" id="ntTag">📢 공지사항</span><span class="nnav" id="ntNav" hidden><button class="btn ghost icon" id="ntPrev" type="button" aria-label="이전 공지">◀</button><span class="mono" id="ntPos"></span><button class="btn ghost icon" id="ntNext" type="button" aria-label="다음 공지">▶</button></span><button class="btn ghost icon" id="ntClose" aria-label="닫기">✕</button></div>
   <div id="ntView">
     <h2><span id="ntTitle"></span><span class="nnew" id="ntNew" hidden>NEW</span></h2>
     <div class="ndate mono" id="ntDate"></div>
     <div class="nbody" id="ntBody"></div>
   </div>
+  <div id="ntAlerts"></div>
   <div class="nempty" id="ntEmpty" hidden>지금 올라와 있는 공지가 없어요.</div>
   <div id="ntBoard" hidden><div class="ntabs" id="ntTabs" role="tablist" aria-label="공지 종류"><button type="button" role="tab" data-ns="all">전체 공지</button><button type="button" role="tab" data-ns="team">우리 팀 공지</button></div><div class="nboard"><div class="nbhead"><span>번호</span><span>제목</span><span>게시일</span></div><div id="ntRows"></div></div></div>
   <div class="mfoot">
@@ -285,6 +298,9 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
 </div>
 <div class="umenu-pop" id="userMenu" hidden role="menu" aria-label="내 메뉴">
   <div class="umeta" id="userMeta"></div>
+  <button type="button" role="menuitem" id="miNotice">📢 전체 공지<span class="mdot" id="miNoticeDot" hidden>새 글</span></button>
+  <button type="button" role="menuitem" id="miMods">🧩 기능 더하기</button>
+  <button type="button" role="menuitem" id="miInstall" class="lite-only">📲 앱 설치</button>
   <button type="button" role="menuitem" id="miPin">비밀번호 바꾸기</button>
   <button type="button" role="menuitem" id="miGuide">📖 사용법</button>
   <button type="button" role="menuitem" id="miAdmin" hidden>⚙ 관리</button>
@@ -425,15 +441,15 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const APP_VERSION = "3.12.0";
+const APP_VERSION = "3.13.0";
 // 화면 제목: {앱} = 앱 이름, {팀} = 지금 보고 있는 팀 이름 (팀 이름은 관리 → 팀에서 바꿔요)
 const APP_TITLE = "Weekly Plan";
 // 로그인 화면에서 아이디 뒤에 자동으로 붙는 회사 메일 주소
 let MAIL_DOMAIN = "conet-sys.co.kr";
 const TITLE_FORMAT = "{앱} - {팀}";
 </script>
-<script>window.WK_BASE="assets/3.12.0/"</script>
-<script src="assets/3.12.0/core.js"></script>
+<script>window.WK_BASE="assets/3.13.0/"</script>
+<script src="assets/3.13.0/core.js"></script>
 
 </body>
 </html>
