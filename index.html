@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Weekly Plan</title>
-<link rel="icon" href="favicon.png?v=3.7.0">
-<link rel="manifest" href="manifest.webmanifest?v=3.7.0">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.7.0">
+<link rel="icon" href="favicon.png?v=3.9.0">
+<link rel="manifest" href="manifest.webmanifest?v=3.9.0">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.9.0">
 <meta name="theme-color" content="#10201D">
 <style>/* 시작 가림막: 로그인 확인이 끝날 때까지 업무 화면이 비치지 않게 */
 html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-lock,.wk-lock body{overflow:hidden}   /* 인트로 중엔 오른쪽 스크롤바 자리(흰 줄)도 어둡게 */
@@ -17,11 +17,12 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap">
-<link rel="stylesheet" href="assets/3.7.0/app.css">
+<link rel="stylesheet" href="assets/3.9.0/app.css">
 
 </head>
 <body>
 <div class="wkboot" id="wkBoot" aria-hidden="true"><i></i></div>
+<script>setTimeout(function(){var b=document.getElementById("wkBoot");if(b)b.remove();document.documentElement.classList.remove("wk-lock")},12000)</script>
 <header class="top">
   <div class="wrap">
     <div class="brand"><svg class="bmark" viewBox="0 0 512 512" role="img" aria-label="Rhy:se"><rect width="512" height="512" rx="112" fill="#10201D"></rect><rect x="76" y="76" width="360" height="360" rx="86" fill="none" stroke="#F4F7F6" stroke-width="30"></rect><g transform="translate(134,168) scale(1.6267)"><circle cx="12" cy="62" r="16" fill="#F4F7F6"></circle><path d="M12 62 H48 L60 22 L76 86 L90 46 L98 62 H138" fill="none" stroke="#F4F7F6" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="138" cy="62" r="16" fill="#F4F7F6"></circle></g></svg><h1 id="brandTitle">Weekly Plan</h1><span class="bver" id="bVer"></span><select class="sel" id="teamSwitch" hidden aria-label="볼 팀 고르기"></select></div>
@@ -145,7 +146,15 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
       <div class="fsec-h"><span class="fnum">2</span><b id="wLegend">이번주 할일</b><span class="wkdate mono" id="wDates"></span></div>
       <fieldset>
         <div class="f full"><label for="w-task">할일</label><input id="w-task" autocomplete="off" placeholder="예: 고객 수검 입회"></div>
-        <div class="f"><label for="w-due">언제까지</label><input id="w-due" type="date"></div>
+        <div class="f full dates3" data-d3="w"><span class="lab">일정</span>
+          <div class="d3row">
+            <div class="d3 d3rng"><span>시작일 → 종료일 <i>*</i></span>
+              <button type="button" class="rbtn" id="w-rng" data-rpk="w" aria-haspopup="dialog"><span class="rb-s" data-rpk-side="s"><small>시작</small><b id="w-rs">-</b></span><span class="rb-arr" aria-hidden="true">→</span><span class="rb-e" data-rpk-side="e"><small>종료</small><b id="w-re">고르기</b></span></button>
+              <input id="w-start" type="hidden"><input id="w-due" type="hidden"></div>
+          </div>
+          <div class="dq" role="group" aria-label="종료일 빠르게 고르기"><button type="button" data-dq="w:today">오늘</button><button type="button" data-dq="w:fri">이번주 금</button><button type="button" data-dq="w:nfri">그다음 주 금</button><span class="d3hint" id="w-d3hint"></span></div>
+          <div class="why" id="w-why" hidden><span class="why-q">일정을 미루는 이유 <em>(선택)</em></span><div class="why-c" id="w-whyc"></div><span class="why-h">이유 목록은 '내 목록 → 미룬 이유'에서 고쳐요</span></div>
+          <div class="phist" id="w-hist" hidden></div></div>
         <div class="f"><span class="lab" id="w-status-lab">상태</span>
           <div class="seg" role="radiogroup" aria-labelledby="w-status-lab">
             <label><input type="radio" name="w-status" id="w-s1" value="진행"><span class="진행">진행</span></label>
@@ -162,7 +171,15 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
       <fieldset>
         <p class="hint" id="carryNextMsg" hidden></p>
         <div class="f full"><label for="n-task">할일</label><input id="n-task" autocomplete="off" placeholder="예: 성적서 제출"></div>
-        <div class="f"><label for="n-due">언제까지</label><input id="n-due" type="date"></div>
+        <div class="f full dates3" data-d3="n"><span class="lab">일정</span>
+          <div class="d3row">
+            <div class="d3 d3rng"><span>시작일 → 종료일 <i>*</i></span>
+              <button type="button" class="rbtn" id="n-rng" data-rpk="n" aria-haspopup="dialog"><span class="rb-s" data-rpk-side="s"><small>시작</small><b id="n-rs">-</b></span><span class="rb-arr" aria-hidden="true">→</span><span class="rb-e" data-rpk-side="e"><small>종료</small><b id="n-re">고르기</b></span></button>
+              <input id="n-start" type="hidden"><input id="n-due" type="hidden"></div>
+          </div>
+          <div class="dq" role="group" aria-label="종료일 빠르게 고르기"><button type="button" data-dq="n:today">오늘</button><button type="button" data-dq="n:fri">그 주 금</button><button type="button" data-dq="n:nfri">그다음 주 금</button><span class="d3hint" id="n-d3hint"></span></div>
+          <div class="why" id="n-why" hidden><span class="why-q">일정을 미루는 이유 <em>(선택)</em></span><div class="why-c" id="n-whyc"></div><span class="why-h">이유 목록은 '내 목록 → 미룬 이유'에서 고쳐요</span></div>
+          <div class="phist" id="n-hist" hidden></div></div>
         <div class="f full"><label for="n-memo">메모</label><textarea id="n-memo" placeholder="다음주에 챙길 것"></textarea></div>
         <p class="hint">미리 정해둔 다음주 할일이에요. 다음주가 되면 이번주 칸으로 자동으로 올라갑니다. 비워두면 이번주 일이 끝나지 않았을 때 그대로 이월돼요.</p>
       </fieldset>
@@ -202,6 +219,7 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
       <button class="tab" role="tab" data-list="customers" aria-selected="false">고객사</button>
       <button class="tab" role="tab" data-list="vendors" aria-selected="false">협력사</button>
       <button class="tab" role="tab" data-list="cats" aria-selected="false">구분</button>
+      <button class="tab" role="tab" data-list="reasons" aria-selected="false">미룬 이유</button>
     </div>
     <p class="hint" id="sHint" style="margin:0"></p>
     <div class="addline">
@@ -386,6 +404,12 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
   </div>
 </div>
 <div class="toast" id="toast" hidden role="status"></div>
+<div class="rpk" id="rpk" hidden role="dialog" aria-modal="false" aria-label="시작일과 종료일 고르기">
+  <div class="rpk-h"><div class="rpk-sum"><span class="rpk-step" id="rpkStep">시작일을 눌러 주세요</span><b id="rpkSum"></b></div><button type="button" class="btn ghost icon" id="rpkX" aria-label="닫기">✕</button></div>
+  <div class="rpk-nav"><button type="button" class="btn ghost icon" id="rpkPrev" aria-label="이전 달">◀</button><span class="spacer"></span><button type="button" class="btn ghost icon" id="rpkNext" aria-label="다음 달">▶</button></div>
+  <div class="rpk-months" id="rpkMonths"></div>
+  <div class="rpk-f"><button type="button" class="btn ghost" id="rpkToday">오늘로 이동</button><span class="spacer"></span><button type="button" class="btn" id="rpkCancel">취소</button><button type="button" class="btn primary" id="rpkOk">완료</button></div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.0/dist/umd/supabase.js"></script>
 <script>
@@ -395,15 +419,15 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const APP_VERSION = "3.7.0";
+const APP_VERSION = "3.9.0";
 // 화면 제목: {앱} = 앱 이름, {팀} = 지금 보고 있는 팀 이름 (팀 이름은 관리 → 팀에서 바꿔요)
 const APP_TITLE = "Weekly Plan";
 // 로그인 화면에서 아이디 뒤에 자동으로 붙는 회사 메일 주소
 let MAIL_DOMAIN = "conet-sys.co.kr";
 const TITLE_FORMAT = "{앱} - {팀}";
 </script>
-<script>window.WK_BASE="assets/3.7.0/"</script>
-<script src="assets/3.7.0/core.js"></script>
+<script>window.WK_BASE="assets/3.9.0/"</script>
+<script src="assets/3.9.0/core.js"></script>
 
 </body>
 </html>
