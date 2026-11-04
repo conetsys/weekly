@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Weekly Plan</title>
-<link rel="icon" href="favicon.png?v=3.17.3">
-<link rel="manifest" href="manifest.webmanifest?v=3.17.3">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.17.3">
+<link rel="icon" href="favicon.png?v=3.18.0">
+<link rel="manifest" href="manifest.webmanifest?v=3.18.0">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.18.0">
 <meta name="theme-color" content="#10201D">
 <style>/* 시작 가림막: 로그인 확인이 끝날 때까지 업무 화면이 비치지 않게 */
 html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-lock,.wk-lock body{overflow:hidden}   /* 인트로 중엔 오른쪽 스크롤바 자리(흰 줄)도 어둡게 */
@@ -17,7 +17,7 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap">
-<link rel="stylesheet" href="assets/3.17.3/app.css">
+<link rel="stylesheet" href="assets/3.18.0/app.css">
 
 </head>
 <body>
@@ -39,6 +39,7 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
     <div class="actions">
       <button class="btn" id="installBtn" type="button" title="PC 바탕화면이나 휴대폰 홈 화면에 앱으로 설치하는 방법">📲 앱 설치</button>
       <button class="btn nbtn" id="noticeBtn" aria-label="팀 공지 · 알림"><span aria-hidden="true">📣</span> 팀 공지<span class="ndot" id="noticeDot" hidden></span></button>
+      <button class="btn nbtn" id="alertBtn" type="button" hidden aria-label="알림"><span aria-hidden="true">🔔</span> 알림<b class="aln" id="alertN" hidden></b></button>
       <button class="btn" id="reportBtn" type="button" title="주간 업무 보고서 (보고용 체크·PPT 내보내기)">📝 보고서</button>
       <button class="btn" id="copyReport" hidden>보고용 복사</button>
       <button class="btn" id="openSettings">🗂️ 내 목록</button>
@@ -55,6 +56,7 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
     <button class="btn" id="moreBtn" aria-expanded="false" aria-controls="moreFilters">필터</button>
   </div>
   <div class="more" id="moreFilters" hidden>
+    <div class="stf"><span class="flabel">상태</span><div id="stFilter" class="stfrow"></div></div>
     <div><span class="flabel">구분</span><select class="sel" id="catFilter" aria-label="구분"></select></div>
     <div><span class="flabel">고객사</span><select class="sel" id="custFilter" aria-label="고객사"></select></div>
     <button class="btn ghost" id="resetFilters">필터 초기화</button>
@@ -69,7 +71,6 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
         <button type="button" data-layout="table">▤ 표<span class="vm-l">로 보기</span></button>
         <button type="button" data-layout="list">☰ 목록<span class="vm-l">으로 보기</span></button>
         <button type="button" data-layout="share" id="shareBtn" hidden>🤝 Co-work<b class="shn" id="shareN" hidden></b></button>
-        <button type="button" data-layout="gantt" id="ganttBtn" hidden>3주 일정</button>
       </div>
       <div class="donemode" id="doneMode" role="group" aria-label="끝난 일 표시">
         <span class="dlab">끝난 일</span>
@@ -83,7 +84,6 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
       <button class="btn" id="clearSamples">예시 지우기</button>
       <span id="clearConfirm" hidden class="confirm"><p>손대지 않은 예시를 모두 지울까요?</p><button class="btn danger" id="clearYes">지우기</button><button class="btn ghost" id="clearNo">취소</button></span>
     </div>
-    <div class="tablebox calbox" id="calView" hidden></div>
     <div class="monthwrap" id="monthView" hidden></div>
     <div id="listView" hidden></div>
     <div id="shareView" hidden></div>
@@ -265,6 +265,23 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
   <p class="ferr" id="acErr" hidden></p>
   <div class="mfoot"><span class="spacer"></span><button class="btn" id="acCancel" type="button">닫기</button><button class="btn primary" id="acOk" type="button" hidden>저장</button></div>
 </div>
+<div class="modal" id="alertModal" hidden role="dialog" aria-modal="true" aria-labelledby="alTitle">
+  <div class="mtop"><span class="mtag">🔔 알림</span><span class="spacer"></span><button class="btn ghost icon" id="alClose" type="button" aria-label="닫기">✕</button></div>
+  <h2 id="alTitle">나에게 온 알림</h2>
+  <div id="alList" class="allist"></div>
+  <div class="mfoot"><span class="spacer"></span><button class="btn primary" id="alOk" type="button">닫기</button></div>
+</div>
+<div class="modal fbmodal" id="boardModal" hidden role="dialog" aria-modal="true" aria-labelledby="fbTitle">
+  <div class="mtop"><span class="mtag">💬 의견 보내기</span><span class="spacer"></span><button class="btn ghost icon" id="fbClose" type="button" aria-label="닫기">✕</button></div>
+  <h2 id="fbTitle">불편한 점 · 바라는 점을 들려주세요</h2>
+  <p class="hint" style="margin:0 0 8px">모두가 보는 게시판이에요. 같은 생각이면 👍 공감을 눌러 주세요. 공감이 많은 의견부터 먼저 살펴봐요.</p>
+  <div class="fbform"><div class="seg" id="fbKinds" role="group" aria-label="종류"><button type="button" data-fbk="불편해요">😣 불편해요</button><button type="button" data-fbk="제안">💡 제안</button><button type="button" data-fbk="질문">❓ 질문</button></div>
+    <textarea id="fbBody" maxlength="1000" placeholder="어떤 화면에서 무엇을 하다가 불편했는지, 무엇이 있으면 좋을지 적어 주세요" aria-label="의견 내용"></textarea>
+    <div class="fbsend"><span class="spacer"></span><button type="button" class="btn primary" id="fbSend">올리기</button></div></div>
+  <div class="fbtools" id="fbTools"><span class="seg"><button type="button" data-fbf="all">전체</button><button type="button" data-fbf="불편해요">😣</button><button type="button" data-fbf="제안">💡</button><button type="button" data-fbf="질문">❓</button><button type="button" data-fbf="mine">내 글</button></span><span class="spacer"></span><span class="seg"><button type="button" data-fbs="new">최신순</button><button type="button" data-fbs="like">공감순</button></span></div>
+  <div id="fbList" class="fblist"></div>
+  <div class="mfoot"><span class="spacer"></span><button class="btn primary" id="fbOk" type="button">닫기</button></div>
+</div>
 <div class="modal" id="modsModal" hidden role="dialog" aria-modal="true" aria-labelledby="modsTitle">
   <div class="mtop"><span class="mtag">🧩 기능 더하기</span><span class="spacer"></span><button class="btn ghost icon" id="modsClose" type="button" aria-label="닫기">✕</button></div>
   <h2 id="modsTitle">필요한 기능만 골라 켜세요</h2>
@@ -312,7 +329,11 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
 <div class="umenu-pop" id="userMenu" hidden role="menu" aria-label="내 메뉴">
   <div class="umeta" id="userMeta"></div>
   <button type="button" role="menuitem" id="miNotice">📢 전체 공지<span class="mdot" id="miNoticeDot" hidden>새 글</span></button>
+  <button type="button" role="menuitem" id="miTeamNotice" class="mt-only">📣 팀 공지</button>
+  <button type="button" role="menuitem" id="miLists" class="mt-only">🗂️ 내 목록</button>
   <button type="button" role="menuitem" id="miMods">🧩 기능 더하기</button>
+  <button type="button" role="menuitem" id="miBoard" hidden>💬 의견 보내기</button>
+  <button type="button" role="menuitem" id="miExport" hidden>💾 내 일정 내려받기</button>
   <button type="button" role="menuitem" id="miInstall" class="lite-only">📲 앱 설치</button>
   <button type="button" role="menuitem" id="miPin">비밀번호 바꾸기</button>
   <button type="button" role="menuitem" id="miGuide">📖 사용법</button>
@@ -463,22 +484,26 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const APP_VERSION = "3.17.3";
+const APP_VERSION = "3.18.0";
 // 화면 제목: {앱} = 앱 이름, {팀} = 지금 보고 있는 팀 이름 (팀 이름은 관리 → 팀에서 바꿔요)
 const APP_TITLE = "Weekly Plan";
 // 로그인 화면에서 아이디 뒤에 자동으로 붙는 회사 메일 주소
 let MAIL_DOMAIN = "conet-sys.co.kr";
 const TITLE_FORMAT = "{앱} - {팀}";
 </script>
-<script>window.WK_BASE="assets/3.17.3/"</script>
-<script src="assets/3.17.3/core.js"></script>
-<script src="assets/3.17.3/feat-mods.js"></script>
-<script src="assets/3.17.3/feat-lite.js"></script>
-<script src="assets/3.17.3/feat-pull.js"></script>
-<script src="assets/3.17.3/feat-wait.js"></script>
-<script src="assets/3.17.3/feat-account.js"></script>
-<script src="assets/3.17.3/feat-peer.js"></script>
-<script src="assets/3.17.3/feat-share.js"></script>
+<script>window.WK_BASE="assets/3.18.0/"</script>
+<script src="assets/3.18.0/core.js"></script>
+<script src="assets/3.18.0/feat-mods.js"></script>
+<script src="assets/3.18.0/feat-lite.js"></script>
+<script src="assets/3.18.0/feat-pull.js"></script>
+<script src="assets/3.18.0/feat-wait.js"></script>
+<script src="assets/3.18.0/feat-account.js"></script>
+<script src="assets/3.18.0/feat-peer.js"></script>
+<script src="assets/3.18.0/feat-share.js"></script>
+<script src="assets/3.18.0/feat-alerts.js"></script>
+<script src="assets/3.18.0/feat-export.js"></script>
+<script src="assets/3.18.0/feat-board.js"></script>
+<script src="assets/3.18.0/feat-mtab.js"></script>
 
 </body>
 </html>
