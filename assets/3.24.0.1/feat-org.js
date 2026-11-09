@@ -1,0 +1,53 @@
+/* rhy:se Weekly Plan — 🏢 조직도 보기 (feat-org.js, v3.24.0)
+   직원 누구나 회사 전체 조직도를 읽기 전용으로 봄 (고치기는 ⚙ 관리 → 조직도, 관리자만)
+   · 대표이사 · 임원 → 본부 › 실 › 팀 순서, 조직장 · 팀원의 이름 · 직책 · 메일
+   · 내 팀 강조 + "내 결재 라인"(사업 삭제 요청 등이 가는 상급자 → 대표)
+   · 🔎 이름 · 팀 · 메일로 찾기 (찾으면 그 조직이 펼쳐짐)
+   서버: 21-org-view.sql 의 wk_org_people (쓰는 중인 사람의 이름 · 메일 · 팀 · 직책). 조직(wk_units) · 대표(wk_company)는 원래 읽기 가능
+   이 파일이 고장 나도 주간 업무는 그대로 */
+const OV={units:null,people:null,err:"",q:"",open:new Set(),busy:false};
+async function ovLoad(){if(OV.busy)return;OV.busy=true;OV.err="";
+  try{const [u,p]=await Promise.all([api.units(),api.orgPeople()]);OV.units=u||[];OV.people=p||[]}
+  catch(x){OV.err=(x&&x.hint)||errText(x)}finally{OV.busy=false}}
+const ovKids=id=>(OV.units||[]).filter(u=>(u.parent_id||null)===(id||null)).sort((a,b)=>(a.sort||0)-(b.sort||0)||String(a.name).localeCompare(String(b.name),"ko"));
+const ovAnc=id=>{const out=[];let u=(OV.units||[]).find(x=>x.id===id),n=0;while(u&&n++<30){out.push(u);u=(OV.units||[]).find(x=>x.id===u.parent_id)}return out};
+const ovMyUnit=()=>{const me=st.me;if(!me)return null;const p=(OV.people||[]).find(x=>x.email===me.email)||{};return (OV.units||[]).find(u=>u.team_id&&u.team_id===me.team_id)||(OV.units||[]).find(u=>u.id===p.unit_id)||null};
+// 그 조직에 바로 속한 사람: 팀 조직이면 그 팀 사람(겸직 포함), 아니면 소속 조직이 그 조직인 사람 (조직장은 위에 따로)
+function ovPeopleOf(u){const hE=String((u.head&&u.head.email)||"").toLowerCase();
+  const L=(OV.people||[]).filter(p=>u.team_id?(p.team_id===u.team_id||p.extra_team===u.team_id):(!p.team_id&&p.unit_id===u.id)).filter(p=>p.email.toLowerCase()!==hE);
+  return L.sort((a,b)=>(a.role==="leader"?0:1)-(b.role==="leader"?0:1)||String(a.name).localeCompare(String(b.name),"ko"))}
+const ovMatch=(...v)=>{const q=OV.q.trim().toLowerCase();return !!q&&v.some(x=>String(x||"").toLowerCase().includes(q))};
+const ovMail=e=>e?`<a class="ovmail mono" href="mailto:${esc(e)}">${esc(e)}</a>`:"";
+const ovPerson=(name,title,email,cls)=>`<div class="ovp${cls?" "+cls:""}${ovMatch(name,title,email)?" hit":""}"><b>${esc(name||"이름 미정")}</b>${title?`<span class="ovt">${esc(title)}</span>`:""}${ovMail(email)}</div>`;
+function ovHit(u){if(!OV.q.trim())return false;const h=u.head||{};if(ovMatch(u.name,h.name,h.title,h.email))return true;if(ovPeopleOf(u).some(p=>ovMatch(p.name,p.title,p.email)))return true;return ovKids(u.id).some(ovHit)}
+const ovCount=u=>ovPeopleOf(u).length+((u.head&&(u.head.name||u.head.email))?1:0)+ovKids(u.id).reduce((n,k)=>n+ovCount(k),0);
+function ovUnit(u,depth){const h=u.head||{},kids=ovKids(u.id),pp=ovPeopleOf(u),mine=st.me&&(u.team_id&&(u.team_id===st.me.team_id||u.team_id===st.me.extra_team)),q=!!OV.q.trim(),hit=q&&ovHit(u);
+  if(q&&!hit)return "";const open=q||OV.open.has(u.id)||depth<1||mine;
+  return `<div class="ovu${mine?" mine":""}${u.team_id?" team":""}" style="--d:${depth}"><button type="button" class="ovh" data-ovt="${esc(u.id)}" aria-expanded="${open}"><span class="ovar" aria-hidden="true">${kids.length||pp.length?(open?"▾":"▸"):"·"}</span><span class="ovlv">${esc(u.level||"")}</span><b class="${ovMatch(u.name)?"hit":""}">${esc(u.name)}</b>${mine?'<span class="ovme">내 팀</span>':""}<span class="ovn dim">${ovCount(u)}명</span></button>
+    ${open?`<div class="ovbody">${h.name||h.email?ovPerson(h.name,h.title||"조직장",h.email,"head"):""}${pp.map(p=>ovPerson(p.name,p.title||(p.role==="leader"?"팀장":""),p.email,p.role==="leader"?"lead":"")).join("")}${kids.map(k=>ovUnit(k,depth+1)).join("")}</div>`:""}</div>`}
+// 내 결재 라인: 내 팀 위 조직장들 → 대표 (사업 삭제 요청 등이 가는 곳)
+function ovLine(){const u=ovMyUnit();if(!u)return "";const H=ovAnc(u.parent_id).map(x=>x.head).filter(h=>h&&(h.name||h.email));const c=(CO&&CO.ceo)||{};
+  const L=H.map(h=>`<b>${esc(h.name||h.email)}</b> <span class="dim">${esc(h.title||"")}</span>`);if(c.name||c.email)L.push(`<b>${esc(c.name||c.email)}</b> <span class="dim">${esc(c.title||"대표이사")}</span>`);
+  return L.length?`<div class="ovline"><span>내 결재 라인</span>${L.join('<i aria-hidden="true">→</i>')}<span class="dim ovlh">사업 삭제 요청은 첫 번째 분에게 가요</span></div>`:""}
+function ovRender(){const B=$("orgBody");if(!B)return;
+  if(OV.err){B.innerHTML=`<div class="rp-empty">${esc(OV.err)}</div>`;return}
+  if(!OV.units){B.innerHTML=`<div class="rp-empty">불러오는 중…</div>`;return}
+  const c=(CO&&CO.ceo)||{},ex=((CO&&CO.execs)||[]).filter(x=>x&&x.name),roots=ovKids(null);
+  const top=`<div class="ovtop">${ovPerson(c.name,c.title||"대표이사",c.email,"ceo")}${ex.map(x=>ovPerson(x.name,x.title,x.email,"exec")).join("")}</div>`;
+  const body=roots.map(u=>ovUnit(u,0)).join("");
+  B.innerHTML=`<div class="ovbar"><input type="search" id="ovQ" placeholder="🔎 이름 · 팀 · 메일로 찾기" value="${esc(OV.q)}" autocomplete="off"><button type="button" class="btn sm ghost" data-ovall="1">${OV.open.size?"모두 접기":"모두 펼치기"}</button>${st.me&&st.me.is_admin?`<button type="button" class="btn sm" data-ovadmin="1">⚙ 관리에서 고치기</button>`:""}</div>
+    ${ovLine()}${top}<div class="ovtree">${body||(OV.q.trim()?`<div class="rp-empty">'${esc(OV.q)}'(으)로 찾은 사람이 없어요</div>`:`<div class="rp-empty">아직 조직도가 없어요. 관리자가 ⚙ 관리 → 조직도에서 만들어요.</div>`)}</div>
+    <p class="hint" style="margin:10px 2px 0">조직도는 관리자가 ⚙ 관리 → 조직도에서 고쳐요. 틀린 곳이 있으면 관리자에게 알려 주세요.</p>`}
+async function orgOpen(){const m=$("userMenu");if(m)m.hidden=true;$("mscrim").hidden=false;$("orgModal").hidden=false;ovRender();await ovLoad();ovRender();const q=$("ovQ");if(q&&matchMedia("(min-width:721px)").matches)q.focus()}
+function orgClose(){if($("orgModal").hidden)return;$("orgModal").hidden=true;if([...document.querySelectorAll(".modal")].every(x=>x.hidden))$("mscrim").hidden=true}
+function orgPaint(){const b=$("miOrg");if(b)b.hidden=!st.me}
+document.addEventListener("click",e=>{
+  if(e.target.closest("#miOrg")){orgOpen();return}
+  if(e.target.closest("#orgClose")||(e.target.id==="mscrim"&&!$("orgModal").hidden)){orgClose();return}
+  if(!e.target.closest("#orgModal"))return;
+  const t=e.target.closest("[data-ovt]");if(t){const id=t.dataset.ovt;OV.open.has(id)?OV.open.delete(id):OV.open.add(id);ovRender();return}
+  if(e.target.closest("[data-ovall]")){if(OV.open.size)OV.open.clear();else (OV.units||[]).forEach(u=>OV.open.add(u.id));ovRender();return}
+  if(e.target.closest("[data-ovadmin]")){orgClose();const a=$("miAdmin")||$("adminBtn");if(a)a.click();setTimeout(()=>{const b=document.querySelector('#adTabs [data-ad="org"]');if(b)b.click()},600);return}});
+document.addEventListener("input",e=>{if(e.target.id!=="ovQ")return;OV.q=e.target.value;const pos=e.target.selectionStart;ovRender();const q=$("ovQ");if(q){q.focus();try{q.setSelectionRange(pos,pos)}catch(_){}}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("orgModal").hidden){e.stopImmediatePropagation();orgClose()}},true);
+wkFeat("org",{orgPaint,orgOpen,orgClose});
