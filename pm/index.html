@@ -5,9 +5,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>사업 관리 · rhy:se</title>
-<link rel="icon" href="favicon.png?v=3.28.1.1">
-<link rel="manifest" href="manifest.webmanifest?v=3.28.1.1">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.28.1.1">
+<link rel="icon" href="favicon.png?v=3.28.2.1">
+<link rel="manifest" href="manifest.webmanifest?v=3.28.2.1">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3.28.2.1">
 <meta name="theme-color" content="#10201D">
 <style>/* 시작 가림막: 로그인 확인이 끝날 때까지 업무 화면이 비치지 않게 */
 html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-lock,.wk-lock body{overflow:hidden}   /* 인트로 중엔 오른쪽 스크롤바 자리(흰 줄)도 어둡게 */
@@ -25,7 +25,7 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap">
-<link rel="stylesheet" href="assets/3.28.1.1/app.css">
+<link rel="stylesheet" href="assets/3.28.2.1/app.css">
 
 </head>
 <body>
@@ -161,8 +161,9 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
       <div class="wedit" id="waitList"></div>
     </section>
     <section class="fsec fsec-cur" aria-labelledby="wLegend">
-      <div class="fsec-h"><span class="fnum">2</span><b id="wLegend">이번주 할일</b><span class="wkdate mono" id="wDates"></span></div>
-      <fieldset>
+      <div class="fsec-h"><span class="fnum">2</span><b id="wLegend">이번주 할일</b><span class="wkdate mono" id="wDates"></span><button type="button" class="btn ghost wkclr" id="wClr" data-wkclr="w" hidden title="이 주 할일만 지웁니다 (다른 주는 그대로)">이 주 비우기</button></div>
+      <p class="clrnote" id="wClrNote" hidden>이 주 할일을 비웠어요. <b>저장</b>하면 이 주만 지워지고 다른 주는 그대로 남아요. <button type="button" class="btn ghost sm" data-wkundo="w">되돌리기</button></p>
+      <fieldset id="wFs">
         <div class="f full"><label for="w-task">할일</label><input id="w-task" autocomplete="off" placeholder="예: 고객 수검 입회"></div>
         <div class="f full dates3" data-d3="w"><span class="lab">일정</span>
           <div class="d3row">
@@ -185,8 +186,9 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
       </fieldset>
     </section>
     <section class="fsec fsec-nxt" aria-labelledby="nLegend">
-      <div class="fsec-h"><span class="fnum">3</span><b id="nLegend">다음주 계획</b><span class="wkdate mono" id="nDates"></span><button type="button" class="btn carrybtn" id="carryNext">↓ 이번주 내용 가져오기</button></div>
-      <fieldset>
+      <div class="fsec-h"><span class="fnum">3</span><b id="nLegend">다음주 계획</b><span class="wkdate mono" id="nDates"></span><button type="button" class="btn ghost wkclr" id="nClr" data-wkclr="n" hidden title="이 주 계획만 지웁니다 (이번주는 그대로)">이 주 비우기</button><button type="button" class="btn carrybtn" id="carryNext">↓ 이번주 내용 가져오기</button></div>
+      <p class="clrnote" id="nClrNote" hidden>다음주 계획을 비웠어요. <b>저장</b>하면 다음주만 지워지고 이번주 할일은 그대로 남아요. <button type="button" class="btn ghost sm" data-wkundo="n">되돌리기</button></p>
+      <fieldset id="nFs">
         <p class="hint" id="carryNextMsg" hidden></p>
         <div class="f full"><label for="n-task">할일</label><input id="n-task" autocomplete="off" placeholder="예: 성적서 제출"></div>
         <div class="f full dates3" data-d3="n"><span class="lab">일정</span>
@@ -213,8 +215,9 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
     <p class="err" id="formErr" hidden></p>
   </form>
   <div class="dfoot">
-    <button class="btn danger" id="delBtn" type="button">삭제</button>
-    <div class="confirm" id="delConfirm" hidden><p>이 업무와 모든 주간 기록을 삭제할까요?</p><button class="btn danger" id="delYes" type="button">삭제</button><button class="btn ghost" id="delNo" type="button">취소</button></div>
+    <button class="btn danger" id="delBtn" type="button">업무 전체 삭제</button>
+    <div class="confirm" id="delConfirm" hidden><p id="delMsg">이 업무와 모든 주간 기록을 삭제할까요?</p><button class="btn" id="delNext" type="button" hidden>다음주만 지우기</button><button class="btn danger" id="delYes" type="button">전체 삭제</button><button class="btn ghost" id="delNo" type="button">취소</button></div>
+    <div class="confirm doneask" id="doneAsk" hidden><p id="doneAskMsg"></p><button class="btn danger" id="doneDel" type="button">지우기</button><button class="btn" id="doneKeep" type="button">그대로 두기</button></div>
     <span class="spacer"></span>
     <button class="btn" id="cancelBtn" type="button">취소</button>
     <button class="btn primary" id="saveBtn" type="button">저장</button>
@@ -497,32 +500,32 @@ html{transition:background-color .32s ease}html.wk-lock{background:#10201D}.wk-l
  * ===================================================================== */
 const SUPABASE_URL = "https://bybidmhwfrkpkudoevdg.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_S12i30_ghKLgViL-QtGWKA_HwJ7KJrQ";   // Publishable key 또는 anon public 키. Secret/service_role 키는 절대 넣지 마세요
-const APP_VERSION = "3.28.1.1";
+const APP_VERSION = "3.28.2.1";
 // 화면 제목: {앱} = 앱 이름, {팀} = 지금 보고 있는 팀 이름 (팀 이름은 관리 → 팀에서 바꿔요)
 const APP_TITLE = "Weekly Plan";
 // 로그인 화면에서 아이디 뒤에 자동으로 붙는 회사 메일 주소
 let MAIL_DOMAIN = "conet-sys.co.kr";
 const TITLE_FORMAT = "{앱} - {팀}";
 </script>
-<script>window.WK_BASE="assets/3.28.1.1/"</script>
-<script src="assets/3.28.1.1/core.js"></script>
-<script src="assets/3.28.1.1/feat-mods.js"></script>
-<script src="assets/3.28.1.1/feat-pull.js"></script>
-<script src="assets/3.28.1.1/feat-wait.js"></script>
-<script src="assets/3.28.1.1/feat-account.js"></script>
-<script src="assets/3.28.1.1/feat-peer.js"></script>
-<script src="assets/3.28.1.1/feat-share.js"></script>
-<script src="assets/3.28.1.1/feat-alerts.js"></script>
-<script src="assets/3.28.1.1/feat-export.js"></script>
-<script src="assets/3.28.1.1/feat-board.js"></script>
-<script src="assets/3.28.1.1/feat-mtab.js"></script>
-<script src="assets/3.28.1.1/feat-dual.js"></script>
-<script src="assets/3.28.1.1/feat-proj.js"></script>
-<script src="assets/3.28.1.1/feat-cmt.js"></script>
-<script src="assets/3.28.1.1/feat-find.js"></script>
-<script src="assets/3.28.1.1/feat-org.js"></script>
-<script src="assets/3.28.1.1/feat-quote.js"></script>
-<script src="assets/3.28.1.1/feat-meet.js"></script>
+<script>window.WK_BASE="assets/3.28.2.1/"</script>
+<script src="assets/3.28.2.1/core.js"></script>
+<script src="assets/3.28.2.1/feat-mods.js"></script>
+<script src="assets/3.28.2.1/feat-pull.js"></script>
+<script src="assets/3.28.2.1/feat-wait.js"></script>
+<script src="assets/3.28.2.1/feat-account.js"></script>
+<script src="assets/3.28.2.1/feat-peer.js"></script>
+<script src="assets/3.28.2.1/feat-share.js"></script>
+<script src="assets/3.28.2.1/feat-alerts.js"></script>
+<script src="assets/3.28.2.1/feat-export.js"></script>
+<script src="assets/3.28.2.1/feat-board.js"></script>
+<script src="assets/3.28.2.1/feat-mtab.js"></script>
+<script src="assets/3.28.2.1/feat-dual.js"></script>
+<script src="assets/3.28.2.1/feat-proj.js"></script>
+<script src="assets/3.28.2.1/feat-cmt.js"></script>
+<script src="assets/3.28.2.1/feat-find.js"></script>
+<script src="assets/3.28.2.1/feat-org.js"></script>
+<script src="assets/3.28.2.1/feat-quote.js"></script>
+<script src="assets/3.28.2.1/feat-meet.js"></script>
 
 </body>
 </html>
