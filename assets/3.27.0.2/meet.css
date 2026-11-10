@@ -1,0 +1,74 @@
+/* 📝 팀 회의록 (meet.js, v3.27.0) — 열 때만 불러옴 */
+#meetPage{position:fixed;inset:0;z-index:19;background:var(--bg);overflow:auto;-webkit-overflow-scrolling:touch}
+html.meet-on{overflow:hidden}html.meet-on .mtab{display:none!important}
+.mp-top{position:sticky;top:0;z-index:3;background:var(--surface);border-bottom:1px solid var(--line)}
+.mp-bar{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:10px 16px;flex-wrap:wrap}
+.mp-bar h2{margin:0;font-size:18px}.mp-tabs{margin-left:6px}.mp-n{display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:var(--danger);color:#fff;font-size:11px;line-height:18px;text-align:center}
+.mp-wrap{max-width:1100px;margin:0 auto;padding:16px 16px 60px}
+.mp-empty{padding:40px 10px;text-align:center;color:var(--muted)}
+.mp-lead{margin:0 0 12px}
+.mp-tools{display:flex;align-items:center;gap:10px;margin-bottom:10px}.mp-q{flex:1;max-width:360px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);font:inherit}
+.mp-row{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:8px;cursor:pointer;font:inherit;color:var(--fg)}
+.mp-row:hover{border-color:var(--line-strong)}.mp-row.static{cursor:default}
+.mp-d{flex:none;width:46px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.mp-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.mp-t b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mp-t .dim{font-size:12.5px}
+.mp-meta{flex:none;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:52%}
+.mp-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;background:var(--surface-2);font-size:12px;color:var(--fg);border:0;font-family:inherit;white-space:nowrap}
+.mp-chip.me{background:var(--need-bg);color:var(--need);font-weight:700}.mp-chip.sh{color:var(--muted);max-width:260px;overflow:hidden;text-overflow:ellipsis}.mp-chip.sm{font-size:11px;padding:1px 7px}
+.mp-chip.p{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.mp-chip.tg{cursor:pointer;border:1px solid var(--line);background:var(--surface)}.mp-chip.tg.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.mp-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.mp-x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 4px;border-radius:6px;font-family:inherit}.mp-x:hover{background:var(--surface-2);color:var(--fg)}
+.mp-chip .mp-x{padding:0 2px;color:inherit;opacity:.7}
+.mp-vh{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:8px}.mp-vt{display:flex;flex-direction:column;gap:2px}.mp-vt h2{margin:0;font-size:20px}
+.mp-share{font-size:13px;color:var(--muted);margin-bottom:12px}.mp-share b{color:var(--fg)}
+.mp-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 18px 10px}
+.mp-sec{padding:12px 0;border-bottom:1px solid var(--line)}.mp-sec:last-child{border-bottom:0}.mp-sec h3{margin:0 0 8px;font-size:13px;color:var(--muted);font-weight:700}
+.mp-txt{white-space:pre-wrap;line-height:1.6;word-break:break-word}
+.mp-tt{width:100%;border-collapse:collapse;font-size:14px}.mp-tt th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:4px 8px;border-bottom:1px solid var(--line)}
+.mp-tt td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}.mp-tt tr:last-child td{border-bottom:0}.mp-tt tr.me td{background:var(--need-bg)}
+.mp-st{text-align:right;white-space:nowrap}.mp-ok{color:var(--done);font-weight:700;font-size:13px}
+.mp-cm{border:0;margin-top:14px}.mp-c{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:8px}.mp-c b{margin-right:8px}.mp-c .dim{font-size:12px}.mp-c .mp-x{float:right}
+.mp-cf{display:flex;gap:8px;align-items:flex-end}.mp-cf textarea{flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);font:inherit;resize:vertical}.mp-cnote{font-size:13px}
+.mp-log{background:var(--surface);border:1px solid var(--line-strong);border-radius:12px;padding:10px 14px;margin-bottom:12px}.mp-lh{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px}.mp-lh .dim{font-size:12.5px}
+.mp-lr{display:grid;grid-template-columns:44px 130px 70px 1fr;gap:10px;width:100%;text-align:left;border:0;background:none;padding:7px 6px;border-radius:8px;cursor:pointer;font:inherit;color:var(--fg);font-size:13px}
+.mp-lr:hover,.mp-lr.on{background:var(--accent-soft)}.mp-ls{color:var(--muted)}
+.mp-snap{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}.mp-sh{font-size:13px;margin-bottom:4px}
+.mp-tasks .mp-task{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:8px}
+.mp-task.done{opacity:.72}.mp-tw{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.mp-tw .dim{font-size:12.5px}.mp-ta{flex:none;display:flex;gap:6px;align-items:center}
+.mp-link{border:0;background:none;padding:0;color:var(--accent);text-decoration:underline;cursor:pointer;font:inherit}
+.mp-edit{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px}.mp-edit h2{margin:0 0 12px;font-size:18px}
+.mp-err{background:var(--danger-bg);color:var(--danger);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-weight:600}
+.mp-row2{display:flex;gap:12px;flex-wrap:wrap}.mp-f{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}.mp-f.grow{flex:1;min-width:220px}
+.mp-f>span{font-size:13px;font-weight:700}.mp-f>span em{font-style:normal;font-weight:400;margin-left:6px;font-size:12px}
+.mp-f input:not([type=checkbox]),.mp-f textarea,.mp-ter input{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);font:inherit}
+.mp-f textarea{resize:vertical;line-height:1.5}
+.mp-pick{position:relative;display:inline-block}.mp-pick input{width:180px}
+.mp-pl{position:absolute;left:0;top:calc(100% + 4px);z-index:5;min-width:220px;background:var(--surface);border:1px solid var(--line-strong);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:4px;display:flex;flex-direction:column}
+.mp-pl button{text-align:left;border:0;background:none;padding:7px 10px;border-radius:6px;cursor:pointer;font:inherit;color:var(--fg)}.mp-pl button:hover,.mp-pl button:first-child{background:var(--accent-soft)}.mp-pl .dim{padding:8px 10px;font-size:13px}
+.mp-te{display:flex;flex-direction:column;gap:8px}.mp-ter{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.mp-ter [data-mpt=task]{flex:1;min-width:200px}.mp-ter input[type=date]{width:150px}
+.mp-pick.own{min-width:130px}.mp-pick.own input{width:130px}
+.mp-shr{display:flex;gap:18px;flex-wrap:wrap}.mp-shr label{display:flex;gap:6px;align-items:center;font-size:14px}
+.mp-sub{display:flex;flex-direction:column;gap:6px;margin-top:10px}.mp-sub>.dim{font-size:12.5px}
+.mp-foot{display:flex;justify-content:flex-end;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+/* 메인 화면 위 '회의에서 나온 일' 한 줄 (feat-meet.js 가 그림 · 이 파일이 아직 안 불렸을 때를 위해 app.css 에도 있음) */
+@media (max-width:700px){
+  .mp-row{flex-wrap:wrap}.mp-meta{max-width:none;justify-content:flex-start;width:100%}
+  .mp-tt thead{display:none}.mp-tt tr{display:grid;grid-template-columns:1fr auto;padding:6px 0;border-bottom:1px solid var(--line)}.mp-tt td{border:0;padding:3px 6px}.mp-tt td:nth-child(2){grid-column:1/-1;order:-1;font-weight:600}
+  .mp-lr{grid-template-columns:40px 1fr;}.mp-lr span:nth-child(3){display:none}.mp-ls{grid-column:1/-1}
+  .mp-ter input[type=date]{width:132px}.mp-task{flex-wrap:wrap}.mp-ta{width:100%;justify-content:flex-end}
+}
+.mp-vh .spacer,.mp-bar .spacer{flex:1}
+/* v3.27.0: To-do 머리 · Due date 달력 단추 · 조직도 모양 공유 */
+.mp-teh{display:grid;grid-template-columns:130px 1fr 260px 24px;gap:8px;font-size:12px;color:var(--muted);font-weight:600;padding:0 2px}
+.mp-ter{display:grid;grid-template-columns:130px 1fr 260px 24px;gap:8px;align-items:center}
+.mp-ter .mp-pick.own,.mp-ter .mp-pick.own input{width:100%;min-width:0}
+.mp-rng .rbtn{width:100%;min-height:38px}
+.mp-org{display:flex;flex-direction:column;gap:6px}
+.mp-orow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding-left:calc(var(--dep,0) * 18px)}
+.mp-chip.un{cursor:pointer;border:1px dashed var(--accent);background:var(--surface);color:var(--accent);font-weight:700}.mp-chip.un.on{background:var(--accent);color:var(--accent-fg);border-style:solid}
+.mp-chip.tg.via{opacity:.75;cursor:default}
+.mp-ol{font-size:12px;min-width:70px}
+.mp-quick{margin-bottom:6px}.mp-chip.qk{cursor:pointer;border:1px dashed var(--line-strong);background:var(--surface);color:var(--fg)}
+.mp-sub>.dim em{font-style:normal;margin-left:6px}
+@media (max-width:700px){.mp-teh{display:none}.mp-ter{grid-template-columns:1fr 24px}.mp-ter>*:nth-child(1),.mp-ter>*:nth-child(2),.mp-ter>*:nth-child(3){grid-column:1}.mp-ter>.mp-x{grid-row:1;grid-column:2}}
