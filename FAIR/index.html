@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAIR 성적서 작성</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: 정확하고 조용한 검사 도구 — 도면이 주인공
+   IDEA: 검사원의 빨간 펜이 올라간 도면과, 옆에 붙은 FAIR 양식(Form 1·3)
+   PICTURE: 도면 뷰어 자체(풍선·영역·지시선이 살아있는 캔버스)
+   COLOUR and TYPE: 흰 종이 + 제도 잉크 #16202a + 검사 빨강 #d7262e + 청사진 슬레이트 #2a5d84 / IBM Plex Sans KR
+   LAYOUT: 상단 도구줄, 좌측 넓은 뷰어, 우측 탭(공통정보·부품표·특성); 900px 이하에서는 위아래 */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#12171c);--ink:light-dark(#16202a,#e6ebf0);--mut:light-dark(#5b6773,#94a1ad);
+--line:light-dark(#d9dee3,#2a333c);--desk:light-dark(#e3e7eb,#0a0e12);--panel:light-dark(#f4f6f8,#171d23);
+--red:#d7262e;--blue:light-dark(#2a5d84,#6aa6d6);--ok:light-dark(#1f7a3f,#5cc483);--sel:light-dark(#fff1f1,#3a1d20)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "IBM Plex Sans KR",system-ui,sans-serif;display:flex;flex-direction:column;overflow-x:clip}
+header{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:10px max(1.5vw,12px);border-bottom:1px solid var(--line)}
+h1{font-size:18px;font-weight:600;margin:0;display:flex;align-items:center;gap:8px;white-space:nowrap}
+h1 svg{flex:none}
+.tools{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.sep{width:1px;height:26px;background:var(--line);margin:0 3px}
+button,.btn{font:inherit;font-size:13.5px;min-height:36px;padding:0 11px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+button:hover,.btn:hover{border-color:var(--mut)}
+button:focus-visible,input:focus-visible,select:focus-visible,.btn:focus-within{outline:2px solid var(--blue);outline-offset:1px}
+button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button.ai.on{background:var(--blue);border-color:var(--blue);color:#fff}
+button.pri{background:var(--red);border-color:var(--red);color:#fff}
+.btn input{display:none}
+label.mini{font-size:13px;color:var(--mut);display:inline-flex;align-items:center;gap:6px}
+input[type=range]{width:70px}
+input[type=color]{width:32px;height:30px;border:1px solid var(--line);border-radius:6px;padding:2px;background:var(--bg)}
+main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(380px,46%);min-height:0}
+.vwrap{display:flex;flex-direction:column;min-height:0;min-width:0}
+#viewer{background:var(--desk);overflow:auto;position:relative;min-height:360px;flex:1;display:flex}
+.vbar{border-top:1px solid var(--line);padding:7px max(1.5vw,12px);background:var(--bg)}
+#pages{padding:24px;display:flex;flex-direction:column;align-items:center;gap:22px;width:max-content;flex:none;margin:auto;transform-origin:0 0}
+.pw{position:relative;box-shadow:0 1px 2px rgba(0,0,0,.12),0 6px 22px rgba(0,0,0,.10);background:#fff}
+.pg{position:absolute;left:0;top:0;transform-origin:0 0;background:#fff}
+.pg canvas{display:block}
+.pg svg{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.pw .pno{position:absolute;left:0;top:-19px;font-size:12px;color:var(--mut)}
+#viewer.mark .pg svg{cursor:crosshair}
+.bal{cursor:grab}
+.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;color:var(--mut)}
+.empty b{display:block;color:var(--ink);font-size:18px;margin-bottom:6px}
+aside{border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:var(--bg)}
+.tabs{display:flex;border-bottom:1px solid var(--line);background:var(--panel);overflow-x:auto}
+.tabs button{border:0;border-radius:0;background:none;min-height:44px;padding:0 16px;color:var(--mut);border-bottom:2px solid transparent;font-size:14px}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--red);font-weight:600}
+.tabs i{font-style:normal;font-size:12px;background:var(--line);color:var(--ink);border-radius:9px;padding:0 7px;margin-left:2px}
+.pane{display:none;flex:1;min-height:0;flex-direction:column}
+.pane.on{display:flex}
+.form{overflow:auto;padding:14px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;align-content:start}
+.form label{font-size:12px;color:var(--mut);display:flex;flex-direction:column;gap:3px}
+.form label.w{grid-column:1/-1}
+.form .grp{grid-column:1/-1;font-size:13px;font-weight:600;color:var(--ink);margin-top:6px;padding-top:10px;border-top:1px solid var(--line)}
+.form .seg{display:flex;gap:6px;flex-wrap:wrap}
+.form .seg button{min-height:34px}
+.found{grid-column:1/-1;font-size:12.5px;color:var(--mut);background:var(--panel);border-radius:7px;padding:8px 10px}
+input,select{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 7px;width:100%}
+.form input,.form select{font-size:14px;min-height:36px}
+.fill{background:light-dark(#fff8d6,#3a3418)}
+.sum{display:flex;gap:16px;align-items:baseline;padding:9px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.sum b{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.sum span{font-size:13px;color:var(--mut)}
+.sum .ng b{color:var(--red)}.sum .ok b{color:var(--ok)}
+.sum .sp{flex:1}
+.tbl{overflow:auto;flex:1}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{position:sticky;top:0;background:var(--panel);text-align:left;font-weight:500;color:var(--mut);padding:7px 5px;border-bottom:1px solid var(--line);white-space:nowrap;z-index:1}
+td{padding:3px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
+td input,td select{font-size:13px;padding:4px 5px;min-height:32px}
+td.n{width:50px}td.n input{text-align:center;font-weight:600}
+td.num input{text-align:right;font-variant-numeric:tabular-nums}
+td.mu{color:var(--mut);white-space:nowrap;font-size:12px}
+tr.sel td{background:var(--sel)}
+tr.warn td{background:light-dark(#fff4c2,#3a3216)}tr.warn.sel td{background:light-dark(#ffe9a8,#4a3a16)}
+input.warn{background:light-dark(#fff4c2,#3a3216);border-color:#d9a400}
+.cf{min-height:30px;padding:0 9px;background:#f2b705;border-color:#f2b705;color:#1b1400;font-weight:600}
+.okk{color:var(--ok);font-weight:700}
+input.miss,select.miss{border-color:var(--red);box-shadow:0 0 0 1px var(--red)}
+.found.err{background:light-dark(#fdecec,#3a1a1c);color:light-dark(#8a1717,#ffb3b3)}
+.sum .wa b{color:#b58300}
+.req::after{content:" *";color:var(--red)}
+.gt-digits,.gt-iso{display:none}.form[data-gt=digits] .gt-digits,.form[data-gt=iso] .gt-iso{display:flex}
+/* symbols */.symbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:7px 14px;border-bottom:1px solid var(--line);font-size:13px;color:var(--mut)}
+.symbar button{min-height:32px;padding:0 10px;font-size:15px;font-weight:600;color:var(--ink)}
+.symbar .mu{font-size:12px}
+/* rhy:se gate */.gate{position:fixed;inset:0;z-index:20;background:var(--bg);display:none;place-items:center;text-align:center;padding:24px}
+.gate.on{display:grid}.gate h2{font-size:22px;margin:14px 0 6px}.gate p{color:var(--mut);max-width:42ch;margin:0 auto}
+.gate svg{width:120px;height:40px}.gate path{fill:none;stroke:var(--red);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.who{font-size:12.5px;color:var(--mut);margin-left:auto;white-space:nowrap}
+#why{font-size:12.5px;color:#8a6400;padding:0 14px 8px;min-height:0}
+.jd{font-weight:600;white-space:nowrap;text-align:center}
+.jd.OK{color:var(--ok)}.jd.NG{color:var(--red)}
+.del{min-height:32px;padding:0 8px;border:0;color:var(--mut);background:none}
+.hint{font-size:12.5px;color:var(--mut);padding:9px 14px;border-top:1px solid var(--line)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:9;max-width:92vw}
+.toast.show{opacity:1;transform:translateX(-50%)}
+@media(prefers-reduced-motion:reduce){.toast{transition:none}}
+@media(max-width:900px){main{grid-template-columns:minmax(0,1fr);grid-template-rows:60vh auto}aside{border-left:0;border-top:1px solid var(--line)}}
+@media(max-width:600px){.form{grid-template-columns:minmax(0,1fr)}.hide-s{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1><svg width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="11" fill="#fff" stroke="#d7262e" stroke-width="2.4"/><text x="13" y="17.5" text-anchor="middle" font-size="12" font-weight="700" fill="#d7262e" font-family="Arial">1</text></svg>FAIR 성적서 작성</h1>
+  <div class="tools">
+    <label class="btn" title="PDF, PNG, JPG">도면 열기<input type="file" id="fDoc" accept=".pdf,.png,.jpg,.jpeg"></label>
+    <button id="bSample">샘플</button>
+    <span class="sep hide-s"></span>
+    <button id="m_mark" class="on" title="드래그: 영역+풍선, 클릭: 풍선만">✚ 넘버링</button>
+    <button id="m_dim" class="ai" title="영역 안의 치수를 찾아 넘버링">치수 인식</button>
+    <button id="m_note" class="ai" title="주기란을 드래그하면 항목별로 넘버링">주기 인식</button>
+    <button id="m_parts" class="ai" title="부품표를 드래그하면 Form 1에 입력">부품표 인식</button>
+    <button id="m_title" class="ai" title="표제란을 드래그하면 공통정보 입력">표제란 인식</button>
+    <span class="sep hide-s"></span>
+    <span class="who" id="who"></span>
+    <button id="eFair" class="pri">성적서 엑셀</button>
+    <button id="ePdf">풍선 PDF</button>
+    <button id="eJson" title="마크업·부품표·공통정보만 저장(원본 도면은 그대로)">작업 저장</button>
+    <label class="btn">작업 열기<input type="file" id="fJson" accept=".json"></label>
+  </div>
+</header>
+<main>
+  <section class="vwrap">
+  <div id="viewer" class="mark"><div id="pages"></div>
+    <div class="empty" id="empty"><div><b>PDF 또는 이미지 도면을 여세요</b>도면은 이 브라우저 안에서만 열리고 어디에도 업로드되지 않습니다.</div></div>
+  </div>
+  <div class="vbar tools">
+    <button id="m_move" title="풍선 이동·선택만">이동</button>
+    <span class="sep"></span>
+    <button id="bUndo" title="Ctrl+Z">되돌리기</button>
+    <button id="bRenum" title="1순위 왼쪽, 2순위 위에서부터 번호 다시 매기기">번호 재정렬</button>
+    <button id="zOut" aria-label="축소">−</button><span id="zLbl" style="font-size:13px;width:44px;text-align:center" title="Ctrl+휠로 확대/축소">100%</span><button id="zIn" aria-label="확대">+</button>
+    <button id="rL" title="왼쪽으로 90°">⟲</button><button id="rR" title="오른쪽으로 90°">⟳</button>
+    <label class="mini">크기<input type="range" id="rSize" min="0.4" max="2.4" step="0.1" value="1"></label>
+    <label class="mini">색<input type="color" id="cCol" value="#d7262e"></label>
+  </div>
+  </section>
+  <aside>
+    <div class="tabs" role="tablist">
+      <button data-tab="info" class="on">공통정보</button>
+      <button data-tab="parts">Form 1 부품표 <i id="cParts">0</i></button>
+      <button data-tab="chars">Form 3 특성 <i id="cChars">0</i></button>
+    </div>
+    <div class="pane on" id="p_info">
+      <div class="form" id="metaForm">
+        <div class="found" id="found">PDF를 열면 표제란에서 품번·도명·도번을 자동으로 읽습니다. 안 되면 <b>표제란 인식</b>으로 표제란을 드래그하세요.</div>
+        <label><span class="req">1. Part Number</span><input data-m="pn"></label>
+        <label><span class="req">2. Part Name</span><input data-m="name"></label>
+        <label>3. Serial Number<input data-m="serial" placeholder="-"></label>
+        <label><span class="req">4. FAIR Identifier</span><input data-m="fairId" placeholder="없으면 PO 번호"></label>
+        <label><span class="req">5. Part Revision Level</span><input data-m="partRev" placeholder="N/C"></label>
+        <label><span class="req">6. Drawing Number</span><input data-m="dwgNo"></label>
+        <label><span class="req">7. Drawing Revision Level</span><input data-m="dwgRev" placeholder="N/C"></label>
+        <label>8. Additional Changes<input data-m="addChg" placeholder="N/A"></label>
+        <label><span class="req">9. Manufacturing Process Ref.</span><input data-m="mfgRef" placeholder="작업지시/LOT 번호"></label>
+        <label><span class="req">10. Organization Name</span><input data-m="org"></label>
+        <label>11. Supplier Code<input data-m="supCode"></label>
+        <label>12. P.O. Number<input data-m="po"></label>
+        <label>13. 구분<select data-m="assy"><option value="1">Assembly FAI</option><option value="0">Detail Part</option></select></label>
+        <label>14. 범위<select data-m="partial"><option value="0">Full FAI</option><option value="1">Partial FAI</option></select></label>
+        <div class="grp">공통공차 (공통주기) <span class="req"></span></div>
+        <div class="found" id="gtFound" style="margin-top:-4px">개별 공차가 없는 치수에 적용됩니다. 표제란에서 자동으로 읽고, 없으면 직접 넣으세요.</div>
+        <label class="w">적용 방식<select data-m="gtMode"><option value="">— 선택 —</option><option value="digits">소수 자리수별 (X.X ±0.1 …)</option><option value="iso">KS B ISO 2768 등급</option><option value="none">없음 — 모든 치수가 개별공차/참고치수</option></select></label>
+        <label class="gt-digits">정수 (X)<input data-m="gt0" placeholder="예: 0.5" inputmode="decimal"></label>
+        <label class="gt-digits">소수 1자리 (X.X)<input data-m="gt1" placeholder="예: 0.1" inputmode="decimal"></label>
+        <label class="gt-digits">소수 2자리 (X.XX)<input data-m="gt2" placeholder="예: 0.05" inputmode="decimal"></label>
+        <label class="gt-digits">소수 3자리 (X.XXX)<input data-m="gt3" placeholder="예: 0.01" inputmode="decimal"></label>
+        <label class="gt-digits">각도 (°)<input data-m="gtA" placeholder="예: 0.5" inputmode="decimal"></label>
+        <label class="gt-iso">등급<select data-m="gtIso"><option value="">— 선택 —</option><option value="f">f 정밀급</option><option value="m">m 보통급</option><option value="c">c 거친급</option><option value="v">v 매우 거친급</option></select></label>
+        <label class="w">공통공차 원문 (엑셀 Comments에 함께 기록)<input data-m="gtText" placeholder="예: 공통공차 X.X ±0.1, 각도 ±0.5°"></label>
+        <div class="grp">서명</div>
+        <label><span class="req">20. FAIR Verified By</span><input data-m="by"></label>
+        <label><span class="req">21. Date</span><input data-m="date" type="date"></label>
+        <label class="w">26. Comments<input data-m="comment"></label>
+        <div class="grp">위치(Reference Location) 계산용 도면 테두리</div>
+        <label>구역 가로 칸 수<input data-m="zc" inputmode="numeric" placeholder="8"></label>
+        <label>구역 세로 칸 수<input data-m="zr" inputmode="numeric" placeholder="6"></label>
+      </div>
+    </div>
+    <div class="pane" id="p_parts">
+      <div class="sum"><div><b id="sP">0</b> <span>품목</span></div><div class="wa"><b id="sPW">0</b> <span>확인 필요</span></div><span class="sp"></span><button id="addPart">행 추가</button><button id="sortPart">품번순 정렬</button></div>
+      <div class="tbl"><table>
+        <thead><tr><th>품번</th><th>품명</th><th>수량</th><th>부품번호</th><th>도면번호/규격</th><th>Part Type</th><th>FAIR ID</th><th>확인</th><th></th></tr></thead>
+        <tbody id="tp"></tbody></table></div>
+      <div class="hint"><b>부품표 인식</b>을 누르고 도면의 부품목록 표 전체(제목행 포함)를 드래그하세요. 부품번호는 Form 1의 15번, 품명은 16번 칸으로 들어갑니다. 15행이 넘으면 FORM 1을 이어 붙입니다.</div>
+    </div>
+    <div class="pane" id="p_chars">
+      <div class="sum"><div><b id="sCnt">0</b> <span>특성</span></div><div class="ok"><b id="sOk">0</b> <span>합격</span></div><div class="ng"><b id="sNg">0</b> <span>불합격</span></div><div><b id="sNa">0</b> <span>미측정</span></div><div class="wa"><b id="sW">0</b> <span>확인 필요</span></div><span class="sp" style="flex:1"></span><button id="bRenum2" title="1순위 왼쪽, 2순위 위에서부터 번호 다시 매기기">번호 재정렬 (왼쪽→위)</button><button id="bLayout" title="모든 풍선을 겹치지 않게 다시 배치">풍선 자동 배치</button></div><div class="symbar">기호 넣기 <button data-sym="Ø" title="지름">Ø 지름</button><button data-sym="°" title="각도(도)">° 도</button><button data-sym="±" title="대칭공차">±</button><span class="mu">입력 칸을 누른 뒤 버튼을 누르세요 · AutoCAD처럼 %%c(Ø) %%d(°) %%p(±)도 됩니다</span></div><div id="why"></div>
+      <div class="tbl"><table>
+        <thead><tr><th>No</th><th>위치</th><th>구분</th><th>요구사항</th><th title="같은 형상의 개수 — 엑셀에 개소만큼 줄이 생깁니다">개소</th><th title="상한 편차">상한</th><th title="하한 편차">하한</th><th>측정값</th><th>판정</th><th>확인</th><th>계측기</th><th>비고</th><th></th></tr></thead>
+        <tbody id="tb"></tbody></table></div>
+      <details class="hint" id="gloss"><summary style="cursor:pointer"><b>도면 기호 인식 규칙</b> (깊이·자리파기·개소 등)</summary><div class="tbl" style="max-height:260px;margin-top:6px"><table id="glossT"></table></div></details>
+      <div class="hint">도면에서 <b>드래그</b>하면 영역+풍선, <b>클릭</b>하면 풍선만 붙습니다. <b>치수 인식</b>·<b>주기 인식</b>은 영역을 드래그하면 그 안의 항목을 찾아 번호와 내용을 채웁니다. 풍선은 끌어서 옮기고 Delete로 지웁니다. Ctrl+휠로 확대/축소.</div>
+    </div>
+  </aside>
+</main>
+<div class="toast" id="toast"></div>
+<div class="gate" id="gate" role="dialog" aria-live="polite"><div>
+  <svg viewBox="0 0 120 40" aria-hidden="true"><path d="M2 22h30l6-14 8 28 7-20 5 6h60"/></svg>
+  <h2 id="gateT">rhy:se에서 사용자를 확인하는 중…</h2>
+  <p id="gateP">잠시만 기다려 주세요.</p>
+</div></div>
+
+<script src="lib/pdf.min.js"></script>
+<script src="lib/pdf-lib.min.js"></script>
+<script src="dim.js"></script>
+<script src="fair.js"></script>
+<script>
+{
+const $=id=>document.getElementById(id);
+const NS='http://www.w3.org/2000/svg';
+const U=p=>new URL(p,location.href).href;
+if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc=U('lib/pdf.worker.min.js');
+
+// ---------- state ----------
+let doc=null,marks=[],parts=[],meta={org:'코넷시스㈜',assy:'1',partial:'0',date:new Date().toISOString().slice(0,10)};
+let zoom=1,rot=0,sel=null,mode='mark',baseR=10,undo=[];
+const CATS=['치수','주기','GD&T','기타'],TYPES=['a detail part','sub-assembly','software','standard catalogue item','COTS'];
+
+const toast=(t,ms=2400)=>{const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),ms)};
+const snap=()=>JSON.stringify({marks,parts});
+const push=s=>{undo.push(s??snap());if(undo.length>80)undo.shift()};
+const key=()=>doc?'fair-app:'+doc.name:null;
+function autosave(){if(!doc)return;try{localStorage.setItem(key(),JSON.stringify({marks,parts,meta,size:$('rSize').value,rot}))}catch(e){}}
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const num=v=>{if(v===''||v==null)return NaN;const s=String(v).replace(',','.').replace(/[^\d.\-+]/g,'');return s===''?NaN:parseFloat(s)};
+const gt=()=>({mode:meta.gtMode||'',d0:meta.gt0,d1:meta.gt1,d2:meta.gt2,d3:meta.gt3,ang:meta.gtA,iso:meta.gtIso});
+// 개소 수: 비고/요구사항의 "6x", "6×", "6개소", "6 PL", "6-Ø"
+const count=m=>{const q=parseInt(m.qty);if(q>=1)return Math.min(q,500);const t=(m.note||'')+' '+(m.nom||'');const x=t.match(/(\d+)\s*(?:[x×X](?![\d.])|개소|EA\b|PL\b|PLACES|-(?=\s*[ØRM]))/);const n=x?parseInt(x[1]):1;return n>1&&n<=200?n:1};
+const vals=m=>String(m.meas??'').split(/[,，;]/).map(v=>v.trim()).filter(Boolean);
+const judge=m=>{const v=vals(m);if(v.length<=1)return DIMX.judge(m,gt());const r=v.map(x=>DIMX.judge(m,gt(),x));return r.includes('NG')?'NG':r.every(x=>x==='OK')?'OK':''};
+const eff=m=>DIMX.effTol(m,gt());
+function reasons(m){if(m.ok)return [];const r=[];if(m.chk)r.push(m.chk);if(m.cat==='치수'&&eff(m).miss)r.push('이 자리수의 공통공차 값이 없음');return r}
+function zone(m){
+  const pg=doc?.pages[m.page];if(!pg)return '';
+  const zc=parseInt(meta.zc)||8,zr=parseInt(meta.zr)||6,L=.032,R=.992,T=.016,B=.984;
+  const c=Math.min(zc,Math.max(1,1+Math.floor((m.x/pg.w-L)/((R-L)/zc)))),r=Math.min(zr,Math.max(1,1+Math.floor((m.y/pg.h-T)/((B-T)/zr))));
+  return 'ABCDEFGHJK'[zr-r]+c;
+}
+
+// ---------- loading ----------
+async function openPdf(bytes,name){
+  const pdf=await pdfjsLib.getDocument({data:bytes.slice(0)}).promise,pages=[];
+  for(let i=1;i<=pdf.numPages;i++){const p=await pdf.getPage(i);const vp=p.getViewport({scale:1});pages.push({w:vp.width,h:vp.height,vp,p})}
+  setDoc({kind:'pdf',name,bytes,pdf,pages});
+}
+function openImg(url,name,bytes,type){
+  return new Promise((res,rej)=>{const im=new Image();im.onload=()=>{setDoc({kind:'img',name,bytes,type,pages:[{w:im.naturalWidth,h:im.naturalHeight,img:im}]});res()};im.onerror=rej;im.src=url});
+}
+function setDoc(d){
+  doc=d;baseR=Math.max(d.pages[0].w,d.pages[0].h)*0.0105;
+  marks=[];parts=[];undo=[];sel=null;rot=0;let restored=false;
+  meta={org:meta.org||'코넷시스㈜',by:meta.by||'',date:meta.date||new Date().toISOString().slice(0,10),supCode:meta.supCode||'',assy:'1',partial:'0',zc:meta.zc||'',zr:meta.zr||''};
+  $('found').textContent='표제란을 읽는 중…';
+  try{const s=JSON.parse(localStorage.getItem(key())||'null');if(s&&(s.marks?.length||s.parts?.length)){marks=s.marks||[];parts=s.parts||[];meta={...meta,...s.meta};$('rSize').value=s.size||1;rot=s.rot||0;restored=true;toast('이전 작업을 불러왔습니다')}}catch(e){}
+  const V=$('viewer'),vw=V.clientWidth-48,vh=V.clientHeight-48,p0=d.pages[0],pw=rot%180?p0.h:p0.w,ph=rot%180?p0.w:p0.h;zoom=Math.min(2,Math.max(.1,Math.min(vw/pw,vh/ph)));
+  for(const k in inkC)delete inkC[k];
+  $('empty').style.display='none';if(d.kind==='pdf'&&!restored)autoTitle();render();table();ptable();fillMeta();
+  setTimeout(async()=>{if(doc!==d)return;for(let i=0;i<d.pages.length;i++){await pdfTokens(i)}await getInk(0)},1200);
+}
+$('fDoc').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;e.target.value='';
+  const buf=new Uint8Array(await f.arrayBuffer());
+  try{
+    if(/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name)){toast('도면 여는 중…',8000);await openPdf(buf,f.name)}
+    else await openImg(URL.createObjectURL(f),f.name,buf,f.type);
+  }catch(err){console.error(err);toast('도면을 열 수 없습니다')}
+};
+
+// ---------- rendering ----------
+let tasks=[],rendered=1;
+async function render(){
+  tasks.forEach(t=>{try{t.cancel()}catch(e){}});tasks=[];
+  const host=$('pages');host.innerHTML='';host.style.transform='';rendered=zoom;
+  if(!doc)return;
+  $('zLbl').textContent=Math.round(zoom*100)+'%';
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  for(let i=0;i<doc.pages.length;i++){
+    const pg=doc.pages[i],W=pg.w*zoom,H=pg.h*zoom,DW=rot%180?H:W,DH=rot%180?W:H;
+    const wrap=document.createElement('div');wrap.className='pw';wrap.style.width=DW+'px';wrap.style.height=DH+'px';
+    const box=document.createElement('div');box.className='pg';box.style.width=W+'px';box.style.height=H+'px';
+    box.style.transform=rot===90?`translate(${DW}px,0) rotate(90deg)`:rot===180?`translate(${DW}px,${DH}px) rotate(180deg)`:rot===270?`translate(0,${DH}px) rotate(270deg)`:'none';
+    const c=document.createElement('canvas');const s=Math.min(dpr,8000/Math.max(W,H));c.width=Math.round(W*s);c.height=Math.round(H*s);c.style.width=W+'px';c.style.height=H+'px';
+    const svg=document.createElementNS(NS,'svg');svg.setAttribute('viewBox',`0 0 ${pg.w} ${pg.h}`);svg.dataset.page=i;
+    box.append(c,svg);wrap.append(box);
+    if(doc.pages.length>1){const l=document.createElement('div');l.className='pno';l.textContent=(i+1)+' / '+doc.pages.length;wrap.append(l)}
+    host.append(wrap);pg.wrap=wrap;pg.svg=svg;bindSvg(svg);
+    const ctx=c.getContext('2d');
+    if(doc.kind==='img')ctx.drawImage(pg.img,0,0,c.width,c.height);
+    else{const t=pg.p.render({canvasContext:ctx,viewport:pg.p.getViewport({scale:zoom*s})});tasks.push(t);t.promise.catch(()=>{})}
+  }
+  {const vh=$('viewer').clientHeight,f=doc.pages[0],l=doc.pages[doc.pages.length-1],h0=(rot%180?f.w:f.h)*zoom,h1=(rot%180?l.w:l.h)*zoom;
+   host.style.paddingTop=Math.max(24,(vh-h0)/2)+'px';host.style.paddingBottom=Math.max(24,(vh-h1)/2)+'px'}
+  draw();
+}
+function R(){return baseR*parseFloat($('rSize').value)}
+function edgePt(m,r){
+  const [x,y,w,h]=m.rect;const tx=Math.max(x,Math.min(m.x,x+w)),ty=Math.max(y,Math.min(m.y,y+h));
+  const dx=tx-m.x,dy=ty-m.y,d=Math.hypot(dx,dy);if(d<=r)return null;return [m.x+dx/d*r,m.y+dy/d*r,tx,ty];
+}
+function draw(){
+  if(!doc)return;const r=R();
+  doc.pages.forEach((pg,i)=>{const svg=pg.svg;if(!svg)return;
+    svg.innerHTML=marks.filter(m=>m.page===i).map(m=>{
+      const s=m.id===sel,c=m.color,sw=r*(s?.26:.17);let o='';
+      if(m.rect){const [x,y,w,h]=m.rect;o+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}" fill-opacity="${s?.12:.06}" stroke="${c}" stroke-width="${r*.1}" stroke-dasharray="${r*.4} ${r*.25}"/>`;
+        const e=edgePt(m,r);if(e)o+=`<line x1="${e[0]}" y1="${e[1]}" x2="${e[2]}" y2="${e[3]}" stroke="${c}" stroke-width="${r*.12}"/>`;}
+      const t=String(m.n),fs=r*(t.length>2?.85:1.05);
+      o+=`<g class="bal" data-id="${m.id}">${s?`<circle cx="${m.x}" cy="${m.y}" r="${r*1.45}" fill="${c}" fill-opacity=".18"/>`:''}<circle cx="${m.x}" cy="${m.y}" r="${r}" fill="#fff" stroke="${c}" stroke-width="${sw}"/><text x="${m.x}" y="${m.y}" dy=".36em"${rot?` transform="rotate(${-rot} ${m.x} ${m.y})"`:''} text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="${fs}" fill="${c}">${t}</text></g>`;
+      return o;}).join('');});
+  stats();
+}
+function stats(){
+  let ok=0,ng=0,na=0;marks.forEach(m=>{const j=judge(m);j==='OK'?ok++:j==='NG'?ng++:na++});
+  $('sCnt').textContent=$('cChars').textContent=marks.length;$('sW').textContent=marks.filter(m=>reasons(m).length).length;$('sOk').textContent=ok;$('sNg').textContent=ng;$('sNa').textContent=na;
+}
+
+// ---------- coordinates ----------
+function toPage(i,u,v){const {w,h}=doc.pages[i];return rot===90?[v,h-u]:rot===180?[w-u,h-v]:rot===270?[w-v,u]:[u,v]}
+function toScr(i,x,y){const {w,h}=doc.pages[i];return rot===90?[h-y,x]:rot===180?[w-x,h-y]:rot===270?[y,w-x]:[x,y]}
+function pt(svg,e){const i=+svg.dataset.page,b=doc.pages[i].wrap.getBoundingClientRect();return toPage(i,(e.clientX-b.left)/zoom,(e.clientY-b.top)/zoom)}
+function nextN(){return marks.reduce((a,m)=>Math.max(a,+m.n||0),0)+1}
+
+// ---------- interaction ----------
+function bindSvg(svg){
+  let act=null;
+  svg.addEventListener('pointerdown',e=>{
+    if(e.button!==0)return;
+    const page=+svg.dataset.page,[x,y]=pt(svg,e),g=e.target.closest('.bal');
+    svg.setPointerCapture(e.pointerId);
+    if(g){const m=marks.find(k=>k.id===g.dataset.id);select(m.id,true);act={t:'move',m,dx:m.x-x,dy:m.y-y,before:snap(),moved:false};return}
+    if(mode==='move'){select(null);return}
+    const ai=mode!=='mark',ghost=document.createElementNS(NS,'rect');
+    ghost.setAttribute('fill',ai?'#2a5d84':'none');ghost.setAttribute('fill-opacity','.08');ghost.setAttribute('stroke',ai?'#2a5d84':$('cCol').value);ghost.setAttribute('stroke-width',R()*.1);ghost.setAttribute('stroke-dasharray',`${R()*.4} ${R()*.25}`);svg.append(ghost);
+    act={t:'rect',page,x0:x,y0:y,x1:x,y1:y,ghost,sx:e.clientX,sy:e.clientY};
+  });
+  svg.addEventListener('pointermove',e=>{
+    if(!act)return;const [x,y]=pt(svg,e);
+    if(act.t==='move'){act.m.x=x+act.dx;act.m.y=y+act.dy;act.moved=true;draw();return}
+    act.x1=x;act.y1=y;const g=act.ghost;
+    g.setAttribute('x',Math.min(act.x0,x));g.setAttribute('y',Math.min(act.y0,y));g.setAttribute('width',Math.abs(x-act.x0));g.setAttribute('height',Math.abs(y-act.y0));
+  });
+  const end=e=>{
+    if(!act)return;const a=act;act=null;
+    if(a.t==='move'){if(a.moved){push(a.before);autosave()}return}
+    a.ghost.remove();
+    const big=Math.hypot(e.clientX-a.sx,e.clientY-a.sy)>8;
+    const box=[Math.min(a.x0,a.x1),Math.min(a.y0,a.y1),Math.abs(a.x1-a.x0),Math.abs(a.y1-a.y0)];
+    if(mode!=='mark'){if(!big)return toast('영역을 드래그해 주세요');run(mode,a.page,box);return}
+    push();const m=newMark(a.page,big?box:null);if(!big){m.x=a.x0;m.y=a.y0}
+    if(big&&!inkC[a.page])getInk(a.page).then(()=>{place(m,a.page,box,'ur');draw();autosave()});
+    marks.push(m);sel=m.id;draw();table();autosave();showTab('chars');
+    setTimeout(()=>{const i=document.querySelector(`tr[data-id="${m.id}"] input[data-k=nom]`);i&&i.focus()},30);
+  };
+  svg.addEventListener('pointerup',end);svg.addEventListener('pointercancel',end);
+}
+function newMark(page,rect,side){
+  const pg=doc.pages[page],r=R(),m={id:Math.random().toString(36).slice(2,9),n:nextN(),page,color:$('cCol').value,cat:'치수',nom:'',up:'',lo:'',meas:'',tool:'',note:'',rect};
+  if(rect){m.pref=side==='left'?'left':'ur';place(m,page,rect,m.pref)}
+  return m;
+}
+// ---------- 풍선 자리 찾기: 다른 풍선·도면 글자·선과 겹치지 않는 가까운 곳 ----------
+const inkC={};
+async function getInk(i){
+  if(inkC[i])return inkC[i];if(!doc)return null;const pg=doc.pages[i],s=Math.min(2,1800/Math.max(pg.w,pg.h)),W=Math.round(pg.w*s),H=Math.round(pg.h*s);
+  const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d',{willReadFrequently:true});g.fillStyle='#fff';g.fillRect(0,0,W,H);
+  if(doc.kind==='img')g.drawImage(pg.img,0,0,W,H);else await pg.p.render({canvasContext:g,viewport:pg.p.getViewport({scale:s})}).promise;
+  const d=g.getImageData(0,0,W,H).data,W1=W+1,I=new Uint32Array(W1*(H+1));
+  for(let y=0;y<H;y++){let row=0;for(let x=0;x<W;x++){const k=(y*W+x)*4;row+=(d[k]*.3+d[k+1]*.59+d[k+2]*.11)<170?1:0;I[(y+1)*W1+x+1]=I[y*W1+x+1]+row}}
+  return inkC[i]={s,W,H,I};
+}
+function inkAt(ink,x,y,r){const s=ink.s,x0=Math.max(0,Math.floor((x-r)*s)),y0=Math.max(0,Math.floor((y-r)*s)),x1=Math.min(ink.W,Math.ceil((x+r)*s)),y1=Math.min(ink.H,Math.ceil((y+r)*s));
+  if(x1<=x0||y1<=y0)return 1;const W1=ink.W+1,I=ink.I;return (I[y1*W1+x1]-I[y0*W1+x1]-I[y1*W1+x0]+I[y0*W1+x0])/((x1-x0)*(y1-y0))}
+const hitCR=(px,py,r,[x,y,w,h])=>{const dx=px-Math.max(x,Math.min(px,x+w)),dy=py-Math.max(y,Math.min(py,y+h));return dx*dx+dy*dy<r*r};
+function segHit(ax,ay,bx,by,cx,cy,r){const vx=bx-ax,vy=by-ay,L=vx*vx+vy*vy||1,t=Math.max(0,Math.min(1,((cx-ax)*vx+(cy-ay)*vy)/L));return Math.hypot(ax+vx*t-cx,ay+vy*t-cy)<r}
+function segX(a,b,c,d,e,f,g,h){const o=(p,q,r,s,t,u)=>Math.sign((r-p)*(u-q)-(s-q)*(t-p));return o(a,b,c,d,e,f)!==o(a,b,c,d,g,h)&&o(e,f,g,h,a,b)!==o(e,f,g,h,c,d)}
+function scrVec(a){const sx=Math.cos(a),sy=Math.sin(a);return rot===90?[sy,-sx]:rot===180?[-sx,-sy]:rot===270?[-sy,sx]:[sx,sy]}
+function place(m,page,rect,pref){
+  const pg=doc.pages[page],r=R(),ink=inkC[page],toks=pg.text||[],others=marks.filter(o=>o.page===page&&o!==m);
+  const [x,y,w,h]=rect,cx=x+w/2,cy=y+h/2,pa={ur:-Math.PI/4,left:Math.PI,r:0}[pref||'ur'];
+  const near=toks.filter(t=>t.bb[2]>x-r*9&&t.bb[0]<x+w+r*9&&t.bb[3]>y-r*9&&t.bb[1]<y+h+r*9).map(t=>[t.bb[0],t.bb[1],t.bb[2]-t.bb[0],t.bb[3]-t.bb[1]]);
+  let best=null;
+  for(const d of [1.5,2.1,2.8,3.7,4.8,6.2,8])for(let k=0;k<24;k++){
+    const a=k/24*2*Math.PI,[vx,vy]=scrVec(a),px=cx+vx*(w/2+d*r),py=cy+vy*(h/2+d*r);
+    if(px<r*1.4||py<r*1.4||px>pg.w-r*1.4||py>pg.h-r*1.4)continue;
+    let sc=d*1.3+(1-Math.cos(a-pa))*1.4;
+    for(const o of others){const dd=Math.hypot(o.x-px,o.y-py);if(dd<r*2.6)sc+=60+(r*2.6-dd)/r*60;if(o.rect&&hitCR(px,py,r*1.1,o.rect))sc+=10;if(segHit(px,py,cx,cy,o.x,o.y,r*1.1))sc+=8}
+    if(hitCR(px,py,r*1.2,rect))sc+=40;
+    {const qx=Math.max(x,Math.min(px,x+w)),qy=Math.max(y,Math.min(py,y+h));for(const o of others){if(!o.rect)continue;const [ox,oy,ow,oh]=o.rect,ex=Math.max(ox,Math.min(o.x,ox+ow)),ey=Math.max(oy,Math.min(o.y,oy+oh));if(segX(px,py,qx,qy,o.x,o.y,ex,ey))sc+=30}}
+    for(const b of near)if(hitCR(px,py,r*1.15,b))sc+=14;
+    if(ink)sc+=inkAt(ink,px,py,r*1.2)*70;
+    if(!best||sc<best.sc)best={sc,px,py};
+  }
+  if(best){m.x=best.px;m.y=best.py}else{m.x=x+w+r*1.7;m.y=y-r*1.1}
+}
+async function relayout(){
+  if(!doc||!marks.length)return;toast('풍선 자리를 다시 잡는 중…',8000);push();
+  const pgs=[...new Set(marks.map(m=>m.page))];for(const i of pgs){await getInk(i);await pdfTokens(i)}
+  const order=[...marks].filter(m=>m.rect).sort((a,b)=>a.n-b.n);
+  for(let pass=0;pass<2;pass++)order.forEach(m=>place(m,m.page,m.rect,m.pref||(m.cat==='주기'?'left':'ur')));
+  draw();autosave();toast('풍선을 겹치지 않게 다시 배치했습니다');
+}
+function select(id,fromView){
+  sel=id;draw();
+  document.querySelectorAll('#tb tr').forEach(tr=>tr.classList.toggle('sel',tr.dataset.id===id));
+  if(id&&fromView){showTab('chars');const tr=document.querySelector(`#tb tr[data-id="${id}"]`);tr&&tr.scrollIntoView({block:'nearest'})}
+}
+function scrollToMark(m){
+  const wr=doc.pages[m.page].wrap;if(!wr)return;const b=wr.getBoundingClientRect(),v=$('viewer'),vb=v.getBoundingClientRect(),[u,w]=toScr(m.page,m.x,m.y);
+  v.scrollBy({left:b.left+u*zoom-vb.left-vb.width/2,top:b.top+w*zoom-vb.top-vb.height/2,behavior:'smooth'});
+}
+function delMark(id){push();marks=marks.filter(m=>m.id!==id);marks.sort((a,b)=>a.n-b.n).forEach((m,i)=>m.n=i+1);sel=null;draw();table();autosave()}
+document.addEventListener('keydown',e=>{
+  const typing=/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName);
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&!typing){e.preventDefault();doUndo()}
+  if((e.key==='Delete'||e.key==='Backspace')&&sel&&!typing){e.preventDefault();delMark(sel)}
+});
+function doUndo(){if(!undo.length)return toast('되돌릴 작업이 없습니다');const s=JSON.parse(undo.pop());marks=s.marks;parts=s.parts;if(!marks.find(m=>m.id===sel))sel=null;draw();table();ptable();autosave()}
+$('bUndo').onclick=doUndo;
+$('bLayout').onclick=relayout;
+// 위치순 번호: 장 → 왼쪽(열) → 위쪽. 같은 치수에서 나온 지름·깊이는 원래 순서 유지
+function renumberByPos(){
+  if(!marks.length)return;push();const r=R(),out=[];
+  [...new Set(marks.map(m=>m.page))].sort((a,b)=>a-b).forEach(pg=>{
+    const L=marks.filter(m=>m.page===pg).map(m=>{const cx=m.rect?m.rect[0]+m.rect[2]/2:m.x,cy=m.rect?m.rect[1]+m.rect[3]/2:m.y,[sx,sy]=toScr(pg,cx,cy);return {m,sx,sy}}).sort((a,b)=>a.sx-b.sx);
+    const cols=[];L.forEach(o=>{const c=cols[cols.length-1];if(c&&o.sx-c.last<=r*2.5){c.items.push(o);c.last=o.sx}else cols.push({last:o.sx,items:[o]})});
+    cols.forEach(c=>c.items.sort((a,b)=>Math.abs(a.sy-b.sy)>r*.5?a.sy-b.sy:(+a.m.n)-(+b.m.n)).forEach(o=>out.push(o.m)));
+  });
+  out.forEach((m,i)=>m.n=i+1);draw();table();autosave();toast('왼쪽 → 위 순서로 번호를 다시 매겼습니다 (되돌리기 가능)');
+}
+$('bRenum').onclick=renumberByPos;$('bRenum2').onclick=renumberByPos;
+const MODES={mark:'',dim:'치수가 있는 영역을 드래그하세요',note:'주기란 전체를 드래그하세요',parts:'부품목록 표 전체(제목행 포함)를 드래그하세요',title:'표제란을 드래그하세요',move:''};
+function setMode(m){mode=m;Object.keys(MODES).forEach(k=>$('m_'+k).classList.toggle('on',k===m));$('viewer').classList.toggle('mark',m!=='move');if(MODES[m])toast(MODES[m],2800)}
+Object.keys(MODES).forEach(k=>$('m_'+k).onclick=()=>setMode(k));
+
+// zoom: buttons + Ctrl/⌘+wheel (미리 CSS로 확대하고 멈추면 다시 그림)
+let zt=null;
+function zoomTo(z,cx,cy){
+  if(!doc)return;const v=$('viewer'),vb=v.getBoundingClientRect();z=Math.min(5,Math.max(.1,z));
+  cx=cx??vb.width/2;cy=cy??vb.height/2;const f=z/zoom;
+  const host=$('pages');
+  zoom=z;$('zLbl').textContent=Math.round(zoom*100)+'%';
+  const sl=(v.scrollLeft+cx)*f-cx,st=(v.scrollTop+cy)*f-cy;
+  host.style.transform=`scale(${zoom/rendered})`;host.style.transformOrigin='0 0';
+  v.scrollLeft=sl;v.scrollTop=st;
+  clearTimeout(zt);zt=setTimeout(()=>{const a=v.scrollLeft,b=v.scrollTop;render();v.scrollLeft=a;v.scrollTop=b},220);
+}
+$('viewer').addEventListener('wheel',e=>{
+  if(!(e.ctrlKey||e.metaKey)||!doc)return;e.preventDefault();
+  const vb=$('viewer').getBoundingClientRect();zoomTo(zoom*Math.exp(-e.deltaY*(e.deltaMode?0.05:0.0018)),e.clientX-vb.left,e.clientY-vb.top);
+},{passive:false});
+$('zIn').onclick=()=>zoomTo(zoom*1.25);$('zOut').onclick=()=>zoomTo(zoom/1.25);
+const turn=d=>{if(!doc)return;rot=(rot+d+360)%360;render();autosave();toast('회전 '+rot+'°')};
+$('rL').onclick=()=>turn(-90);$('rR').onclick=()=>turn(90);
+$('rSize').oninput=()=>{draw();autosave()};
+$('cCol').onchange=()=>{if(sel){push();const m=marks.find(k=>k.id===sel);m.color=$('cCol').value;draw();autosave()}};
+
+// ---------- tabs & meta ----------
+function showTab(t){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='p_'+t))}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+function fillMeta(hl){$('metaForm').dataset.gt=meta.gtMode||'';document.querySelectorAll('[data-m]').forEach(i=>{i.value=meta[i.dataset.m]??'';if(hl&&hl.includes(i.dataset.m)){i.classList.add('fill');setTimeout(()=>i.classList.remove('fill'),6000)}})}
+$('metaForm').addEventListener('input',e=>{const k=e.target.dataset.m;if(!k)return;meta[k]=e.target.value;e.target.classList.remove('miss');if(k==='gtMode')$('metaForm').dataset.gt=meta.gtMode;if(/^(zc|zr|gt)/.test(k))table();autosave()});
+
+// ---------- characteristic table (Form 3) ----------
+const QTY_RE=/(^|\s)(\d+)\s*(?:[x×X]|개소|EA|PL\.?|PLACES)(?=\s|$)/i;
+const stripNote=()=>marks.forEach(m=>{
+  if(m.cat==='주기')m.nom=String(m.nom||'').replace(/^주\s*기\s*\d+\s*[.)．]\s*/,'');
+  // 비고에 적힌 개소(32x, 18개소 …)는 개소 열로 옮기기
+  const x=String(m.note||'').match(QTY_RE);
+  if(x){if(!m.qty||m.qty==='1')m.qty=String(parseInt(x[2]));m.note=String(m.note).replace(QTY_RE,' ').replace(/\s+/g,' ').trim()}
+});
+function table(){
+  stripNote();const rows=[...marks].sort((a,b)=>(+a.n)-(+b.n));
+  $('tb').innerHTML=rows.length?rows.map(m=>{const j=judge(m),nt=m.cat==='주기',e=eff(m),rs=reasons(m),ph=e.src==='공통공차'?[e.up,e.lo]:['',''];return `<tr data-id="${m.id}" class="${m.id===sel?'sel':''}${rs.length?' warn':''}" title="${esc(rs.join(' / '))}">
+    <td class="n"><input data-k="n" value="${esc(m.n)}" inputmode="numeric" aria-label="번호"></td>
+    <td class="mu">${zone(m)}</td>
+    <td><select data-k="cat" aria-label="구분" style="min-width:70px">${CATS.map(c=>`<option${c===m.cat?' selected':''}>${c}</option>`).join('')}</select></td>
+    <td class="${nt?'':'num'}"><input data-k="nom" value="${esc(m.nom)}" aria-label="요구사항" style="min-width:${nt?'220px':'72px'}"></td>
+    <td class="num"><input data-k="qty" value="${esc(m.qty??'')}" inputmode="numeric" placeholder="1" aria-label="개소" style="min-width:44px;width:52px"></td>
+    <td class="num"><input data-k="up" value="${esc(m.up)}" placeholder="${ph[0]}" title="${e.src==='공통공차'?'공통공차 적용':''}" aria-label="상한 편차" style="min-width:52px"></td>
+    <td class="num"><input data-k="lo" value="${esc(m.lo)}" placeholder="${ph[1]}" aria-label="하한 편차" style="min-width:52px"></td>
+    <td class="num"><input data-k="meas" value="${esc(m.meas)}" aria-label="측정값" style="min-width:${count(m)>1?'120px':'64px'}" placeholder="${nt?'확인':count(m)>1?count(m)+'개소: 값, 값, …':''}" title="${count(m)>1?count(m)+'개소 — 쉼표로 구분해 개소별 측정값을 넣으면 엑셀에 한 줄씩 들어갑니다':''}"></td>
+    <td class="jd ${j}">${j==='OK'?'합격':j==='NG'?'불합격':'–'}</td>
+    <td>${rs.length?`<button class="cf" title="${esc(rs.join(' / '))}">확인</button>`:m.ok?'<span class="okk" title="확인함">✓</span>':''}</td>
+    <td><input data-k="tool" value="${esc(m.tool)}" aria-label="계측기" style="min-width:76px"></td>
+    <td><input data-k="note" value="${esc(m.note)}" aria-label="비고" style="min-width:70px"></td>
+    <td><button class="del" aria-label="삭제" title="삭제">✕</button></td></tr>`}).join('')
+  :`<tr><td colspan="13" style="padding:28px 14px;color:var(--mut);text-align:center">아직 특성이 없습니다. 도면에서 치수 위를 드래그하거나 <b>주기 인식</b>으로 주기란을 드래그해 보세요.</td></tr>`;
+  stats();
+}
+let pending=null;
+let prevN=null,lastIn=null;
+// 기호 넣기: 마지막으로 누른 입력 칸의 커서 자리에
+function insertSym(el,sym){
+  if(!el)return;const a=el.selectionStart??el.value.length,b=el.selectionEnd??a;
+  el.value=el.value.slice(0,a)+sym+el.value.slice(b);el.focus();el.setSelectionRange(a+sym.length,a+sym.length);
+  el.dispatchEvent(new Event('input',{bubbles:true}));
+}
+document.querySelector('.symbar').addEventListener('mousedown',e=>{const b=e.target.closest('[data-sym]');if(!b)return;e.preventDefault();
+  let el=lastIn&&document.body.contains(lastIn)?lastIn:null;
+  if(!el&&sel)el=document.querySelector(`#tb tr[data-id="${sel}"] [data-k=nom]`);
+  if(!el)return toast('기호를 넣을 칸을 먼저 누르세요');
+  insertSym(el,b.dataset.sym);clearTimeout(el._ct);el._ct=setTimeout(()=>el.dispatchEvent(new Event('change',{bubbles:true})),900)});
+$('tb').addEventListener('focusout',e=>{if(e.target.matches('input[data-k]')&&e.target.dataset.k!=='n')lastIn=e.target});
+$('tb').addEventListener('input',e=>{const el=e.target;if(!el.matches('input[data-k]'))return;
+  if(/%%[cdp]/i.test(el.value)){const pos=el.selectionStart,before=el.value.length;el.value=el.value.replace(/%%c/gi,'Ø').replace(/%%d/gi,'°').replace(/%%p/gi,'±');const p2=Math.max(0,pos-(before-el.value.length));el.setSelectionRange(p2,p2)}},true);
+$('tb').addEventListener('focusin',e=>{if(e.target.dataset.k)pending=snap();const tr=e.target.closest('tr');if(!tr?.dataset.id)return;const m=marks.find(x=>x.id===tr.dataset.id);if(e.target.dataset.k==='n')prevN=m.n;
+  $('why').textContent=reasons(m).length?'확인 필요: '+reasons(m).join(' / '):'';if(tr.dataset.id!==sel)select(tr.dataset.id)});
+$('tb').addEventListener('input',e=>{
+  const k=e.target.dataset.k,tr=e.target.closest('tr');if(!k||!tr||k==='n')return;
+  const m=marks.find(x=>x.id===tr.dataset.id);m[k]=e.target.value;if(['nom','up','lo'].includes(k)&&m.chk)m.ok=true;
+  const j=judge(m),c=tr.querySelector('.jd');c.className='jd '+j;c.textContent=j==='OK'?'합격':j==='NG'?'불합격':'–';
+  if(k==='n')draw();else stats();
+});
+$('tb').addEventListener('change',e=>{
+  const k=e.target.dataset.k,tr=e.target.closest('tr');
+  if(k==='n'&&tr){const m=marks.find(x=>x.id===tr.dataset.id),v=parseInt(e.target.value);
+    if(!v||v<1){e.target.value=m.n;return}
+    const o=marks.find(x=>x!==m&&+x.n===v);if(o){o.n=prevN;toast(`${v}번이 이미 있어서 ${prevN}번과 서로 바꿨습니다`)}m.n=v;draw()}
+  if(k==='qty'&&tr){const m=marks.find(x=>x.id===tr.dataset.id),q=parseInt(e.target.value);m.qty=q>1?String(q):(q===1?'1':'')}
+  if(pending){push(pending);pending=null}autosave();if(['n','cat','nom','up','lo','qty','note'].includes(k))table()});
+$('tb').addEventListener('click',e=>{
+  const tr=e.target.closest('tr');if(!tr?.dataset.id)return;
+  if(e.target.closest('.del')){delMark(tr.dataset.id);return}
+  const m=marks.find(x=>x.id===tr.dataset.id);
+  if(e.target.closest('.cf')){push();m.ok=true;table();autosave();$('why').textContent='';return}
+  select(m.id);if(e.target.tagName==='TD')scrollToMark(m);
+});
+const enterNext=e=>{if(e.key!=='Enter'||!(e.target.dataset.k||e.target.dataset.p))return;e.preventDefault();
+  const a=e.target.dataset.k?'k':'p',tr=e.target.closest('tr').nextElementSibling,n=tr&&tr.querySelector(`[data-${a}="${e.target.dataset[a]}"]`);n?n.focus():e.target.blur()};
+$('tb').addEventListener('keydown',enterNext);$('tp').addEventListener('keydown',enterNext);
+
+// ---------- parts table (Form 1) ----------
+function ptable(){
+  const W=(p,k)=>p.chk&&p.chk[k]?' class="warn" title="OCR로 읽은 값 — 확인 필요"':'';
+  $('tp').innerHTML=parts.length?parts.map((p,i)=>`<tr data-i="${i}">
+    <td class="n"><input data-p="no" value="${esc(p.no)}"${W(p,"no")} aria-label="품번"></td>
+    <td><input data-p="name" value="${esc(p.name)}"${W(p,"name")} aria-label="품명" style="min-width:120px"></td>
+    <td class="num"><input data-p="qty" value="${esc(p.qty)}"${W(p,"qty")} aria-label="수량" style="min-width:52px"></td>
+    <td><input data-p="pn" value="${esc(p.pn)}"${W(p,"pn")} aria-label="부품번호" style="min-width:120px"></td>
+    <td><input data-p="dwg" value="${esc(p.dwg)}"${W(p,"dwg")} aria-label="도면번호" style="min-width:100px"></td>
+    <td><select data-p="type" aria-label="Part Type" style="min-width:120px"><option value=""></option>${TYPES.map(t=>`<option${t===p.type?' selected':''}>${t}</option>`).join('')}</select></td>
+    <td><input data-p="fairId" value="${esc(p.fairId)}" aria-label="FAIR ID" placeholder="N/A" style="min-width:70px"></td>
+    <td>${p.chk&&Object.values(p.chk).some(Boolean)?'<button class="cf">확인</button>':''}</td>
+    <td><button class="del" aria-label="삭제">✕</button></td></tr>`).join('')
+  :`<tr><td colspan="9" style="padding:28px 14px;color:var(--mut);text-align:center">부품표가 비어 있습니다. <b>부품표 인식</b>을 누르고 도면의 부품목록을 드래그하세요.</td></tr>`;
+  $('sP').textContent=$('cParts').textContent=parts.length;$('sPW').textContent=parts.filter(p=>p.chk&&Object.values(p.chk).some(Boolean)).length;
+}
+$('tp').addEventListener('focusin',e=>{if(e.target.dataset.p)pending=snap()});
+$('tp').addEventListener('input',e=>{const k=e.target.dataset.p,tr=e.target.closest('tr');if(!k||!tr)return;const p=parts[+tr.dataset.i];p[k]=e.target.value;if(p.chk&&p.chk[k]){p.chk[k]=false;e.target.classList.remove('warn')}});
+$('tp').addEventListener('change',e=>{if(pending){push(pending);pending=null}autosave();ptable()});
+$('tp').addEventListener('click',e=>{const tr=e.target.closest('tr');if(!tr)return;if(e.target.closest('.del')){push();parts.splice(+tr.dataset.i,1);ptable();autosave()}else if(e.target.closest('.cf')){push();parts[+tr.dataset.i].chk={};ptable();autosave()}});
+$('addPart').onclick=()=>{push();parts.push({no:String(parts.length+1),name:'',qty:'',pn:'',dwg:'',type:'',fairId:''});ptable();autosave();const l=$('tp').lastElementChild;l&&l.querySelector('[data-p=name]').focus()};
+$('sortPart').onclick=()=>{push();parts.sort((a,b)=>(num(a.no)||1e9)-(num(b.no)||1e9));ptable();autosave()};
+
+// ---------- text tokens (PDF 글자 / OCR) ----------
+function tok(s,p0,u,len,h,conf=100){
+  const up=[u[1],-u[0]],c=[[0,0],[len,0],[0,h],[len,h]].map(([a,b])=>[p0[0]+u[0]*a+up[0]*b,p0[1]+u[1]*a+up[1]*b]);
+  const xs=c.map(q=>q[0]),ys=c.map(q=>q[1]),cx=p0[0]+u[0]*len/2+up[0]*h/2,cy=p0[1]+u[1]*len/2+up[1]*h/2;
+  return {s,u,h,a0:p0[0]*u[0]+p0[1]*u[1],a1:p0[0]*u[0]+p0[1]*u[1]+len,perp:cx*up[0]+cy*up[1],cx,cy,bb:[Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)],conf};
+}
+function phrases(toks,gapF=1.1){
+  const out=[],by={};toks.forEach(t=>{const k=Math.round(Math.atan2(t.u[1],t.u[0])/(Math.PI/2));(by[k]=by[k]||[]).push(t)});
+  for(const k in by){
+    const L=by[k].sort((a,b)=>a.perp-b.perp||a.a0-b.a0),lines=[];
+    L.forEach(t=>{const l=lines.find(l=>Math.abs(l.perp-t.perp)<Math.max(l.h,t.h)*.55);l?l.t.push(t):lines.push({perp:t.perp,h:t.h,t:[t]})});
+    lines.forEach(l=>{l.t.sort((a,b)=>a.a0-b.a0);let cur=null;
+      l.t.forEach(t=>{if(cur&&t.a0-cur.a1<Math.max(cur.h,t.h)*gapF){cur.s+=(t.a0-cur.a1>cur.h*.15?' ':'')+t.s;cur.a1=Math.max(cur.a1,t.a1);cur.h=Math.max(cur.h,t.h);cur.conf=Math.min(cur.conf,t.conf);cur.bb=[Math.min(cur.bb[0],t.bb[0]),Math.min(cur.bb[1],t.bb[1]),Math.max(cur.bb[2],t.bb[2]),Math.max(cur.bb[3],t.bb[3])];cur.cx=(cur.bb[0]+cur.bb[2])/2;cur.cy=(cur.bb[1]+cur.bb[3])/2}
+        else{cur&&out.push(cur);cur={...t,bb:[...t.bb]}}});cur&&out.push(cur)});
+  }
+  return out;
+}
+async function pdfTokens(i){
+  const pg=doc.pages[i];if(doc.kind!=='pdf')return [];
+  if(!pg.text){const tc=await pg.p.getTextContent();
+    pg.text=tc.items.filter(it=>it.str&&it.str.trim()).map(it=>{const t=pdfjsLib.Util.transform(pg.vp.transform,it.transform),d=Math.hypot(t[0],t[1])||1,h=Math.hypot(t[2],t[3])||1;
+      return tok(it.str.trim(),[t[4],t[5]],[t[0]/d,t[1]/d],it.width||h*it.str.length*.5,h)})}
+  return pg.text;
+}
+const inside=(t,[x,y,w,h])=>t.cx>=x&&t.cx<=x+w&&t.cy>=y&&t.cy<=y+h;
+const loadScript=src=>new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.append(s)});
+async function b64(url){const t=(await (await fetch(U(url))).text()).trim(),bin=atob(t),a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a}
+let ocrP=null;
+function getOcr(){
+  if(!ocrP)ocrP=(async()=>{
+    if(!window.Tesseract)await loadScript(U('ocr/tesseract.min.js'));
+    const [kor,eng]=await Promise.all([b64('ocr/kor.traineddata.b64.txt'),b64('ocr/eng.traineddata.b64.txt')]);
+    return await Tesseract.createWorker([{code:'kor',data:kor},{code:'eng',data:eng}],1,{workerPath:U('ocr/worker.min.js'),corePath:U('ocr/tesseract-core-simd-lstm.wasm.js'),workerBlobURL:false,cacheMethod:'none'});
+  })().catch(e=>{ocrP=null;throw e});
+  return ocrP;
+}
+async function ocr(canvas,psm){const w=await getOcr();await w.setParameters({tessedit_pageseg_mode:String(psm)});return (await w.recognize(canvas,{},{blocks:true,text:true})).data}
+async function cropCanvas(i,[rx,ry,rw,rh],target=2600,maxK){
+  const pg=doc.pages[i],k=Math.min(maxK||(doc.kind==='img'?3:6),Math.max(1,target/Math.max(rw,rh))),c=document.createElement('canvas');
+  c.width=Math.max(8,Math.round(rw*k));c.height=Math.max(8,Math.round(rh*k));const g=c.getContext('2d',{willReadFrequently:true});g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);
+  if(doc.kind==='img')g.drawImage(pg.img,rx,ry,rw,rh,0,0,c.width,c.height);
+  else await pg.p.render({canvasContext:g,viewport:pg.p.getViewport({scale:k}),transform:[1,0,0,1,-rx*k,-ry*k]}).promise;
+  return {c,k};
+}
+function words(data){const w=[];(data.blocks||[]).forEach(b=>b.paragraphs.forEach(p=>p.lines.forEach(l=>l.words.forEach(x=>w.push(x)))));return w}
+function olines(data){const w=[];(data.blocks||[]).forEach(b=>b.paragraphs.forEach(p=>p.lines.forEach(l=>w.push(l))));return w}
+async function ocrTokens(i,rect,both=true){
+  const {c,k}=await cropCanvas(i,rect),[rx,ry]=rect,out=[];
+  words(await ocr(c,11)).forEach(x=>{const b=x.bbox;out.push(tok(x.text,[rx+b.x0/k,ry+b.y1/k],[1,0],(b.x1-b.x0)/k,(b.y1-b.y0)/k,x.confidence))});
+  if(both){const rc=document.createElement('canvas');rc.width=c.height;rc.height=c.width;const g=rc.getContext('2d');g.translate(rc.width,0);g.rotate(Math.PI/2);g.drawImage(c,0,0);const ch=c.height;
+    words(await ocr(rc,11)).forEach(x=>{const b=x.bbox;out.push(tok(x.text,[rx+b.y1/k,ry+(ch-b.x0)/k],[0,-1],(b.x1-b.x0)/k,(b.y1-b.y0)/k,x.confidence))})}
+  return out.filter(t=>t.conf>=45);
+}
+let busy=false;
+async function run(kind,page,rect){
+  if(busy)return toast('이전 인식이 끝날 때까지 기다려 주세요');busy=true;
+  try{if(kind==='dim'||kind==='note'){await getInk(page);await pdfTokens(page)}await ({dim:autoDim,note:autoNote,parts:autoParts,title:autoTitleRect})[kind](page,rect)}
+  catch(e){console.error(e);toast(/OCR|Tesseract|worker|fetch/i.test(String(e))?'OCR 엔진을 불러오지 못했습니다':'인식 중 오류가 났습니다')}
+  finally{busy=false}
+}
+const slow=()=>toast('글자 인식 중… (처음엔 엔진을 불러오느라 10초쯤 걸립니다)',90000);
+
+// ---------- 치수 인식 ----------
+async function autoDim(page,rect){
+  let toks=(await pdfTokens(page)).filter(t=>inside(t,rect)),how='PDF 글자';
+  if(!toks.some(t=>/\d/.test(t.s))){slow();toks=(await ocrTokens(page,rect)).filter(t=>inside(t,rect));how='OCR'}
+  toks=DIMX.stackTol(toks);
+  let found=phrases(toks).map(p=>({p,d:DIMX.parseDim(p.s,how==='OCR'?'ocr':'pdf')})).filter(x=>x.d);
+  found.forEach(f=>{if(how==='OCR'&&f.p.conf<70&&!f.d.chk)f.d.chk='OCR 신뢰도 낮음('+Math.round(f.p.conf)+'%)'});
+  found=found.filter((a,ia)=>!found.some((b,ib)=>ib!==ia&&b.p.cx>=a.p.bb[0]&&b.p.cx<=a.p.bb[2]&&b.p.cy>=a.p.bb[1]&&b.p.cy<=a.p.bb[3]&&(b.p.conf>a.p.conf||(b.p.conf===a.p.conf&&ib<ia))));
+  found=found.filter(({p})=>!marks.some(m=>m.page===page&&m.rect&&p.cx>=m.rect[0]&&p.cx<=m.rect[0]+m.rect[2]&&p.cy>=m.rect[1]&&p.cy<=m.rect[1]+m.rect[3]));
+  if(!found.length)return toast('영역 안에서 치수를 찾지 못했습니다 ('+how+')');
+  const r=R(),sc=found.map(f=>({f,s:toScr(page,f.p.cx,f.p.cy)}));
+  sc.sort((a,b)=>Math.abs(a.s[1]-b.s[1])>r*2?a.s[1]-b.s[1]:a.s[0]-b.s[0]);
+  push();let n=nextN();
+  let cnt=0;
+  sc.forEach(({f})=>{const pad=f.p.h*.25,[x0,y0,x1,y1]=f.p.bb,box=[x0-pad,y0-pad,x1-x0+pad*2,y1-y0+pad*2],{extra,...d}=f.d;
+    const toQty=mm=>{const c=count(mm);if(c>1){mm.qty=String(c);mm.note=String(mm.note||'').replace(/(^|\s)\d+\s*[x×X](?=\s|$)/,' ').replace(/\s+/g,' ').trim()}};
+    const m=newMark(page,box);m.n=n++;Object.assign(m,d);toQty(m);marks.push(m);cnt++;
+    (extra||[]).forEach(x=>{const e=newMark(page,box);e.n=n++;const {feature,...xd}=x;Object.assign(e,xd);toQty(e);marks.push(e);cnt++})});
+  sel=null;draw();table();autosave();showTab('chars');
+  const w=marks.filter(m=>reasons(m).length).length;toast(`${cnt}개 특성을 넘버링했습니다 (${how})${w?` — 노란 행 ${w}개는 확인이 필요합니다`:''}`,5000);
+}
+
+// ---------- 주기 인식 ----------
+async function autoNote(page,rect){
+  let lines=[];const pt=(await pdfTokens(page)).filter(t=>inside(t,rect)&&Math.abs(t.u[1])<.3);
+  if(pt.length&&pt.map(t=>t.s).join('').length>12&&/[가-힣A-Za-z]{4}/.test(pt.map(t=>t.s).join(''))){
+    phrases(pt,6).forEach(p=>lines.push({s:p.s,bb:p.bb}));lines.sort((a,b)=>a.bb[1]-b.bb[1]);
+  }else{
+    slow();const {c,k}=await cropCanvas(page,rect,2400,5),[rx,ry]=rect;
+    olines(await ocr(c,6)).forEach(l=>{const t=l.text.replace(/\s+/g,' ').trim(),b=l.bbox;if(t&&l.confidence>30)lines.push({s:t,bb:[rx+b.x0/k,ry+b.y0/k,rx+b.x1/k,ry+b.y1/k],conf:l.confidence})});
+  }
+  const items=[];let cur=null;
+  lines.forEach(l=>{const s=l.s.replace(/^[|\[\]]+\s*/,'');
+    if(/^주\s*기\s*:?$|^NOTES?:?$/i.test(s))return;
+    const m=s.match(/^(\d{1,2})\s*[.)．]\s*(.+)$/);
+    if(m){cur={no:m[1],s:m[2],bb:[...l.bb],conf:l.conf??100};items.push(cur)}
+    else if(cur){cur.s+=' '+s;cur.conf=Math.min(cur.conf,l.conf??100);cur.bb=[Math.min(cur.bb[0],l.bb[0]),Math.min(cur.bb[1],l.bb[1]),Math.max(cur.bb[2],l.bb[2]),Math.max(cur.bb[3],l.bb[3])]}
+  });
+  if(!items.length)return toast('번호(1. 2. …)가 붙은 주기 항목을 찾지 못했습니다');
+  push();let n=nextN();
+  items.forEach(it=>{const h=(it.bb[3]-it.bb[1]),pad=Math.min(h,R())*.3;const m=newMark(page,[it.bb[0]-pad,it.bb[1]-pad,it.bb[2]-it.bb[0]+pad*2,h+pad*2],'left');
+    m.n=n++;m.cat='주기';m.nom=it.s.replace(/\s+/g,' ').trim();if(it.conf<80)m.chk='OCR로 읽은 주기 — 문구 확인('+Math.round(it.conf)+'%)';marks.push(m)});
+  sel=null;draw();table();autosave();showTab('chars');
+  const refAll=items.some(it=>/모든\s*치수.*참고/.test(it.s));
+  toast(`주기 ${items.length}개 항목을 넘버링했습니다${refAll?' — "모든 치수는 참고치" 주기가 있습니다. 공통공차를 확인하세요':''}`,5500);
+  if(refAll&&!meta.gtMode){$('gtFound').innerHTML='주기에 <b>"모든 치수는 참고치"</b>가 있습니다. 해당되면 적용 방식을 <b>없음</b>으로 고르세요.'}
+}
+
+// ---------- 부품표 인식 (표 칸선을 찾아 셀 단위로 읽기) ----------
+function lines1d(prof,len,thr){const out=[];let s=-1;for(let i=0;i<=prof.length;i++){const on=i<prof.length&&prof[i]>len*thr;if(on&&s<0)s=i;if(!on&&s>=0){out.push([s,i-1]);s=-1}}return out}
+async function autoParts(page,rect){
+  toast('부품표 칸을 찾는 중…',60000);
+  const {c,k}=await cropCanvas(page,rect,5200,7),W=c.width,H=c.height,d=c.getContext('2d').getImageData(0,0,W,H).data,[rx,ry]=rect;
+  const dk=new Uint8Array(W*H);for(let i=0;i<W*H;i++)dk[i]=(d[i*4]*.3+d[i*4+1]*.59+d[i*4+2]*.11)<150?1:0;
+  const rowP=new Uint32Array(H);for(let y=0;y<H;y++){let s=0;for(let x=0;x<W;x++)s+=dk[y*W+x];rowP[y]=s}
+  const hl=lines1d(rowP,W,.5);if(hl.length<3)return toast('표의 가로 칸선을 찾지 못했습니다. 표 바깥 테두리까지 포함해 드래그해 주세요');
+  const y0=hl[0][1],y1=hl[hl.length-1][0],colP=new Uint32Array(W);for(let x=0;x<W;x++){let s=0;for(let y=y0;y<y1;y++)s+=dk[y*W+x];colP[x]=s}
+  const vl=lines1d(colP,y1-y0,.45);if(vl.length<3)return toast('표의 세로 칸선을 찾지 못했습니다');
+  const pdfT=(await pdfTokens(page)).filter(t=>inside(t,rect));
+  const grid=[];let todo=0,done=0;
+  for(let r=0;r<hl.length-1;r++){const a=hl[r][1]+1,b=hl[r+1][0]-1;if(b-a<6*k*.5||b-a<10)continue;const row=[];
+    for(let q=0;q<vl.length-1;q++){const l=vl[q][1]+1,rr=vl[q+1][0]-1;if(rr-l<6)continue;
+      const ins=Math.max(2,Math.round(k*.6)),cx0=l+ins,cx1=rr-ins,cy0=a+ins,cy1=b-ins;let ink=0;
+      for(let y=cy0;y<cy1;y+=2)for(let x=cx0;x<cx1;x+=2)ink+=dk[y*W+x];
+      const box=[rx+l/k,ry+a/k,(rr-l)/k,(b-a)/k];
+      const inT=pdfT.filter(t=>inside(t,box)&&Math.abs(t.u[1])<.3);
+      const cell={box,px:[cx0,cy0,cx1,cy1],s:'',ink:ink/(((cx1-cx0)/2)*((cy1-cy0)/2)||1)};
+      if(inT.length)cell.s=phrases(inT,3).sort((p,q)=>p.bb[0]-q.bb[0]).map(p=>p.s).join(' ');
+      else if(cell.ink>.004){cell.ocr=true;todo++}
+      row.push(cell)}
+    grid.push(row)}
+  // 칸 수가 가장 흔한 행 기준
+  const cnt={};grid.forEach(r=>cnt[r.length]=(cnt[r.length]||0)+1);const nc=+Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
+  const body=grid.filter(r=>r.length===nc);
+  if(todo){slow();const w=await getOcr();await w.setParameters({tessedit_pageseg_mode:'7'});
+    for(const row of grid)for(const cell of row)if(cell.ocr){
+      const [x0,y0c,x1,y1c]=cell.px,bx=[rx+x0/k,ry+y0c/k,(x1-x0)/k,(y1c-y0c)/k],kk=Math.min(16,80/bx[3]);
+      const {c:hc}=await cropCanvas(page,bx,kk*Math.max(bx[2],bx[3]),16),cc=document.createElement('canvas'),pad=16;cc.width=hc.width+pad*2;cc.height=hc.height+pad*2;const g=cc.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,cc.width,cc.height);g.drawImage(hc,pad,pad);
+      const lo=document.createElement('canvas');lo.width=x1-x0+20;lo.height=y1c-y0c+20;const g2=lo.getContext('2d');g2.fillStyle='#fff';g2.fillRect(0,0,lo.width,lo.height);g2.drawImage(c,x0,y0c,x1-x0,y1c-y0c,10,10,x1-x0,y1c-y0c);
+      const a1=(await w.recognize(cc)).data,a2=(await w.recognize(lo)).data,best=a1.confidence>=a2.confidence?a1:a2;
+      cell.conf=best.confidence;cell.s=best.text.replace(/\s+/g,' ').replace(/^[|\[\]_]+|[|\[\]_]+$/g,'').trim();
+      done++;if(done%4===0)toast(`부품표 읽는 중… ${done}/${todo}`,60000)}}
+  // 칸 의미 정하기: 머리행 글자 + 칸 내용(번호/한글/코드)으로 교차 확인
+  const fix=s=>s.replace(/[Oo]/g,'0').replace(/[Il|]/g,'1');
+  const NAMES={no:/^(품번|NO|ITEM)/i,name:/^(품명|명칭|NAME)/i,qty:/^(수량|QTY)/i,pn:/^(부품번호|규격|PARTNO)/i,dwg:/^(도면번호|도번|DWG|대체|비고)/i};
+  const st=[...Array(nc)].map((_,j)=>{const v=body.map(r=>(r[j]?.s||'').trim()),ne=v.filter(Boolean),n=ne.length||1;
+    return {j,empty:1-ne.length/(v.length||1),int:ne.filter(x=>/^\d{1,3}$/.test(fix(x))).length/n,ko:ne.filter(x=>/[가-힣]{2}/.test(x)&&!/^(필요량|소요량)$/.test(x)).length/n,
+      qty:ne.filter(x=>/^\d{1,4}(\.\d+)?\s*(m|mm|EA|개|g|kg|L)?$|^(필요량|소요량|AR|A\/R)$/i.test(x)).length/n,
+      code:ne.filter(x=>/\d/.test(x)&&x.replace(/\s/g,'').length>=4&&!/^\d{1,3}$/.test(x)).length/n}});
+  const cm={};
+  const hdr=body.find(r=>r.some(c=>/품\s*명|명\s*칭/.test(c.s)));
+  if(hdr)hdr.forEach((c,j)=>{const t=c.s.replace(/\s/g,'');const k=Object.keys(NAMES).find(k=>NAMES[k].test(t))||(/품/.test(t)&&/명/.test(t)?'name':'');if(k&&cm[k]==null)cm[k]=j});
+  const good={no:s=>s.int>.5,name:s=>s.ko>.3,qty:s=>s.qty>.5,pn:s=>s.code>.4,dwg:s=>s.code>.3||s.ko>.2};
+  Object.keys(cm).forEach(k=>{const s=st[cm[k]];if(!s||s.empty>.85||!good[k](s))delete cm[k]});
+  const used=()=>new Set(Object.values(cm)),free=()=>st.filter(s=>!used().has(s.j)&&s.empty<.85);
+  if(cm.no==null){const c=free().find(s=>s.int>.6);if(c)cm.no=c.j}
+  if(cm.name==null){const c=free().sort((a,b)=>b.ko-a.ko)[0];if(c&&c.ko>.3)cm.name=c.j}
+  if(cm.qty==null){const c=free().filter(s=>s.j>(cm.name??-1)).sort((a,b)=>b.qty-a.qty)[0];if(c&&c.qty>.5)cm.qty=c.j}
+  const codes=free().filter(s=>s.code>.4&&s.j>(cm.qty??cm.name??-1)).sort((a,b)=>a.j-b.j);
+  if(cm.pn==null&&codes[0])cm.pn=codes[0].j;
+  if(cm.dwg==null){const c=free().filter(s=>s.j>(cm.pn??-1)&&(s.code>.3||s.ko>.2)).sort((a,b)=>a.j-b.j)[0];if(c)cm.dwg=c.j}
+  if(cm.no==null)return toast('품번 칸을 찾지 못했습니다. 품번 칸이 있는 표 전체를 드래그해 주세요');
+  const map=[];Object.entries(cm).forEach(([k,j])=>map[j]=k);
+  const tidy=s=>{const m=s.match(/^(.*[가-힣])\s*[(\[]?([^()가-힣]{0,4})\)\s*$/);if(m&&!/^[A-Z]{2}$/.test(m[2].trim()))return m[1]+'(KR)';return s.replace(/\s*\(\s*\)\s*$/,'')};
+  const out=[];
+  body.forEach(r=>{const p={no:'',name:'',qty:'',pn:'',dwg:'',type:'',fairId:'',chk:{}};r.forEach((c,i)=>{const kk=map[i];if(kk&&kk in p){p[kk]=c.s;if(c.ocr&&(c.conf??0)<82)p.chk[kk]=true}});
+    if(p.qty&&!/^\d+(\.\d+)?\s*(m|mm|EA|개|g|kg|L|ml)?$|^(필요량|AR|A\/R|소요량)$/i.test(p.qty.trim()))p.chk.qty=true;
+    p.no=fix(p.no.trim());if(!/^\d{1,3}$/.test(p.no))return;p.dwg=tidy(p.dwg);p.pn=tidy(p.pn);p.type=FAIR.partType(p);out.push(p)});
+  if(!out.length)return toast('부품 행을 찾지 못했습니다. 품번 칸이 있는 표 전체를 드래그해 주세요');
+  const uniq=[...new Map(out.map(p=>[p.no,p])).values()].sort((a,b)=>+a.no-+b.no);
+  push();parts=uniq;ptable();autosave();showTab('parts');
+  const pw=uniq.filter(p=>Object.values(p.chk).some(Boolean)).length;toast(`부품 ${uniq.length}개를 읽었습니다${pw?` — 노란 칸 ${pw}개 행은 확인이 필요합니다`:''}`,5500);
+}
+
+// ---------- 표제란 인식 ----------
+function parseTitle(toks){
+  const ph=phrases(toks.filter(t=>Math.abs(t.u[1])<.3),.9),got={};
+  const near=(re,test,mx=40)=>{const ls=ph.filter(p=>re.test(p.s.replace(/\s/g,'')));let best=null;
+    ls.forEach(l=>ph.forEach(p=>{if(p===l||!test(p.s))return;const dx=p.bb[0]-l.bb[2],dy=Math.abs(p.cy-l.cy);if(dx>-l.h&&dy<Math.max(l.h,p.h)*1.2&&dx<l.h*mx){const sc=dx+dy*3-p.h*2;if(!best||sc<best.sc)best={p,sc}}}));return best&&best.p};
+  // 도번: 표제란의 큰 숫자
+  const no=near(/^도번$|^도면번호$|^DWG\.?NO/i,s=>/^\d{5,}[\w-]*$/.test(s.replace(/\s/g,'')))||ph.filter(p=>/^\d{6,}$/.test(p.s)).sort((a,b)=>b.h-a.h)[0];
+  if(no)got.dwgNo=got.pn=no.s.replace(/\s/g,'');
+  const nm=near(/^도명$|^품명$|^TITLE/i,s=>/[가-힣A-Za-z]{2}/.test(s)&&!/^(도번|도명|척도|단위|중량)/.test(s.replace(/\s/g,'')));
+  const big=ph.filter(p=>/[가-힣]{2}/.test(p.s)&&!/(연구소|㈜|\(주\)|주식회사|도번|도명)/.test(p.s)).sort((a,b)=>b.h-a.h)[0];
+  if(nm&&!/(연구소|㈜|\(주\))/.test(nm.s))got.name=nm.s;else if(big)got.name=big.s;
+  const all=ph.map(p=>p.s).join(' | ');
+  const sc=all.match(/척\s*도\s*([\d.]+\s*:\s*[\d.]+)/);if(sc)got.scale=sc[1].replace(/\s/g,'');
+  const sh=all.match(/(\d+)\s*장\s*중/);if(sh)got.sheets=sh[1];
+  const dep=near(/^작성부서$/,s=>s.length>1);if(dep)got.dept=dep.s;
+  // 공통공차 블록: 라벨 주변 글자 + 소수/각도 칸 아래 값
+  const gl=ph.find(p=>/(공통|일반|보통)\s*공차|GENERAL\s*TOL/i.test(p.s));
+  if(gl){const h=gl.h,box=[gl.bb[0]-h*2,gl.bb[1]-h,gl.bb[0]+h*32,gl.bb[3]+h*7];
+    const inb=ph.filter(p=>p.cx>=box[0]&&p.cx<=box[2]&&p.cy>=box[1]&&p.cy<=box[3]);
+    const g=DIMX.parseGenTolText(inb.map(p=>p.s).join(' '));
+    const below=lab=>{const L=inb.find(p=>new RegExp('^'+lab+'$').test(p.s.replace(/\s/g,'')));if(!L)return null;return inb.find(p=>p!==L&&p.cy>L.cy+L.h*.4&&p.cy<L.cy+L.h*5&&p.bb[0]<L.bb[2]+L.h&&p.bb[2]>L.bb[0]-L.h&&/\d/.test(p.s))};
+    const vd=below('소수'),va=below('각도');
+    if(vd&&!g.d1&&!g.d2&&!g.d3){const x=vd.s.match(/±?\s*(\d*\.?\d+)/);if(x){g.d1=g.d2=g.d3=x[1];g.colOnly=1}}
+    if(va&&!g.ang){const x=va.s.match(/±?\s*(\d*\.?\d+)\s*°?(?:\s*(\d+)')?/);if(x)g.ang=String(+x[1]+(x[2]?x[2]/60:0))}
+    g.text=inb.map(p=>p.s).join(' ');got.gt=g;got.gtLabel=1}
+  const iso=all.match(/2768\s*-?\s*([fmcv])\b/i);if(iso){got.gt=got.gt||{};got.gt.iso=iso[1].toLowerCase()}
+  const mat=near(/^재질$|^MATERIAL/i,s=>s.length>1&&s!==got.name&&!/열처리|보호|공통|제도|검도|설계|승인|작성|도명|도번/.test(s),14);if(mat)got.mat=mat.s;
+  return got;
+}
+function applyTitle(got,how,soft){
+  const hl=[];['pn','name','dwgNo'].forEach(k=>{if(got[k]&&!(soft&&meta[k])){meta[k]=got[k];hl.push(k)}});
+  if(!meta.partRev){meta.partRev='N/C';hl.push('partRev')}if(!meta.dwgRev){meta.dwgRev='N/C';hl.push('dwgRev')}
+  if(!meta.assy)meta.assy='1';
+  const g=got.gt||{},hasD=['d0','d1','d2','d3','ang'].some(k=>g[k]);
+  if(!(soft&&meta.gtMode)){
+    if(g.iso){meta.gtMode='iso';meta.gtIso=g.iso;hl.push('gtMode','gtIso')}
+    else if(hasD){meta.gtMode='digits';[['d0','gt0'],['d1','gt1'],['d2','gt2'],['d3','gt3'],['ang','gtA']].forEach(([a,b])=>{if(g[a]){meta[b]=g[a];hl.push(b)}});hl.push('gtMode')}
+    if(g.text&&(g.iso||hasD)){meta.gtText=g.text;hl.push('gtText')}
+  }
+  $('gtFound').innerHTML=g.iso?`표제란에서 <b>KS B ISO 2768-${g.iso}</b>을 읽었습니다.`:hasD?`표제란에서 공통공차를 읽었습니다${g.colOnly?' (소수 칸 값 하나를 모든 소수 자리에 넣었습니다 — 확인하세요)':''}.`
+    :got.gtLabel?'<b>표제란의 공통공차 칸이 비어 있습니다.</b> 값을 직접 넣거나, 해당 없으면 <b>없음</b>을 고르세요.':'표제란에서 공통공차를 찾지 못했습니다. 직접 넣거나 <b>없음</b>을 고르세요.';
+  fillMeta(hl);autosave();table();
+  const extra=[got.scale&&'척도 '+got.scale,got.sheets&&got.sheets+'장',got.mat&&'재질 '+got.mat,got.dept&&'작성부서 '+got.dept].filter(Boolean).join(' · ');
+  $('found').innerHTML=hl.length?`<b>표제란에서 읽음 (${how})</b> — 품번 ${esc(got.pn||'?')}, 도명 ${esc(got.name||'?')}${extra?'<br>'+esc(extra):''}<br>개정란이 비어 있으면 N/C로 넣었습니다. 노란 칸을 확인하세요.`:'표제란에서 정보를 찾지 못했습니다. <b>표제란 인식</b>으로 표제란을 드래그하세요.';
+  return hl.length;
+}
+async function autoTitle(){
+  try{const t=await pdfTokens(0);if(!t.length)return;const pg=doc.pages[0];
+    const tb=t.filter(x=>x.cx>pg.w*.5&&x.cy>pg.h*.75),got=parseTitle(tb.length>5?tb:t);
+    const iso=t.map(x=>x.s).join(' ').match(/2768\s*-?\s*([fmcv])\b/i);if(iso&&!got.gt?.iso){got.gt={...(got.gt||{}),iso:iso[1].toLowerCase()}}
+    if(applyTitle(got,'PDF 글자',true))toast('표제란에서 품번·도명을 읽었습니다');}catch(e){console.error('autoTitle',e)}
+}
+async function autoTitleRect(page,rect){
+  let toks=(await pdfTokens(page)).filter(t=>inside(t,rect)),how='PDF 글자';
+  if(toks.length<3){slow();toks=(await ocrTokens(page,rect,false)).filter(t=>inside(t,rect));how='OCR'}
+  const n=applyTitle(parseTitle(toks),how);showTab('info');toast(n?'표제란 정보를 공통정보에 넣었습니다':'표제란에서 정보를 찾지 못했습니다');
+}
+
+// ---------- saving ----------
+let dl=null;try{window.claude?.use&&window.claude.use('downloads').then(d=>dl=d).catch(()=>{})}catch(e){}
+async function save(filename,data){
+  if(dl){try{await dl.save({filename,data});toast('저장했습니다: '+filename)}catch(err){if(err?.code!=='declined')toast('저장하지 못했습니다')}return}
+  if(window.claude?.use){toast('이 화면에서는 파일 저장을 쓸 수 없습니다');return}
+  const blob=data instanceof Blob?data:new Blob([data]);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.append(a);a.click();a.remove();
+}
+const base=()=>(meta.pn||doc?.name||'drawing').replace(/\.[^.]+$/,'');
+const REQ=[['pn','1. Part Number'],['name','2. Part Name'],['fairId','4. FAIR Identifier (없으면 P.O. 번호)'],['partRev','5. Part Revision Level'],['dwgNo','6. Drawing Number'],['dwgRev','7. Drawing Revision Level'],['mfgRef','9. Manufacturing Process Ref.'],['org','10. Organization Name'],['by','20. FAIR Verified By'],['date','21. Date'],['gtMode','공통공차 적용 방식']];
+function validate(){
+  document.querySelectorAll('.miss').forEach(i=>i.classList.remove('miss'));
+  const miss=[],mark=k=>{const i=document.querySelector(`[data-m="${k}"]`);i&&i.classList.add('miss')};
+  REQ.forEach(([k,l])=>{if(!String(meta[k]??'').trim()){if(k==='fairId'&&String(meta.po||'').trim())return;miss.push(l);mark(k)}});
+  if(meta.gtMode==='digits'&&!['gt0','gt1','gt2','gt3','gtA'].some(k=>String(meta[k]||'').trim())){miss.push('공통공차 값 (최소 한 칸)');['gt0','gt1','gt2','gt3'].forEach(mark)}
+  if(meta.gtMode==='iso'&&!meta.gtIso){miss.push('ISO 2768 등급');mark('gtIso')}
+  const ns=marks.map(m=>+m.n),dup=ns.filter((v,i)=>ns.indexOf(v)!==i);if(dup.length)miss.push('중복된 풍선 번호: '+[...new Set(dup)].join(', '));
+  return miss;
+}
+$('eFair').onclick=async()=>{
+  const miss=validate();
+  if(miss.length){showTab('info');$('found').classList.add('err');$('found').innerHTML='<b>엑셀로 내보내려면 아래 항목을 먼저 채워 주세요.</b><br>· '+miss.map(esc).join('<br>· ');
+    $('found').scrollIntoView({block:'nearest'});toast(`필수 항목 ${miss.length}개가 비어 있습니다`,4000);return}
+  $('found').classList.remove('err');
+  try{const w=marks.filter(m=>reasons(m).length).length+parts.filter(p=>p.chk&&Object.values(p.chk).some(Boolean)).length;
+    toast(w?`성적서 만드는 중… 확인 안 된 ${w}건은 엑셀에 주황색 칸으로 표시됩니다`:'성적서 만드는 중…',20000);
+    if(!window.ExcelJS)await loadScript(U('lib/exceljs.min.js'));
+    const tpl=await b64('tpl/fair_form.b64.txt');
+    const chars=[...marks].sort((a,b)=>(+a.n)-(+b.n)).flatMap(m=>{const j=judge(m),e=eff(m),rs=reasons(m),cn=count(m),vs=vals(m);
+      let req=m.nom;if(m.kind==='ref')req='('+m.nom+')';if(m.kind==='basic')req='['+m.nom+']';
+      let tol=m.cat==='치수'?DIMX.tolText(e.up,e.lo):'';if(m.kind==='max')tol='MAX';if(m.kind==='min')tol='MIN';
+      const note=[m.note,e.src==='공통공차'?'공통공차':'',rs.length?'[확인 필요] '+rs.join(' / '):''].filter(Boolean).join(' · ');
+      const base={loc:zone(m),cat:m.cat,req,tol,tool:m.tool,note,flag:rs.length>0,reason:rs.join(' / ')};
+      if(cn<=1)return [{...base,n:m.n,result:m.meas,nc:j==='NG'?'NCR-':''}];
+      // 개소 수만큼 같은 요구사항을 한 줄씩 (번호: 5-1, 5-2 …)
+      return Array.from({length:cn},(_,i)=>{const v=vs.length===cn?vs[i]:(i===0&&vs.length===1?vs[0]:(vs[i]||''));const jj=v?DIMX.judge(m,gt(),v):'';
+        return {...base,n:m.n+'-'+(i+1),result:v,nc:jj==='NG'?'NCR-':'',note:i===0?base.note:(cn+'개소 중 '+(i+1)),flag:base.flag&&i===0}})});
+    const M={...meta,assy:meta.assy!=='0',partial:meta.partial==='1',comment:[meta.comment,meta.gtText&&meta.gtMode!=='none'?'공통공차: '+meta.gtText:(meta.gtMode==='iso'?'공통공차: KS B ISO 2768-'+meta.gtIso:meta.gtMode==='digits'?'공통공차: '+[['gt0','X'],['gt1','X.X'],['gt2','X.XX'],['gt3','X.XXX'],['gtA','각도']].filter(([k])=>meta[k]).map(([k,l])=>l+' ±'+meta[k]+(k==='gtA'?'°':'')).join(', '):''),meta.gtMode==='none'?'공통공차 없음(개별공차/참고치수)':''].filter(Boolean).join(' / ')};
+    const buf=await FAIR.fillFair(ExcelJS,tpl.buffer,{meta:M,parts,chars});
+    await save(base()+'_FAIR.xlsx',new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    notifyHost('fair-exported',{chars:marks.length,parts:parts.length,ng:marks.filter(m=>judge(m)==='NG').length,review:w,by:meta.by||'',fairId:meta.fairId||''});
+  }catch(e){console.error(e);toast('성적서를 만들지 못했습니다')}
+};
+const hex=h=>{const n=parseInt(h.slice(1),16);return PDFLib.rgb((n>>16&255)/255,(n>>8&255)/255,(n&255)/255)};
+$('ePdf').onclick=async()=>{
+  if(!doc)return toast('먼저 도면을 여세요');toast('PDF 만드는 중…');
+  const {PDFDocument,StandardFonts,rgb}=PDFLib;let out,pages;
+  if(doc.kind==='pdf'){out=await PDFDocument.load(doc.bytes.slice(0),{ignoreEncryption:true});pages=out.getPages()}
+  else{out=await PDFDocument.create();const im=(/png/i.test(doc.type)||doc.bytes[0]===0x89)?await out.embedPng(doc.bytes):await out.embedJpg(doc.bytes);
+    const pg=doc.pages[0],p=out.addPage([pg.w,pg.h]);p.drawImage(im,{x:0,y:0,width:pg.w,height:pg.h});pages=[p]}
+  const font=await out.embedFont(StandardFonts.HelveticaBold);
+  const tot=pages.map(p=>{const t=((p.getRotation().angle||0)+rot)%360;if(rot)p.setRotation(PDFLib.degrees(t));return t});
+  const P=(i,x,y)=>{const vp=doc.pages[i].vp;if(vp){const q=vp.convertToPdfPoint(x,y);return {x:q[0],y:q[1]}}return {x,y:doc.pages[i].h-y}};
+  const r=R();
+  for(const m of marks){const p=pages[m.page];if(!p)continue;const c=hex(m.color);
+    if(m.rect){const [x,y,w,h]=m.rect,a=P(m.page,x,y),b=P(m.page,x+w,y+h);
+      p.drawRectangle({x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),width:Math.abs(b.x-a.x),height:Math.abs(b.y-a.y),borderColor:c,borderWidth:r*.1,borderDashArray:[r*.4,r*.25],color:c,opacity:.06,borderOpacity:1});
+      const e=edgePt(m,r);if(e)p.drawLine({start:P(m.page,e[0],e[1]),end:P(m.page,e[2],e[3]),thickness:r*.12,color:c})}
+    const ctr=P(m.page,m.x,m.y);p.drawCircle({x:ctr.x,y:ctr.y,size:r,color:rgb(1,1,1),borderColor:c,borderWidth:r*.17});
+    const t=String(m.n),fs=r*(t.length>2?.85:1.05),tw=font.widthOfTextAtSize(t,fs),ang=tot[m.page]*Math.PI/180,ox=tw/2,oy=fs*.36,ca=Math.cos(ang),sa=Math.sin(ang);
+    p.drawText(t,{x:ctr.x-(ox*ca-oy*sa),y:ctr.y-(ox*sa+oy*ca),size:fs,font,color:c,rotate:PDFLib.degrees(tot[m.page])})}
+  await save(base()+'_ballooned.pdf',new Blob([await out.save()],{type:'application/pdf'}));
+};
+$('eJson').onclick=()=>save(base()+'_fair.json',JSON.stringify({app:'fair-app',v:2,drawing:doc?.name||'',meta,parts,size:$('rSize').value,rot,marks},null,1));
+$('fJson').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;e.target.value='';
+  try{const d=JSON.parse(await f.text());if(!Array.isArray(d.marks))throw 0;push();marks=d.marks;parts=d.parts||[];meta={...meta,...d.meta};if(d.size)$('rSize').value=d.size;
+    if(d.rot!=null&&doc&&d.rot!==rot){rot=d.rot;render()}sel=null;draw();table();ptable();fillMeta();autosave();
+    toast(d.drawing&&doc&&d.drawing!==doc.name?'주의: 다른 도면('+d.drawing+')의 작업입니다':'작업을 불러왔습니다')}
+  catch(err){toast('작업 파일을 읽을 수 없습니다')}
+};
+
+// ---------- sample drawing ----------
+function sample(){
+  const W=1400,H=990,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+  g.fillStyle='#fff';g.fillRect(0,0,W,H);g.strokeStyle='#111';g.fillStyle='#111';g.lineWidth=3;g.strokeRect(24,24,W-48,H-48);g.lineWidth=1.2;g.strokeRect(34,34,W-68,H-68);
+  const T=(t,x,y,s=22,a='center')=>{g.font=`${s}px Arial`;g.textAlign=a;g.fillText(t,x,y)};
+  const arrow=(x,y,ang)=>{g.save();g.translate(x,y);g.rotate(ang);g.beginPath();g.moveTo(0,0);g.lineTo(14,-5);g.lineTo(14,5);g.closePath();g.fill();g.restore()};
+  const dimH=(x1,x2,y,t)=>{g.lineWidth=1;g.beginPath();g.moveTo(x1,y);g.lineTo(x2,y);g.stroke();arrow(x1,y,0);arrow(x2,y,Math.PI);T(t,(x1+x2)/2,y-10)};
+  const dimV=(y1,y2,x,t)=>{g.lineWidth=1;g.beginPath();g.moveTo(x,y1);g.lineTo(x,y2);g.stroke();arrow(x,y1,Math.PI/2);arrow(x,y2,-Math.PI/2);g.save();g.translate(x-10,(y1+y2)/2);g.rotate(-Math.PI/2);T(t,0,0);g.restore()};
+  const ext=(x1,y1,x2,y2)=>{g.lineWidth=.8;g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke()};
+  const X=200,Y=260,PW=600,PH=350;g.lineWidth=2.6;g.beginPath();g.roundRect(X,Y,PW,PH,30);g.stroke();
+  [[X+50,Y+50],[X+PW-50,Y+50],[X+50,Y+PH-50],[X+PW-50,Y+PH-50]].forEach(([hx,hy])=>{g.lineWidth=2;g.beginPath();g.arc(hx,hy,21,0,7);g.stroke();g.lineWidth=.7;g.setLineDash([10,4,2,4]);g.beginPath();g.moveTo(hx-32,hy);g.lineTo(hx+32,hy);g.moveTo(hx,hy-32);g.lineTo(hx,hy+32);g.stroke();g.setLineDash([])});
+  g.lineWidth=2;g.beginPath();g.arc(X+PW/2,Y+PH/2,70,0,7);g.stroke();
+  ext(X,Y-12,X,Y-110);ext(X+PW,Y-12,X+PW,Y-110);dimH(X,X+PW,Y-90,'120 ±0.2');
+  ext(X-12,Y,X-110,Y);ext(X-12,Y+PH,X-110,Y+PH);dimV(Y,Y+PH,X-90,'70 ±0.2');
+  ext(X+50,Y+PH+12,X+50,Y+PH+100);ext(X+PW-50,Y+PH+12,X+PW-50,Y+PH+100);dimH(X+50,X+PW-50,Y+PH+80,'100 ±0.1');
+  g.lineWidth=1;g.beginPath();g.moveTo(X+PW-35,Y+35);g.lineTo(X+PW+60,Y-40);g.lineTo(X+PW+210,Y-40);g.stroke();T('4× Ø8.5 +0.1/0 THRU',X+PW+62,Y-48,20,'left');
+  const fx=X+PW+62,fy=Y-32;g.lineWidth=1.3;g.strokeRect(fx,fy,210,34);[40,130,170].forEach(d=>{g.beginPath();g.moveTo(fx+d,fy);g.lineTo(fx+d,fy+34);g.stroke()});
+  g.beginPath();g.arc(fx+20,fy+17,9,0,7);g.moveTo(fx+7,fy+17);g.lineTo(fx+33,fy+17);g.moveTo(fx+20,fy+4);g.lineTo(fx+20,fy+30);g.stroke();T('Ø0.1 Ⓜ',fx+85,fy+25,19);T('A',fx+150,fy+25,19);T('B',fx+190,fy+25,19);
+  g.beginPath();g.moveTo(X+PW/2+50,Y+PH/2-50);g.lineTo(X+PW/2+150,Y+PH/2-120);g.lineTo(X+PW/2+260,Y+PH/2-120);g.stroke();T('Ø40 H7',X+PW/2+155,Y+PH/2-128,20,'left');
+  g.beginPath();g.moveTo(X+8,Y+PH-8);g.lineTo(X-40,Y+PH+50);g.stroke();T('R6',X-46,Y+PH+70,20);
+  const SX=990,SW=36;g.lineWidth=2.6;g.strokeRect(SX,Y,SW,PH);ext(SX,Y+PH+12,SX,Y+PH+90);ext(SX+SW,Y+PH+12,SX+SW,Y+PH+90);
+  g.lineWidth=1;g.beginPath();g.moveTo(SX-60,Y+PH+70);g.lineTo(SX+SW+60,Y+PH+70);g.stroke();arrow(SX,Y+PH+70,Math.PI);arrow(SX+SW,Y+PH+70,0);T('6 ±0.1',SX+SW/2,Y+PH+100);
+  T('A',SX+SW/2,Y-40,20);g.strokeRect(SX+SW/2-16,Y-62,32,30);g.beginPath();g.moveTo(SX+SW/2,Y-32);g.lineTo(SX+SW/2,Y);g.stroke();
+  T('NOTES:',60,790,18,'left');T('1. MATERIAL: AL 6061-T6',60,815,17,'left');T('2. BREAK ALL SHARP EDGES 0.3 MAX',60,840,17,'left');T('3. SURFACE FINISH Ra 1.6',60,865,17,'left');
+  const bx=880,by=820;g.lineWidth=1.5;g.strokeRect(bx,by,486,136);[[bx,by+45,bx+486,by+45],[bx,by+90,bx+486,by+90],[bx+240,by+45,bx+240,by+136]].forEach(l=>ext(...l));
+  T('SAMPLE MOUNTING PLATE',bx+243,by+31,22);T('P/N  SMP-1024',bx+12,by+75,17,'left');T('REV  A',bx+252,by+75,17,'left');T('SCALE 1:1   UNIT mm',bx+12,by+120,17,'left');T('SHEET 1/1',bx+252,by+120,17,'left');
+  const url=c.toDataURL('image/png'),bin=atob(url.split(',')[1]),bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+  try{localStorage.removeItem('fair-app:sample-drawing.png')}catch(e){}
+  openImg(url,'sample-drawing.png',bytes,'image/png').then(()=>{
+    const col='#d7262e',r=R(),mk=(n,rect,cat,nom,up,lo,meas,tool,note='')=>{const [x,y,w,h]=rect;return {id:'s'+n,n,page:0,color:col,cat,nom,up,lo,meas,tool,note,rect,x:x+w+r*1.7,y:y-r*1.1}};
+    marks=[mk(1,[X+PW/2-60,Y-118,120,34],'치수','120','0.2','0.2','120.05','버니어캘리퍼스'),mk(2,[X-122,Y+PH/2-60,32,120],'치수','70','0.2','0.2','69.86','버니어캘리퍼스'),
+      mk(3,[X+PW/2-60,Y+PH+50,120,36],'치수','100','0.1','0.1','100.02','버니어캘리퍼스'),mk(4,[X+PW+56,Y-70,212,30],'치수','Ø8.5','0.1','0','8.63','핀게이지','4×')];
+    meta={...meta,pn:'SMP-1024',name:'Sample Mounting Plate',dwgNo:'SMP-1024',partRev:'A',dwgRev:'A',assy:'0',gtMode:'iso',gtIso:'m',gtText:'KS B ISO 2768-m (샘플)'};
+    parts=[];undo=[];sel=null;draw();table();ptable();fillMeta();showTab('chars');
+    $('found').textContent='샘플 도면입니다. 실제 도면 PDF를 열면 표제란에서 품번·도명·도번을 자동으로 읽습니다.';
+  });
+}
+$('bSample').onclick=sample;
+// ---------- rhy:se 연동: 품질팀 전용 모듈 ----------
+// rhy:se 안(iframe 또는 모듈 폴더)에서 열리면 rhy:se가 보내 준 사용자 정보로 접근을 확인합니다.
+// 단독으로 열면(이 아티팩트) 공유 설정이 접근을 막으므로 그대로 씁니다.
+const RHYSE={module:'fair',allowDepts:['고객품질팀'],adminRoles:['관리자','admin','owner'],origins:[]};
+const embedded=window.parent!==window&&!/claude\.ai|claudeusercontent|anthropic/.test(document.referrer||'');
+let rhyUser=null;
+const toHost=msg=>{if(window.parent!==window)try{window.parent.postMessage({source:'fair',...msg},'*')}catch(e){}};
+function allowed(u){if(!u)return false;const d=String(u.dept||'').replace(/\s/g,''),r=String(u.role||'').toLowerCase();
+  return RHYSE.allowDepts.some(a=>d===a.replace(/\s/g,''))||RHYSE.adminRoles.some(a=>r===a.toLowerCase())||(u.modules||[]).includes(RHYSE.module)}
+function gate(state){const g=$('gate');if(state==='ok'){g.classList.remove('on');return}g.classList.add('on');
+  if(state==='deny'){$('gateT').textContent='고객품질팀 전용 기능입니다';$('gateP').textContent=`${rhyUser?.name||''}${rhyUser?.dept?' ('+rhyUser.dept+')':''}님은 FAIR 성적서 작성 권한이 없습니다. 필요하면 rhy:se 관리자에게 🧩 기능 더하기에서 권한을 요청하세요.`}
+  else if(state==='timeout'){$('gateT').textContent='rhy:se 사용자 정보를 받지 못했습니다';$('gateP').textContent='rhy:se에 다시 로그인한 뒤 메뉴에서 열어 주세요.'}}
+window.addEventListener('message',e=>{
+  if(e.source!==window.parent)return;if(RHYSE.origins.length&&!RHYSE.origins.includes(e.origin))return;
+  const d=e.data||{};if(d.type!=='rhyse:user')return;
+  rhyUser=d.user||null;if(d.theme)document.documentElement.dataset.theme=d.theme;
+  if(allowed(rhyUser)){gate('ok');$('who').textContent=`${rhyUser.name||''} · ${rhyUser.dept||''}`;if(!meta.by&&rhyUser.name){meta.by=rhyUser.name;fillMeta()}toHost({type:'rhyse:access',ok:true})}
+  else{gate('deny');toHost({type:'rhyse:access',ok:false})}
+});
+if(!embedded&&!/claude|anthropic|localhost|127\.0\.0\.1/.test(location.hostname)){gate('wait');$('gateT').textContent='rhy:se 메뉴에서 열어 주세요';$('gateP').innerHTML='FAIR 성적서는 rhy:se에 로그인한 뒤 <b>내정보 ▾ → 📐 FAIR 성적서</b>에서 쓸 수 있어요. <a href="../">rhy:se 열기</a>'}
+else if(embedded){gate('wait');toHost({type:'rhyse:module-ready',module:RHYSE.module,version:'1.0'});setTimeout(()=>{if(!rhyUser)gate('timeout')},6000)}
+// 성적서를 내보내면 rhy:se에 알림 → '오늘 한 일'·팀 보고에 쓸 수 있게
+function notifyHost(kind,extra){toHost({type:'rhyse:event',kind,module:RHYSE.module,at:new Date().toISOString(),pn:meta.pn||'',name:meta.name||'',...extra})}
+$('glossT').innerHTML='<thead><tr><th>표기</th><th>의미</th><th>예</th></tr></thead><tbody>'+DIMX.GLOSSARY.map(g=>`<tr><td><b>${esc(g[0])}</b></td><td>${esc(g[1])}</td><td class="mu">${esc(g[2])}</td></tr>`).join('')+'</tbody>';
+fillMeta();sample();
+}
+</script>
+</body>
+</html>

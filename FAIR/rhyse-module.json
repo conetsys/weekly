@@ -1,0 +1,23 @@
+{
+  "id": "fair",
+  "name": "FAIR 성적서",
+  "icon": "📐",
+  "summary": "도면 풍선 넘버링 · 부품표/주기 인식 · AS9102 FAIR 양식 엑셀",
+  "entry": "index.html",
+  "version": "1.0",
+  "access": {
+    "depts": ["고객품질팀"],
+    "roles": ["관리자", "admin", "owner"],
+    "grantable": true
+  },
+  "messages": {
+    "host_to_module": {
+      "rhyse:user": "{ type, user:{ id, name, dept, role, modules:[] }, theme:'dark'|'light' } — 모듈이 module-ready를 보내면 응답"
+    },
+    "module_to_host": {
+      "rhyse:module-ready": "{ source:'fair', module:'fair', version }",
+      "rhyse:access": "{ source:'fair', ok:true|false }",
+      "rhyse:event": "{ source:'fair', kind:'fair-exported', pn, name, chars, parts, ng, review, by, fairId, at }"
+    }
+  }
+}
