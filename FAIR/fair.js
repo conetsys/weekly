@@ -27,7 +27,12 @@ async function fillFair(ExcelJS,tplBuf,D){
     ws.getCell('A11').value=`13. Detail Part  ${asm?'□':'■'}\n\n     Assembly FAI ${asm?'■':'□'}`;
     ws.getCell('B11').value=`14. Full FAI   ${m.partial?'□':'■'}`;ws.getCell('C11').value=`Partial FAI   ${m.partial?'■':'□'}`;
     ws.getCell('A34').value='20. FAIR Verified By: '+(m.by||'');ws.getCell('D34').value='21. Date: '+(m.date||'');
+    ws.getCell('A35').value='22. FAIR Reviewed/Approved By: '+(m.appr||'');ws.getCell('D35').value='23. Date: '+(m.apprDate||(m.appr?m.date||'':''));
+    ws.getCell('A36').value='24. Customer Approval: '+(m.cust||'');ws.getCell('D36').value='25. Date: '+(m.custDate||'');
+    ws.getCell('A37').value='26. Comments.';   // 양식에 남아 있던 예전 내용 지우기
   };
+  const isF=c=>{const x=c.value;return !!(x&&typeof x==='object'&&(x.formula||x.sharedFormula))};
+  const setIf=(ws,a,val)=>{if(!ws)return;const c=ws.getCell(a);if(!isF(c))c.value=val};
   // FORM 1: 15행씩, 넘치면 같은 양식을 이어 붙임
   const parts=(D.parts||[]).slice(),per=15,pages=Math.max(1,Math.ceil(parts.length/per));
   const sheets=[f1];
@@ -41,17 +46,31 @@ async function fillFair(ExcelJS,tplBuf,D){
   });
   // 시트 순서: FORM 1 바로 뒤에 이어붙인 시트
   if(pages>1){const i0=wb.worksheets.indexOf(f1);const others=wb.worksheets.filter(w=>!sheets.includes(w));const order=[...others.slice(0,i0),...sheets,...others.slice(i0)];order.forEach((w,i)=>w.orderNo=i)}
-  // FORM 3
-  f3.getCell('A5').value=v(m.pn);f3.getCell('J5').value=v(m.name);
+  // FORM 2 · FORM 3 머리칸: 수식(FORM 1 참조)이 있는 양식은 그대로, 비어 있는 양식은 값으로 채움
+  const f2=wb.getWorksheet('FORM2');
+  setIf(f2,'A5',v(m.pn));setIf(f2,'B5',v(m.name));setIf(f2,'D5',v(m.serial)||'-');setIf(f2,'F5',v(m.fairId));
+  f3.getCell('A5').value=v(m.pn);f3.getCell('J5').value=v(m.name);setIf(f3,'M5',v(m.serial)||'-');setIf(f3,'N5',v(m.fairId));
+  // FORM 3 표: 양식에 남아 있던 여러 줄 병합(예전 작성분)을 풀고, 줄마다 D:G · H:I (· M:N) 병합으로 맞춤
+  const top=x=>parseInt(String(x).split(':')[0].replace(/\D/g,'')),bot=x=>parseInt(String(x).split(':').pop().replace(/\D/g,''));
+  (f3.model.merges||[]).filter(x=>top(x)>=8&&bot(x)>top(x)).forEach(x=>{try{f3.unMergeCells(x)}catch(e){}});
+  const merged=new Set((f3.model.merges||[]).map(String));
+  const noteMerge=merged.has('M8:N8');
+  const lastFmt=Math.max(8,...[...merged].filter(x=>/^D\d+:G\d+$/.test(x)).map(top));
   const ch=(D.chars||[]);let r=8;
-  ch.forEach(c=>{
+  const prep=row=>{
+    if(row>lastFmt){for(let c=1;c<=14;c++)f3.getCell(row,c).style=JSON.parse(JSON.stringify(f3.getCell(8,c).style||{}));f3.getRow(row).height=f3.getRow(8).height}
+    else if(row>8){for(let c=1;c<=14;c++){const a=f3.getCell(8,c).alignment;if(a){const cl=f3.getCell(row,c);cl.style=JSON.parse(JSON.stringify(cl.style||{}));cl.alignment=JSON.parse(JSON.stringify(a))}}}   // 양식 줄마다 정렬이 달라 칸이 붙어 보이는 것 맞춤
+    [['D','G'],['H','I']].concat(noteMerge?[['M','N']]:[]).forEach(([a,b])=>{const k=`${a}${row}:${b}${row}`;if(!merged.has(k)){try{f3.mergeCells(k);merged.add(k)}catch(e){}}});
+  };
+  ch.forEach(c=>{prep(r);
     f3.getCell('A'+r).value=c.n;f3.getCell('B'+r).value=v(c.loc);f3.getCell('C'+r).value=v(c.cat);
     f3.getCell('D'+r).value=v(c.req);f3.getCell('H'+r).value=v(c.tol);
     f3.getCell('J'+r).value=v(c.result);f3.getCell('K'+r).value=v(c.tool);f3.getCell('L'+r).value=v(c.nc);f3.getCell('M'+r).value=v(c.note);
     if(c.flag){flag(f3.getCell('D'+r),'확인 필요: '+(c.reason||''));flag(f3.getCell('H'+r));flag(f3.getCell('M'+r))}
-    if(c.cat==='주기'||String(c.req||'').length>18){const cl=f3.getCell('D'+r);cl.alignment={...(cl.alignment||{}),wrapText:true,vertical:'middle',horizontal:'left'};const len=String(c.req||'').length;if(len>22)f3.getRow(r).height=Math.min(90,28.5*Math.ceil(len/24))}
+    if(c.cat==='주기'||String(c.req||'').length>18){const cl=f3.getCell('D'+r);cl.alignment={...(cl.alignment||{}),wrapText:true,vertical:'middle',horizontal:'left'};const len=String(c.req||'').length,lines=Math.ceil(len/8);if(lines>1)f3.getRow(r).height=Math.min(200,Math.max(28.5,lines*14+8))}
     r++;});
-  if(r-1>211)f3.pageSetup.printArea='A1:N'+(r+5);
+  const pa=String(f3.pageSetup.printArea||'A1:N211'),paEnd=parseInt(pa.split(':').pop().replace(/\D/g,''))||211;
+  if(r-1>paEnd)f3.pageSetup.printArea='A1:N'+(r-1);
   return await wb.xlsx.writeBuffer();
 }
 root.FAIR={fillFair,partType};

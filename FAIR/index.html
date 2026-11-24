@@ -46,6 +46,7 @@ header .sep{background:rgba(232,237,243,.16)}
 .modes button.ai.on{background:var(--blue);color:#fff}
 .grow{flex:1}
 .who{font-size:12.5px;color:#93a0b0;white-space:nowrap}
+.tplsel{width:auto;max-width:210px;font-size:13px;min-height:36px;background:var(--rail2);color:#e8edf3;border-color:rgba(232,237,243,.18)}.tplsel:focus{box-shadow:none;border-color:#7db4e6}
 /* ---- 제도판 ---- */
 main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(400px,46%);min-height:0}
 .vwrap{display:flex;flex-direction:column;min-height:0;min-width:0;position:relative}
@@ -133,6 +134,8 @@ input.miss,select.miss{border-color:var(--red)!important;box-shadow:0 0 0 3px li
 @media(max-width:1100px){.modes button .lb{display:none}.hide-m{display:none}}
 @media(max-width:900px){main{grid-template-columns:minmax(0,1fr);grid-template-rows:62vh auto}aside{border-left:0;border-top:1px solid var(--line);min-height:80vh}}
 @media(max-width:600px){.form{grid-template-columns:minmax(0,1fr)}.hide-s{display:none}h1 small{display:none}}
+.dt{display:flex;gap:4px}.dt input{flex:1;min-width:0}.today{border:1px solid var(--line,#ccd);background:transparent;border-radius:6px;padding:0 8px;font:inherit;font-size:12px;cursor:pointer;color:inherit}
+em.opt{font-style:normal;font-size:10.5px;opacity:.6;margin-left:4px}
 </style>
 </head>
 <body>
@@ -155,6 +158,7 @@ input.miss,select.miss{border-color:var(--red)!important;box-shadow:0 0 0 3px li
     <button id="eJson" class="hide-m" title="마크업·부품표·공통정보만 저장(원본 도면은 그대로)">작업 저장</button>
     <label class="btn hide-m" title="저장해 둔 작업(.json) 열기">작업 열기<input type="file" id="fJson" accept=".json"></label>
     <button id="ePdf">풍선 PDF</button>
+    <select id="tplSel" class="tplsel" title="내보낼 성적서 양식 (고객사별)" aria-label="성적서 양식"></select>
     <button id="eFair" class="pri"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13l2 2 4-4"/></svg>성적서 엑셀</button>
   </div>
 </header>
@@ -215,6 +219,10 @@ input.miss,select.miss{border-color:var(--red)!important;box-shadow:0 0 0 3px li
         <div class="grp">서명</div>
         <label><span class="req">20. FAIR Verified By</span><input data-m="by"></label>
         <label><span class="req">21. Date</span><input data-m="date" type="date"></label>
+        <label><span class="req">22. Reviewed/Approved By</span><input data-m="appr" placeholder="검토/승인자"></label>
+        <label><span>23. Date</span><span class="dt"><input data-m="apprDate" type="date"><button type="button" class="today" data-today="apprDate">오늘</button></span></label>
+        <label><span>24. Customer Approval <em class="opt">선택</em></span><input data-m="cust" placeholder="고객 승인자 (나중에 받으면 비움)"></label>
+        <label><span>25. Date <em class="opt">선택</em></span><span class="dt"><input data-m="custDate" type="date"><button type="button" class="today" data-today="custDate">오늘</button></span></label>
         <label class="w">26. Comments<input data-m="comment"></label>
         <div class="grp">위치(Reference Location) 계산용 도면 테두리</div>
         <label>구역 가로 칸 수<input data-m="zc" inputmode="numeric" placeholder="8"></label>
@@ -295,7 +303,7 @@ function openImg(url,name,bytes,type){
 function setDoc(d){
   doc=d;baseR=Math.max(d.pages[0].w,d.pages[0].h)*0.0105;
   marks=[];parts=[];undo=[];sel=null;rot=0;let restored=false;
-  meta={org:meta.org||'코넷시스㈜',by:meta.by||'',date:meta.date||new Date().toISOString().slice(0,10),supCode:meta.supCode||'',assy:'1',partial:'0',zc:meta.zc||'',zr:meta.zr||''};
+  meta={tpl:meta.tpl||'',org:meta.org||'코넷시스㈜',by:meta.by||'',appr:meta.appr||lsGet('fair-appr'),date:meta.date||new Date().toISOString().slice(0,10),supCode:meta.supCode||'',assy:'1',partial:'0',zc:meta.zc||'',zr:meta.zr||''};
   $('found').textContent='표제란을 읽는 중…';
   try{const s=JSON.parse(localStorage.getItem(key())||'null');if(s&&(s.marks?.length||s.parts?.length)){marks=s.marks||[];parts=s.parts||[];meta={...meta,...s.meta};$('rSize').value=s.size||1;rot=s.rot||0;restored=true;toast('이전 작업을 불러왔습니다')}}catch(e){}
   const V=$('viewer'),vw=V.clientWidth-48,vh=V.clientHeight-48,p0=d.pages[0],pw=rot%180?p0.h:p0.w,ph=rot%180?p0.w:p0.h;zoom=Math.min(2,Math.max(.1,Math.min(vw/pw,vh/ph)));
@@ -510,8 +518,11 @@ $('cAll').onclick=()=>{if(!marks.length)return toast('풍선이 아직 없습니
 // ---------- tabs & meta ----------
 function showTab(t){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='p_'+t))}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
-function fillMeta(hl){$('metaForm').dataset.gt=meta.gtMode||'';document.querySelectorAll('[data-m]').forEach(i=>{i.value=meta[i.dataset.m]??'';if(hl&&hl.includes(i.dataset.m)){i.classList.add('fill');setTimeout(()=>i.classList.remove('fill'),6000)}})}
-$('metaForm').addEventListener('input',e=>{const k=e.target.dataset.m;if(!k)return;meta[k]=e.target.value;e.target.classList.remove('miss');if(k==='gtMode')$('metaForm').dataset.gt=meta.gtMode;if(/^(zc|zr|gt)/.test(k))table();autosave()});
+function lsGet(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+$('metaForm').addEventListener('click',e=>{const b=e.target.closest('[data-today]');if(!b)return;const k=b.dataset.today,i=document.querySelector(`[data-m="${k}"]`);meta[k]=i.value=new Date().toISOString().slice(0,10);autosave()});
+function fillMeta(hl){if($('tplSel'))paintTpl();$('metaForm').dataset.gt=meta.gtMode||'';document.querySelectorAll('[data-m]').forEach(i=>{i.value=meta[i.dataset.m]??'';if(hl&&hl.includes(i.dataset.m)){i.classList.add('fill');setTimeout(()=>i.classList.remove('fill'),6000)}})}
+$('metaForm').addEventListener('input',e=>{const k=e.target.dataset.m;if(!k)return;meta[k]=e.target.value;if(k==='appr')lsSet('fair-appr',e.target.value);e.target.classList.remove('miss');if(k==='gtMode')$('metaForm').dataset.gt=meta.gtMode;if(/^(zc|zr|gt)/.test(k))table();autosave()});
 
 // ---------- characteristic table (Form 3) ----------
 const QTY_RE=/(^|\s)(\d+)\s*(?:[x×X]|개소|EA|PL\.?|PLACES)(?=\s|$)/i;
@@ -823,6 +834,7 @@ function applyTitle(got,how,soft){
   $('gtFound').innerHTML=g.iso?`표제란에서 <b>KS B ISO 2768-${g.iso}</b>을 읽었습니다.`:hasD?`표제란에서 공통공차를 읽었습니다${g.colOnly?' (소수 칸 값 하나를 모든 소수 자리에 넣었습니다 — 확인하세요)':''}.`
     :got.gtLabel?'<b>표제란의 공통공차 칸이 비어 있습니다.</b> 값을 직접 넣거나, 해당 없으면 <b>없음</b>을 고르세요.':'표제란에서 공통공차를 찾지 못했습니다. 직접 넣거나 <b>없음</b>을 고르세요.';
   fillMeta(hl);autosave();table();
+  {const t=TEMPLATES.find(t=>t.match&&(t.match.test(got.dept||'')||t.match.test(got.org||'')));if(t){meta.tpl=t.id;paintTpl()}}
   const extra=[got.scale&&'척도 '+got.scale,got.sheets&&got.sheets+'장',got.mat&&'재질 '+got.mat,got.dept&&'작성부서 '+got.dept].filter(Boolean).join(' · ');
   $('found').innerHTML=hl.length?`<b>표제란에서 읽음 (${how})</b> — 품번 ${esc(got.pn||'?')}, 도명 ${esc(got.name||'?')}${extra?'<br>'+esc(extra):''}<br>개정란이 비어 있으면 N/C로 넣었습니다. 노란 칸을 확인하세요.`:'표제란에서 정보를 찾지 못했습니다. <b>표제란 인식</b>으로 표제란을 드래그하세요.';
   return hl.length;
@@ -839,6 +851,15 @@ async function autoTitleRect(page,rect){
   const n=applyTitle(parseTitle(toks),how);showTab('info');toast(n?'표제란 정보를 공통정보에 넣었습니다':'표제란에서 정보를 찾지 못했습니다');
 }
 
+// ---------- 성적서 양식 (고객사별) ----------
+// 새 양식: tpl/ 에 b64 파일을 넣고 여기 한 줄 추가 (칸 위치가 AS9102 기본과 다르면 fair.js 에 그 양식 규칙 추가)
+const TEMPLATES=[
+  {id:'conet',name:'코넷시스 기본 FAIR',file:'tpl/fair_form.b64.txt',short:'코넷시스'},
+  {id:'hanwha',name:'한화시스템 FAIR',file:'tpl/hanwha_fair.b64.txt',short:'한화시스템',match:/한화\s*시스템/},
+];
+const tplOf=()=>TEMPLATES.find(t=>t.id===meta.tpl)||TEMPLATES[0];
+function paintTpl(){const s=$('tplSel');s.innerHTML=TEMPLATES.map(t=>`<option value="${t.id}"${t.id===tplOf().id?' selected':''}>양식: ${esc(t.name)}</option>`).join('')}
+$('tplSel').onchange=e=>{meta.tpl=e.target.value;autosave();toast(`내보낼 양식: ${tplOf().name}`)};
 // ---------- saving ----------
 let dl=null;try{window.claude?.use&&window.claude.use('downloads').then(d=>dl=d).catch(()=>{})}catch(e){}
 async function save(filename,data){
@@ -847,7 +868,7 @@ async function save(filename,data){
   const blob=data instanceof Blob?data:new Blob([data]);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.append(a);a.click();a.remove();
 }
 const base=()=>(meta.pn||doc?.name||'drawing').replace(/\.[^.]+$/,'');
-const REQ=[['pn','1. Part Number'],['name','2. Part Name'],['fairId','4. FAIR Identifier (없으면 P.O. 번호)'],['partRev','5. Part Revision Level'],['dwgNo','6. Drawing Number'],['dwgRev','7. Drawing Revision Level'],['mfgRef','9. Manufacturing Process Ref.'],['org','10. Organization Name'],['by','20. FAIR Verified By'],['date','21. Date'],['gtMode','공통공차 적용 방식']];
+const REQ=[['pn','1. Part Number'],['name','2. Part Name'],['fairId','4. FAIR Identifier (없으면 P.O. 번호)'],['partRev','5. Part Revision Level'],['dwgNo','6. Drawing Number'],['dwgRev','7. Drawing Revision Level'],['mfgRef','9. Manufacturing Process Ref.'],['org','10. Organization Name'],['by','20. FAIR Verified By'],['date','21. Date'],['appr','22. FAIR Reviewed/Approved By'],['gtMode','공통공차 적용 방식']];
 function validate(){
   document.querySelectorAll('.miss').forEach(i=>i.classList.remove('miss'));
   const miss=[],mark=k=>{const i=document.querySelector(`[data-m="${k}"]`);i&&i.classList.add('miss')};
@@ -865,7 +886,7 @@ $('eFair').onclick=async()=>{
   try{const w=marks.filter(m=>reasons(m).length).length+parts.filter(p=>p.chk&&Object.values(p.chk).some(Boolean)).length;
     toast(w?`성적서 만드는 중… 확인 안 된 ${w}건은 엑셀에 주황색 칸으로 표시됩니다`:'성적서 만드는 중…',20000);
     if(!window.ExcelJS)await loadScript(U('lib/exceljs.min.js'));
-    const tpl=await b64('tpl/fair_form.b64.txt');
+    const T=tplOf(),tpl=await b64(T.file);
     const chars=[...marks].sort((a,b)=>(+a.n)-(+b.n)).flatMap(m=>{const j=judge(m),e=eff(m),rs=reasons(m),cn=count(m),vs=vals(m);
       let req=m.nom;if(m.kind==='ref')req='('+m.nom+')';if(m.kind==='basic')req='['+m.nom+']';
       let tol=m.cat==='치수'?DIMX.tolText(e.up,e.lo):'';if(m.kind==='max')tol='MAX';if(m.kind==='min')tol='MIN';
@@ -877,7 +898,7 @@ $('eFair').onclick=async()=>{
         return {...base,n:m.n+'-'+(i+1),result:v,nc:jj==='NG'?'NCR-':'',note:i===0?base.note:(cn+'개소 중 '+(i+1)),flag:base.flag&&i===0}})});
     const M={...meta,assy:meta.assy!=='0',partial:meta.partial==='1',comment:[meta.comment,meta.gtText&&meta.gtMode!=='none'?'공통공차: '+meta.gtText:(meta.gtMode==='iso'?'공통공차: KS B ISO 2768-'+meta.gtIso:meta.gtMode==='digits'?'공통공차: '+[['gt0','X'],['gt1','X.X'],['gt2','X.XX'],['gt3','X.XXX'],['gtA','각도']].filter(([k])=>meta[k]).map(([k,l])=>l+' ±'+meta[k]+(k==='gtA'?'°':'')).join(', '):''),meta.gtMode==='none'?'공통공차 없음(개별공차/참고치수)':''].filter(Boolean).join(' / ')};
     const buf=await FAIR.fillFair(ExcelJS,tpl.buffer,{meta:M,parts,chars});
-    await save(base()+'_FAIR.xlsx',new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    await save(base()+'_FAIR_'+T.short+'.xlsx',new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
     notifyHost('fair-exported',{chars:marks.length,parts:parts.length,ng:marks.filter(m=>judge(m)==='NG').length,review:w,by:meta.by||'',fairId:meta.fairId||''});
   }catch(e){console.error(e);toast('성적서를 만들지 못했습니다')}
 };
