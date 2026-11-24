@@ -5,127 +5,157 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FAIR 성적서 작성</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
-/* VOICE: 정확하고 조용한 검사 도구 — 도면이 주인공
-   IDEA: 검사원의 빨간 펜이 올라간 도면과, 옆에 붙은 FAIR 양식(Form 1·3)
-   PICTURE: 도면 뷰어 자체(풍선·영역·지시선이 살아있는 캔버스)
-   COLOUR and TYPE: 흰 종이 + 제도 잉크 #16202a + 검사 빨강 #d7262e + 청사진 슬레이트 #2a5d84 / IBM Plex Sans KR
-   LAYOUT: 상단 도구줄, 좌측 넓은 뷰어, 우측 탭(공통정보·부품표·특성); 900px 이하에서는 위아래 */
+/* VOICE: 정밀 측정기처럼 차분하고 단단한 검사 도구 — 도면이 주인공
+   IDEA: 검사 성적서가 끼워진 제도판 — 짙은 잉크색 상단 레일, 연회색 제도판 위의 흰 도면, 옆에 붙은 성적서 카드
+   PICTURE: 도면 뷰어(풍선·네모·지시선) 자체, 아래에 떠 있는 둥근 도구 막대
+   COLOUR and TYPE: 잉크 #0E1726 · 검사 빨강 #D7262E · 청사진 #2F6FA8 · 종이 흰색 / IBM Plex Sans KR + 숫자 IBM Plex Mono
+   LAYOUT: 상단 레일(파일 · 모드 · 내보내기), 좌측 제도판 + 떠 있는 도구 막대, 우측 성적서 패널(탭) */
 :root{color-scheme:light dark;
---bg:light-dark(#ffffff,#12171c);--ink:light-dark(#16202a,#e6ebf0);--mut:light-dark(#5b6773,#94a1ad);
---line:light-dark(#d9dee3,#2a333c);--desk:light-dark(#e3e7eb,#0a0e12);--panel:light-dark(#f4f6f8,#171d23);
---red:#d7262e;--blue:light-dark(#2a5d84,#6aa6d6);--ok:light-dark(#1f7a3f,#5cc483);--sel:light-dark(#fff1f1,#3a1d20)}
+--bg:light-dark(#ffffff,#10161e);--ink:light-dark(#0e1726,#e8edf3);--mut:light-dark(#5f6b7a,#93a0b0);--faint:light-dark(#8a95a3,#6f7c8c);
+--line:light-dark(#e3e8ee,#253040);--line2:light-dark(#d2d9e1,#2f3b4d);--desk:light-dark(#eceff3,#0a0f15);--dot:light-dark(#d5dbe2,#1a2330);
+--panel:light-dark(#f6f8fa,#151c26);--card:light-dark(#ffffff,#18212c);--rail:#0e1726;--rail2:#1a2738;
+--red:#d7262e;--red2:#b81d24;--blue:light-dark(#2f6fa8,#7db4e6);--blueBg:light-dark(#eaf2fa,#18283a);--ok:light-dark(#1d7a44,#5cc483);
+--sel:light-dark(#fff3f3,#3a1d22);--warn:light-dark(#fff6d6,#372e14);--shadow:0 1px 2px rgba(14,23,38,.06),0 8px 24px rgba(14,23,38,.08);
+--r:10px;--mono:"IBM Plex Mono",ui-monospace,monospace}
 :root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
 html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "IBM Plex Sans KR",system-ui,sans-serif;display:flex;flex-direction:column;overflow-x:clip}
-header{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:10px max(1.5vw,12px);border-bottom:1px solid var(--line)}
-h1{font-size:18px;font-weight:600;margin:0;display:flex;align-items:center;gap:8px;white-space:nowrap}
-h1 svg{flex:none}
-.tools{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
-.sep{width:1px;height:26px;background:var(--line);margin:0 3px}
-button,.btn{font:inherit;font-size:13.5px;min-height:36px;padding:0 11px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-button:hover,.btn:hover{border-color:var(--mut)}
+body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.5 "IBM Plex Sans KR",system-ui,sans-serif;display:flex;flex-direction:column;overflow-x:clip;-webkit-font-smoothing:antialiased}
+button,.btn{font:inherit;font-size:13.5px;font-weight:500;min-height:36px;padding:0 12px;border:1px solid var(--line2);background:var(--card);color:var(--ink);border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:background .15s,border-color .15s,color .15s}
+button:hover,.btn:hover{border-color:var(--faint)}
 button:focus-visible,input:focus-visible,select:focus-visible,.btn:focus-within{outline:2px solid var(--blue);outline-offset:1px}
-button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-button.ai.on{background:var(--blue);border-color:var(--blue);color:#fff}
-button.pri{background:var(--red);border-color:var(--red);color:#fff}
+button svg,.btn svg{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .btn input{display:none}
-label.mini{font-size:13px;color:var(--mut);display:inline-flex;align-items:center;gap:6px}
-input[type=range]{width:70px}
-input[type=color]{width:32px;height:30px;border:1px solid var(--line);border-radius:6px;padding:2px;background:var(--bg)}
-main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(380px,46%);min-height:0}
-.vwrap{display:flex;flex-direction:column;min-height:0;min-width:0}
-#viewer{background:var(--desk);overflow:auto;position:relative;min-height:360px;flex:1;display:flex}
-.vbar{border-top:1px solid var(--line);padding:7px max(1.5vw,12px);background:var(--bg)}
-#pages{padding:24px;display:flex;flex-direction:column;align-items:center;gap:22px;width:max-content;flex:none;margin:auto;transform-origin:0 0}
-.pw{position:relative;box-shadow:0 1px 2px rgba(0,0,0,.12),0 6px 22px rgba(0,0,0,.10);background:#fff}
+button.pri{background:var(--red);border-color:var(--red);color:#fff}button.pri:hover{background:var(--red2);border-color:var(--red2)}
+.sep{width:1px;height:22px;background:var(--line2);margin:0 2px;flex:none}
+/* ---- 상단 레일 ---- */
+header{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;padding:9px max(1.4vw,12px);background:var(--rail);color:#e8edf3}
+h1{font-size:15px;font-weight:600;margin:0;display:flex;align-items:center;gap:10px;white-space:nowrap;letter-spacing:.01em}
+h1 svg{flex:none}h1 small{font-weight:400;color:#93a0b0;font-size:13px}
+header .tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:1}
+header button,header .btn{background:transparent;border-color:rgba(232,237,243,.18);color:#e8edf3}
+header button:hover,header .btn:hover{background:rgba(232,237,243,.08);border-color:rgba(232,237,243,.35)}
+header button.pri{background:var(--red);border-color:var(--red)}header button.pri:hover{background:var(--red2)}
+header .sep{background:rgba(232,237,243,.16)}
+.modes{display:inline-flex;gap:2px;padding:3px;border-radius:10px;background:var(--rail2);border:1px solid rgba(232,237,243,.1)}
+.modes button{border:0;min-height:32px;border-radius:7px;padding:0 11px;color:#b9c4d1;background:transparent}
+.modes button:hover{background:rgba(232,237,243,.07);color:#fff}
+.modes button.on{background:#e8edf3;color:var(--rail)}
+.modes button.ai.on{background:var(--blue);color:#fff}
+.grow{flex:1}
+.who{font-size:12.5px;color:#93a0b0;white-space:nowrap}
+/* ---- 제도판 ---- */
+main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(400px,46%);min-height:0}
+.vwrap{display:flex;flex-direction:column;min-height:0;min-width:0;position:relative}
+#viewer{background:var(--desk) radial-gradient(var(--dot) 1px,transparent 1.2px) 0 0/22px 22px;overflow:auto;position:relative;min-height:360px;flex:1;display:flex}
+#pages{padding:24px 24px 96px;display:flex;flex-direction:column;align-items:center;gap:26px;width:max-content;flex:none;margin:auto;transform-origin:0 0}
+.pw{position:relative;box-shadow:0 1px 3px rgba(14,23,38,.12),0 14px 40px rgba(14,23,38,.14);background:#fff;border-radius:2px}
 .pg{position:absolute;left:0;top:0;transform-origin:0 0;background:#fff}
 .pg canvas{display:block}
 .pg svg{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
-.pw .pno{position:absolute;left:0;top:-19px;font-size:12px;color:var(--mut)}
+.pw .pno{position:absolute;left:0;top:-21px;font:500 11.5px var(--mono);color:var(--mut)}
 #viewer.mark .pg svg{cursor:crosshair}
 .bal{cursor:grab}
 .empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;color:var(--mut)}
 .empty b{display:block;color:var(--ink);font-size:18px;margin-bottom:6px}
-aside{border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:var(--bg)}
-.tabs{display:flex;border-bottom:1px solid var(--line);background:var(--panel);overflow-x:auto}
-.tabs button{border:0;border-radius:0;background:none;min-height:44px;padding:0 16px;color:var(--mut);border-bottom:2px solid transparent;font-size:14px}
+/* 떠 있는 도구 막대 */
+.vbar{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:flex;align-items:center;gap:4px;padding:6px;border-radius:14px;background:light-dark(rgba(255,255,255,.92),rgba(24,33,44,.92));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:var(--shadow);border:1px solid var(--line);max-width:calc(100% - 24px);overflow-x:auto;z-index:3}
+.vbar button{border-color:transparent;background:transparent;min-height:34px;padding:0 9px}
+.vbar button:hover{background:var(--panel);border-color:transparent}
+.vbar button.on{background:var(--ink);color:var(--bg)}
+.vbar .zl{font:500 12.5px var(--mono);width:48px;text-align:center;color:var(--mut)}
+label.mini{font-size:12px;color:var(--mut);display:inline-flex;align-items:center;gap:6px;padding:0 6px;white-space:nowrap}
+input[type=range]{width:74px;accent-color:var(--red)}
+.sw{display:inline-flex;flex-direction:column;align-items:center;gap:1px;font-size:10.5px;color:var(--mut);padding:0 3px;cursor:pointer}
+.sw input{appearance:none;-webkit-appearance:none;width:24px;height:24px;border-radius:50%;border:2px solid var(--card);box-shadow:0 0 0 1px var(--line2);padding:0;cursor:pointer;background:none}
+.sw input::-webkit-color-swatch-wrapper{padding:0}.sw input::-webkit-color-swatch{border:0;border-radius:50%}.sw input::-moz-color-swatch{border:0;border-radius:50%}
+.vbar .apply{font-size:12px;min-height:30px;padding:0 9px;border:1px solid var(--line2)}
+/* ---- 성적서 패널 ---- */
+aside{border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:var(--panel)}
+.tabs{display:flex;gap:4px;padding:8px 10px 0;border-bottom:1px solid var(--line);background:var(--bg);overflow-x:auto}
+.tabs button{border:0;border-radius:8px 8px 0 0;background:none;min-height:42px;padding:0 14px;color:var(--mut);border-bottom:2px solid transparent;font-size:14px}
+.tabs button:hover{color:var(--ink);background:var(--panel)}
 .tabs button.on{color:var(--ink);border-bottom-color:var(--red);font-weight:600}
-.tabs i{font-style:normal;font-size:12px;background:var(--line);color:var(--ink);border-radius:9px;padding:0 7px;margin-left:2px}
+.tabs i{font:500 11.5px var(--mono);font-style:normal;background:var(--panel);border:1px solid var(--line);color:var(--mut);border-radius:20px;padding:0 7px;margin-left:4px}
+.tabs button.on i{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .pane{display:none;flex:1;min-height:0;flex-direction:column}
 .pane.on{display:flex}
-.form{overflow:auto;padding:14px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;align-content:start}
-.form label{font-size:12px;color:var(--mut);display:flex;flex-direction:column;gap:3px}
+.form{overflow:auto;padding:14px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 12px;align-content:start}
+.form label{font-size:12px;color:var(--mut);display:flex;flex-direction:column;gap:4px;font-weight:500}
 .form label.w{grid-column:1/-1}
-.form .grp{grid-column:1/-1;font-size:13px;font-weight:600;color:var(--ink);margin-top:6px;padding-top:10px;border-top:1px solid var(--line)}
-.form .seg{display:flex;gap:6px;flex-wrap:wrap}
-.form .seg button{min-height:34px}
-.found{grid-column:1/-1;font-size:12.5px;color:var(--mut);background:var(--panel);border-radius:7px;padding:8px 10px}
-input,select{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 7px;width:100%}
-.form input,.form select{font-size:14px;min-height:36px}
-.fill{background:light-dark(#fff8d6,#3a3418)}
-.sum{display:flex;gap:16px;align-items:baseline;padding:9px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.sum b{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
-.sum span{font-size:13px;color:var(--mut)}
-.sum .ng b{color:var(--red)}.sum .ok b{color:var(--ok)}
-.sum .sp{flex:1}
-.tbl{overflow:auto;flex:1}
-table{border-collapse:collapse;width:100%;font-size:13px}
-th{position:sticky;top:0;background:var(--panel);text-align:left;font-weight:500;color:var(--mut);padding:7px 5px;border-bottom:1px solid var(--line);white-space:nowrap;z-index:1}
+.form .grp{grid-column:1/-1;font-size:12px;font-weight:600;color:var(--ink);margin-top:10px;padding-top:12px;border-top:1px solid var(--line);letter-spacing:.02em}
+.found{grid-column:1/-1;font-size:12.5px;color:var(--mut);background:var(--card);border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:8px;padding:9px 11px}
+input,select{font:inherit;font-size:16px;color:var(--ink);background:var(--card);border:1px solid var(--line2);border-radius:7px;padding:5px 8px;width:100%;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blueBg);outline:0}
+.form input,.form select{font-size:14px;min-height:38px}
+.fill{background:light-dark(#fff8d6,#3a3418)!important}
+.sum{display:flex;gap:6px 18px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap;background:var(--bg)}
+.sum>div b{font:600 19px var(--mono);font-variant-numeric:tabular-nums;margin-right:3px}
+.sum span{font-size:12.5px;color:var(--mut)}
+.sum .ng b{color:var(--red)}.sum .ok b{color:var(--ok)}.sum .wa b{color:#b58300}
+.sum .sp{flex:1}.sum button{min-height:32px;font-size:12.5px}
+.tbl{overflow:auto;flex:1;background:var(--bg)}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
+th{position:sticky;top:0;background:var(--panel);text-align:left;font-weight:500;font-size:11.5px;color:var(--mut);padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap;z-index:1;letter-spacing:.02em}
 td{padding:3px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
-td input,td select{font-size:13px;padding:4px 5px;min-height:32px}
-td.n{width:50px}td.n input{text-align:center;font-weight:600}
-td.num input{text-align:right;font-variant-numeric:tabular-nums}
-td.mu{color:var(--mut);white-space:nowrap;font-size:12px}
-tr.sel td{background:var(--sel)}
-tr.warn td{background:light-dark(#fff4c2,#3a3216)}tr.warn.sel td{background:light-dark(#ffe9a8,#4a3a16)}
-input.warn{background:light-dark(#fff4c2,#3a3216);border-color:#d9a400}
-.cf{min-height:30px;padding:0 9px;background:#f2b705;border-color:#f2b705;color:#1b1400;font-weight:600}
+tbody tr:hover td{background:light-dark(#fafbfc,#141c26)}
+td input,td select{font-size:13px;padding:4px 6px;min-height:32px;border-color:transparent;background:transparent;border-radius:6px}
+td input:hover,td select:hover{border-color:var(--line2);background:var(--card)}
+td input:focus,td select:focus{background:var(--card)}
+td.n{width:50px}td.n input{text-align:center;font:600 13px var(--mono)}
+td.num input{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+td.mu{color:var(--mut);white-space:nowrap;font:500 12px var(--mono)}
+tr.sel td{background:var(--sel)!important}
+tr.warn td{background:var(--warn)}tr.warn.sel td{background:light-dark(#ffe9a8,#4a3a16)!important}
+input.warn{background:var(--warn)!important;border-color:#d9a400!important}
+.cf{min-height:28px;padding:0 10px;background:#f2b705;border-color:#f2b705;color:#1b1400;font-weight:600;font-size:12px;border-radius:20px}
 .okk{color:var(--ok);font-weight:700}
-input.miss,select.miss{border-color:var(--red);box-shadow:0 0 0 1px var(--red)}
-.found.err{background:light-dark(#fdecec,#3a1a1c);color:light-dark(#8a1717,#ffb3b3)}
-.sum .wa b{color:#b58300}
+input.miss,select.miss{border-color:var(--red)!important;box-shadow:0 0 0 3px light-dark(#fde5e6,#3a1a1c)}
+.found.err{background:light-dark(#fdf0f0,#3a1a1c);color:light-dark(#8a1717,#ffb3b3);border-left-color:var(--red)}
 .req::after{content:" *";color:var(--red)}
 .gt-digits,.gt-iso{display:none}.form[data-gt=digits] .gt-digits,.form[data-gt=iso] .gt-iso{display:flex}
-/* symbols */.symbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:7px 14px;border-bottom:1px solid var(--line);font-size:13px;color:var(--mut)}
-.symbar button{min-height:32px;padding:0 10px;font-size:15px;font-weight:600;color:var(--ink)}
-.symbar .mu{font-size:12px}
-/* rhy:se gate */.gate{position:fixed;inset:0;z-index:20;background:var(--bg);display:none;place-items:center;text-align:center;padding:24px}
+.jd{font-weight:600;white-space:nowrap;text-align:center;font-size:12.5px}
+.jd.OK{color:var(--ok)}.jd.NG{color:var(--red)}
+.del{min-height:30px;padding:0 8px;border:0;color:var(--faint);background:none}.del:hover{color:var(--red);background:none}
+.hint{font-size:12.5px;color:var(--mut);padding:10px 14px;border-top:1px solid var(--line);background:var(--bg)}
+.symbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:7px 14px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--mut);background:var(--bg)}
+.symbar button{min-height:30px;padding:0 10px;font-size:14px;font-weight:600;border-radius:20px}
+.symbar .mu{font-size:11.5px}
+#why{font-size:12.5px;color:#8a6400;padding:0 14px;background:var(--bg)}#why:not(:empty){padding:6px 14px}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%) translateY(14px);background:var(--rail);color:#e8edf3;padding:10px 16px;border-radius:10px;font-size:13.5px;opacity:0;transition:.25s;pointer-events:none;z-index:9;max-width:92vw;box-shadow:var(--shadow)}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.gate{position:fixed;inset:0;z-index:20;background:var(--bg);display:none;place-items:center;text-align:center;padding:24px}
 .gate.on{display:grid}.gate h2{font-size:22px;margin:14px 0 6px}.gate p{color:var(--mut);max-width:42ch;margin:0 auto}
 .gate svg{width:120px;height:40px}.gate path{fill:none;stroke:var(--red);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-.who{font-size:12.5px;color:var(--mut);margin-left:auto;white-space:nowrap}
-#why{font-size:12.5px;color:#8a6400;padding:0 14px 8px;min-height:0}
-.jd{font-weight:600;white-space:nowrap;text-align:center}
-.jd.OK{color:var(--ok)}.jd.NG{color:var(--red)}
-.del{min-height:32px;padding:0 8px;border:0;color:var(--mut);background:none}
-.hint{font-size:12.5px;color:var(--mut);padding:9px 14px;border-top:1px solid var(--line)}
-.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:9;max-width:92vw}
-.toast.show{opacity:1;transform:translateX(-50%)}
-@media(prefers-reduced-motion:reduce){.toast{transition:none}}
-@media(max-width:900px){main{grid-template-columns:minmax(0,1fr);grid-template-rows:60vh auto}aside{border-left:0;border-top:1px solid var(--line)}}
-@media(max-width:600px){.form{grid-template-columns:minmax(0,1fr)}.hide-s{display:none}}
+@media(prefers-reduced-motion:reduce){.toast,button,input{transition:none}}
+@media(max-width:1100px){.modes button .lb{display:none}.hide-m{display:none}}
+@media(max-width:900px){main{grid-template-columns:minmax(0,1fr);grid-template-rows:62vh auto}aside{border-left:0;border-top:1px solid var(--line);min-height:80vh}}
+@media(max-width:600px){.form{grid-template-columns:minmax(0,1fr)}.hide-s{display:none}h1 small{display:none}}
 </style>
 </head>
 <body>
 <header>
-  <h1><svg width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="11" fill="#fff" stroke="#d7262e" stroke-width="2.4"/><text x="13" y="17.5" text-anchor="middle" font-size="12" font-weight="700" fill="#d7262e" font-family="Arial">1</text></svg>FAIR 성적서 작성</h1>
+  <h1><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="7" fill="#d7262e"/><circle cx="14" cy="14" r="7.5" fill="none" stroke="#fff" stroke-width="2"/><path d="M14 9.5v9M9.5 14h9" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>FAIR <small>성적서 작성</small></h1>
   <div class="tools">
-    <label class="btn" title="PDF, PNG, JPG">도면 열기<input type="file" id="fDoc" accept=".pdf,.png,.jpg,.jpeg"></label>
-    <button id="bSample">샘플</button>
     <span class="sep hide-s"></span>
-    <button id="m_mark" class="on" title="드래그: 영역+풍선, 클릭: 풍선만">✚ 넘버링</button>
-    <button id="m_dim" class="ai" title="영역 안의 치수를 찾아 넘버링">치수 인식</button>
-    <button id="m_note" class="ai" title="주기란을 드래그하면 항목별로 넘버링">주기 인식</button>
-    <button id="m_parts" class="ai" title="부품표를 드래그하면 Form 1에 입력">부품표 인식</button>
-    <button id="m_title" class="ai" title="표제란을 드래그하면 공통정보 입력">표제란 인식</button>
-    <span class="sep hide-s"></span>
+    <label class="btn" title="PDF, PNG, JPG"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M4 20h16"/></svg><span>도면 열기</span><input type="file" id="fDoc" accept=".pdf,.png,.jpg,.jpeg"></label>
+    <button id="bSample" class="hide-m">샘플</button>
+    <span class="grow"></span>
+    <div class="modes" role="group" aria-label="작업 모드">
+      <button id="m_mark" class="on" title="드래그: 영역+풍선, 클릭: 풍선만"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg><span class="lb">넘버링</span></button>
+      <button id="m_dim" class="ai" title="영역 안의 치수를 찾아 넘버링"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18M3 8v8M21 8v8M7 12l-2-2M7 12l-2 2M17 12l2-2M17 12l2 2"/></svg><span class="lb">치수</span></button>
+      <button id="m_note" class="ai" title="주기란을 드래그하면 항목별로 넘버링"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14M5 11h14M5 16h9"/></svg><span class="lb">주기</span></button>
+      <button id="m_parts" class="ai" title="부품표를 드래그하면 Form 1에 입력"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M4 15h16M10 4v16"/></svg><span class="lb">부품표</span></button>
+      <button id="m_title" class="ai" title="표제란을 드래그하면 공통정보 입력"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="13" width="18" height="7" rx="1"/><path d="M12 13v7M3 16.5h9"/></svg><span class="lb">표제란</span></button>
+    </div>
+    <span class="grow"></span>
     <span class="who" id="who"></span>
-    <button id="eFair" class="pri">성적서 엑셀</button>
+    <button id="eJson" class="hide-m" title="마크업·부품표·공통정보만 저장(원본 도면은 그대로)">작업 저장</button>
+    <label class="btn hide-m" title="저장해 둔 작업(.json) 열기">작업 열기<input type="file" id="fJson" accept=".json"></label>
     <button id="ePdf">풍선 PDF</button>
-    <button id="eJson" title="마크업·부품표·공통정보만 저장(원본 도면은 그대로)">작업 저장</button>
-    <label class="btn">작업 열기<input type="file" id="fJson" accept=".json"></label>
+    <button id="eFair" class="pri"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13l2 2 4-4"/></svg>성적서 엑셀</button>
   </div>
 </header>
 <main>
@@ -133,15 +163,20 @@ input.miss,select.miss{border-color:var(--red);box-shadow:0 0 0 1px var(--red)}
   <div id="viewer" class="mark"><div id="pages"></div>
     <div class="empty" id="empty"><div><b>PDF 또는 이미지 도면을 여세요</b>도면은 이 브라우저 안에서만 열리고 어디에도 업로드되지 않습니다.</div></div>
   </div>
-  <div class="vbar tools">
-    <button id="m_move" title="풍선 이동·선택만">이동</button>
+  <div class="vbar" role="toolbar" aria-label="도면 도구">
+    <button id="m_move" title="풍선 이동·선택만"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg>이동</button>
     <span class="sep"></span>
-    <button id="bUndo" title="Ctrl+Z">되돌리기</button>
-    <button id="bRenum" title="1순위 왼쪽, 2순위 위에서부터 번호 다시 매기기">번호 재정렬</button>
-    <button id="zOut" aria-label="축소">−</button><span id="zLbl" style="font-size:13px;width:44px;text-align:center" title="Ctrl+휠로 확대/축소">100%</span><button id="zIn" aria-label="확대">+</button>
-    <button id="rL" title="왼쪽으로 90°">⟲</button><button id="rR" title="오른쪽으로 90°">⟳</button>
+    <button id="bUndo" title="되돌리기 (Ctrl+Z)" aria-label="되돌리기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
+    <button id="bRenum" title="번호 재정렬: 1순위 왼쪽, 2순위 위"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16M4 17l3 3 3-3M14 6h6M14 12h4M14 18h2"/></svg><span class="hide-s">재정렬</span></button>
+    <span class="sep"></span>
+    <button id="zOut" aria-label="축소"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button><span class="zl" id="zLbl" title="Ctrl+휠로 확대/축소">100%</span><button id="zIn" aria-label="확대"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button>
+    <button id="rL" title="왼쪽으로 90°" aria-label="왼쪽으로 회전"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v6h6"/><path d="M4.5 10A8 8 0 1 1 6 17"/></svg></button><button id="rR" title="오른쪽으로 90°" aria-label="오른쪽으로 회전"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4v6h-6"/><path d="M19.5 10A8 8 0 1 0 18 17"/></svg></button>
+    <span class="sep"></span>
     <label class="mini">크기<input type="range" id="rSize" min="0.4" max="2.4" step="0.1" value="1"></label>
-    <label class="mini">색<input type="color" id="cCol" value="#d7262e"></label>
+    <label class="sw" title="풍선 테두리·번호 색"><input type="color" id="cCol" value="#d7262e">풍선</label>
+    <label class="sw" title="네모(영역) 색"><input type="color" id="cRect" value="#d7262e">네모</label>
+    <label class="sw" title="풍선 안 번호 글자 색"><input type="color" id="cText" value="#d7262e">글자</label>
+    <button class="apply" id="cAll" title="지금 색을 모든 풍선에 적용">모두 적용</button>
   </div>
   </section>
   <aside>
@@ -312,11 +347,11 @@ function draw(){
   if(!doc)return;const r=R();
   doc.pages.forEach((pg,i)=>{const svg=pg.svg;if(!svg)return;
     svg.innerHTML=marks.filter(m=>m.page===i).map(m=>{
-      const s=m.id===sel,c=m.color,sw=r*(s?.26:.17);let o='';
-      if(m.rect){const [x,y,w,h]=m.rect;o+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}" fill-opacity="${s?.12:.06}" stroke="${c}" stroke-width="${r*.1}" stroke-dasharray="${r*.4} ${r*.25}"/>`;
+      const s=m.id===sel,c=m.color,rc=m.rcol||c,tc=m.tcol||c,sw=r*(s?.26:.17);let o='';
+      if(m.rect){const [x,y,w,h]=m.rect;o+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${rc}" fill-opacity="${s?.12:.06}" stroke="${rc}" stroke-width="${r*.1}" stroke-dasharray="${r*.4} ${r*.25}"/>`;
         const e=edgePt(m,r);if(e)o+=`<line x1="${e[0]}" y1="${e[1]}" x2="${e[2]}" y2="${e[3]}" stroke="${c}" stroke-width="${r*.12}"/>`;}
       const t=String(m.n),fs=r*(t.length>2?.85:1.05);
-      o+=`<g class="bal" data-id="${m.id}">${s?`<circle cx="${m.x}" cy="${m.y}" r="${r*1.45}" fill="${c}" fill-opacity=".18"/>`:''}<circle cx="${m.x}" cy="${m.y}" r="${r}" fill="#fff" stroke="${c}" stroke-width="${sw}"/><text x="${m.x}" y="${m.y}" dy=".36em"${rot?` transform="rotate(${-rot} ${m.x} ${m.y})"`:''} text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="${fs}" fill="${c}">${t}</text></g>`;
+      o+=`<g class="bal" data-id="${m.id}">${s?`<circle cx="${m.x}" cy="${m.y}" r="${r*1.45}" fill="${c}" fill-opacity=".18"/>`:''}<circle cx="${m.x}" cy="${m.y}" r="${r}" fill="#fff" stroke="${c}" stroke-width="${sw}"/><text x="${m.x}" y="${m.y}" dy=".36em"${rot?` transform="rotate(${-rot} ${m.x} ${m.y})"`:''} text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="${fs}" fill="${tc}">${t}</text></g>`;
       return o;}).join('');});
   stats();
 }
@@ -341,7 +376,7 @@ function bindSvg(svg){
     if(g){const m=marks.find(k=>k.id===g.dataset.id);select(m.id,true);act={t:'move',m,dx:m.x-x,dy:m.y-y,before:snap(),moved:false};return}
     if(mode==='move'){select(null);return}
     const ai=mode!=='mark',ghost=document.createElementNS(NS,'rect');
-    ghost.setAttribute('fill',ai?'#2a5d84':'none');ghost.setAttribute('fill-opacity','.08');ghost.setAttribute('stroke',ai?'#2a5d84':$('cCol').value);ghost.setAttribute('stroke-width',R()*.1);ghost.setAttribute('stroke-dasharray',`${R()*.4} ${R()*.25}`);svg.append(ghost);
+    ghost.setAttribute('fill',ai?'#2a5d84':'none');ghost.setAttribute('fill-opacity','.08');ghost.setAttribute('stroke',ai?'#2f6fa8':$('cRect').value);ghost.setAttribute('stroke-width',R()*.1);ghost.setAttribute('stroke-dasharray',`${R()*.4} ${R()*.25}`);svg.append(ghost);
     act={t:'rect',page,x0:x,y0:y,x1:x,y1:y,ghost,sx:e.clientX,sy:e.clientY};
   });
   svg.addEventListener('pointermove',e=>{
@@ -365,7 +400,7 @@ function bindSvg(svg){
   svg.addEventListener('pointerup',end);svg.addEventListener('pointercancel',end);
 }
 function newMark(page,rect,side){
-  const pg=doc.pages[page],r=R(),m={id:Math.random().toString(36).slice(2,9),n:nextN(),page,color:$('cCol').value,cat:'치수',nom:'',up:'',lo:'',meas:'',tool:'',note:'',rect};
+  const pg=doc.pages[page],r=R(),m={id:Math.random().toString(36).slice(2,9),n:nextN(),page,color:$('cCol').value,rcol:$('cRect').value,tcol:$('cText').value,cat:'치수',nom:'',up:'',lo:'',meas:'',tool:'',note:'',rect};
   if(rect){m.pref=side==='left'?'left':'ur';place(m,page,rect,m.pref)}
   return m;
 }
@@ -463,7 +498,14 @@ $('zIn').onclick=()=>zoomTo(zoom*1.25);$('zOut').onclick=()=>zoomTo(zoom/1.25);
 const turn=d=>{if(!doc)return;rot=(rot+d+360)%360;render();autosave();toast('회전 '+rot+'°')};
 $('rL').onclick=()=>turn(-90);$('rR').onclick=()=>turn(90);
 $('rSize').oninput=()=>{draw();autosave()};
-$('cCol').onchange=()=>{if(sel){push();const m=marks.find(k=>k.id===sel);m.color=$('cCol').value;draw();autosave()}};
+// 색: 풍선(테두리) · 네모(영역) · 글자(번호). 새 풍선의 기본색이 되고, 선택한 풍선이 있으면 그 풍선에 바로 적용
+const COLK={cCol:'color',cRect:'rcol',cText:'tcol'};
+try{const cs=JSON.parse(localStorage.getItem('fair-style')||'null');if(cs)Object.keys(COLK).forEach(id=>{if(cs[id])$(id).value=cs[id]})}catch(e){}
+const saveStyle=()=>{try{localStorage.setItem('fair-style',JSON.stringify(Object.fromEntries(Object.keys(COLK).map(id=>[id,$(id).value]))))}catch(e){}};
+Object.keys(COLK).forEach(id=>{let snapd=false;
+  $(id).addEventListener('input',()=>{saveStyle();if(!sel)return;const m=marks.find(k=>k.id===sel);if(!m)return;if(!snapd){push();snapd=true}m[COLK[id]]=$(id).value;draw()});
+  $(id).addEventListener('change',()=>{snapd=false;if(sel)autosave()})});
+$('cAll').onclick=()=>{if(!marks.length)return toast('풍선이 아직 없습니다');push();marks.forEach(m=>{m.color=$('cCol').value;m.rcol=$('cRect').value;m.tcol=$('cText').value});draw();autosave();toast('모든 풍선에 지금 색을 적용했습니다 (되돌리기 가능)')};
 
 // ---------- tabs & meta ----------
 function showTab(t){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='p_'+t))}
@@ -850,13 +892,13 @@ $('ePdf').onclick=async()=>{
   const tot=pages.map(p=>{const t=((p.getRotation().angle||0)+rot)%360;if(rot)p.setRotation(PDFLib.degrees(t));return t});
   const P=(i,x,y)=>{const vp=doc.pages[i].vp;if(vp){const q=vp.convertToPdfPoint(x,y);return {x:q[0],y:q[1]}}return {x,y:doc.pages[i].h-y}};
   const r=R();
-  for(const m of marks){const p=pages[m.page];if(!p)continue;const c=hex(m.color);
+  for(const m of marks){const p=pages[m.page];if(!p)continue;const c=hex(m.color),rc=hex(m.rcol||m.color),tc=hex(m.tcol||m.color);
     if(m.rect){const [x,y,w,h]=m.rect,a=P(m.page,x,y),b=P(m.page,x+w,y+h);
-      p.drawRectangle({x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),width:Math.abs(b.x-a.x),height:Math.abs(b.y-a.y),borderColor:c,borderWidth:r*.1,borderDashArray:[r*.4,r*.25],color:c,opacity:.06,borderOpacity:1});
+      p.drawRectangle({x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),width:Math.abs(b.x-a.x),height:Math.abs(b.y-a.y),borderColor:rc,borderWidth:r*.1,borderDashArray:[r*.4,r*.25],color:rc,opacity:.06,borderOpacity:1});
       const e=edgePt(m,r);if(e)p.drawLine({start:P(m.page,e[0],e[1]),end:P(m.page,e[2],e[3]),thickness:r*.12,color:c})}
     const ctr=P(m.page,m.x,m.y);p.drawCircle({x:ctr.x,y:ctr.y,size:r,color:rgb(1,1,1),borderColor:c,borderWidth:r*.17});
     const t=String(m.n),fs=r*(t.length>2?.85:1.05),tw=font.widthOfTextAtSize(t,fs),ang=tot[m.page]*Math.PI/180,ox=tw/2,oy=fs*.36,ca=Math.cos(ang),sa=Math.sin(ang);
-    p.drawText(t,{x:ctr.x-(ox*ca-oy*sa),y:ctr.y-(ox*sa+oy*ca),size:fs,font,color:c,rotate:PDFLib.degrees(tot[m.page])})}
+    p.drawText(t,{x:ctr.x-(ox*ca-oy*sa),y:ctr.y-(ox*sa+oy*ca),size:fs,font,color:tc,rotate:PDFLib.degrees(tot[m.page])})}
   await save(base()+'_ballooned.pdf',new Blob([await out.save()],{type:'application/pdf'}));
 };
 $('eJson').onclick=()=>save(base()+'_fair.json',JSON.stringify({app:'fair-app',v:2,drawing:doc?.name||'',meta,parts,size:$('rSize').value,rot,marks},null,1));
@@ -910,7 +952,9 @@ $('bSample').onclick=sample;
 // rhy:se 안(iframe 또는 모듈 폴더)에서 열리면 rhy:se가 보내 준 사용자 정보로 접근을 확인합니다.
 // 단독으로 열면(이 아티팩트) 공유 설정이 접근을 막으므로 그대로 씁니다.
 const RHYSE={module:'fair',allowDepts:['고객품질팀'],adminRoles:['관리자','admin','owner'],origins:[]};
-const embedded=window.parent!==window&&!/claude\.ai|claudeusercontent|anthropic/.test(document.referrer||'');
+// Claude 아티팩트 화면(window.claude 가 있음)에서는 rhy:se 확인 없이 바로 씀
+const onClaude=!!(window.claude&&window.claude.use)||/claude|anthropic/.test(location.hostname)||/claude|anthropic/.test(document.referrer||'');
+const embedded=window.parent!==window&&!onClaude;
 let rhyUser=null;
 const toHost=msg=>{if(window.parent!==window)try{window.parent.postMessage({source:'fair',...msg},'*')}catch(e){}};
 function allowed(u){if(!u)return false;const d=String(u.dept||'').replace(/\s/g,''),r=String(u.role||'').toLowerCase();
@@ -925,7 +969,7 @@ window.addEventListener('message',e=>{
   if(allowed(rhyUser)){gate('ok');$('who').textContent=`${rhyUser.name||''} · ${rhyUser.dept||''}`;if(!meta.by&&rhyUser.name){meta.by=rhyUser.name;fillMeta()}toHost({type:'rhyse:access',ok:true})}
   else{gate('deny');toHost({type:'rhyse:access',ok:false})}
 });
-if(!embedded&&!/claude|anthropic|localhost|127\.0\.0\.1/.test(location.hostname)){gate('wait');$('gateT').textContent='rhy:se 메뉴에서 열어 주세요';$('gateP').innerHTML='FAIR 성적서는 rhy:se에 로그인한 뒤 <b>내정보 ▾ → 📐 FAIR 성적서</b>에서 쓸 수 있어요. <a href="../">rhy:se 열기</a>'}
+if(!embedded&&!onClaude&&!/localhost|127\.0\.0\.1/.test(location.hostname)){gate('wait');$('gateT').textContent='rhy:se 메뉴에서 열어 주세요';$('gateP').innerHTML='FAIR 성적서는 rhy:se에 로그인한 뒤 <b>내정보 ▾ → 📐 FAIR 성적서</b>에서 쓸 수 있어요. <a href="../">rhy:se 열기</a>'}
 else if(embedded){gate('wait');toHost({type:'rhyse:module-ready',module:RHYSE.module,version:'1.0'});setTimeout(()=>{if(!rhyUser)gate('timeout')},6000)}
 // 성적서를 내보내면 rhy:se에 알림 → '오늘 한 일'·팀 보고에 쓸 수 있게
 function notifyHost(kind,extra){toHost({type:'rhyse:event',kind,module:RHYSE.module,at:new Date().toISOString(),pn:meta.pn||'',name:meta.name||'',...extra})}
