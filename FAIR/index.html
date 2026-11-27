@@ -475,9 +475,12 @@ $('bLayout').onclick=relayout;
 function renumberByPos(){
   if(!marks.length)return;push();const r=R(),out=[];
   [...new Set(marks.map(m=>m.page))].sort((a,b)=>a-b).forEach(pg=>{
-    const L=marks.filter(m=>m.page===pg).map(m=>{const cx=m.rect?m.rect[0]+m.rect[2]/2:m.x,cy=m.rect?m.rect[1]+m.rect[3]/2:m.y,[sx,sy]=toScr(pg,cx,cy);return {m,sx,sy}}).sort((a,b)=>a.sx-b.sx);
-    const cols=[];L.forEach(o=>{const c=cols[cols.length-1];if(c&&o.sx-c.last<=r*2.5){c.items.push(o);c.last=o.sx}else cols.push({last:o.sx,items:[o]})});
-    cols.forEach(c=>c.items.sort((a,b)=>Math.abs(a.sy-b.sy)>r*.5?a.sy-b.sy:(+a.m.n)-(+b.m.n)).forEach(o=>out.push(o.m)));
+    // 풍선 위치 기준: 왼쪽부터 세로 띠(풍선 지름 약 1.5배 폭)를 만들고, 띠 안에서는 위→아래
+    // (예전에는 띠를 이어 붙여 도면 전체가 한 띠가 되면서 사실상 위→아래로만 정렬되던 문제)
+    const [ax,ay]=toScr(pg,0,0),[bx,by]=toScr(pg,r,0),rs=Math.hypot(bx-ax,by-ay)||r,W=rs*3;
+    const L=marks.filter(m=>m.page===pg).map(m=>{const [sx,sy]=toScr(pg,m.x,m.y);return {m,sx,sy}}).sort((a,b)=>a.sx-b.sx);
+    const cols=[];L.forEach(o=>{const c=cols[cols.length-1];if(c&&o.sx-c.x0<=W)c.items.push(o);else cols.push({x0:o.sx,items:[o]})});
+    cols.forEach(c=>c.items.sort((a,b)=>Math.abs(a.sy-b.sy)>rs*.5?a.sy-b.sy:a.sx-b.sx).forEach(o=>out.push(o.m)));
   });
   out.forEach((m,i)=>m.n=i+1);draw();table();autosave();toast('왼쪽 → 위 순서로 번호를 다시 매겼습니다 (되돌리기 가능)');
 }
